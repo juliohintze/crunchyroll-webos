@@ -108,11 +108,11 @@ V.component('[data-video]', {
         window.toggleVideo = function(){
             return self.toggleVideo();
         }
-        window.forwardVideo = function(){
-            return self.forwardVideo();
+        window.forwardVideo = function(seconds){
+            return self.forwardVideo(seconds);
         }
-        window.backwardVideo = function(){
-            return self.backwardVideo();
+        window.backwardVideo = function(seconds){
+            return self.backwardVideo(seconds);
         }
 
     },
@@ -466,27 +466,29 @@ V.component('[data-video]', {
 
     /**
      * Forward video
+     * @param {Number} seconds
      * @return {void}
      */
-    forwardVideo: function(){
+    forwardVideo: function(seconds){
 
         var self = this;
         var video = self.video;
 
-        self.skipAhead(video.currentTime + 10);
+        self.skipAhead(video.currentTime + seconds);
 
     },
 
     /**
      * Backward video
+     * @param {Number} seconds
      * @return {void}
      */
-    backwardVideo: function(){
+    backwardVideo: function(seconds){
 
         var self = this;
         var video = self.video;
 
-        self.skipAhead(video.currentTime - 10);
+        self.skipAhead(video.currentTime - seconds);
 
     },
 

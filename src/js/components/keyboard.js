@@ -351,22 +351,22 @@ V.component('[data-keyboard-navigation]', {
 
         // FORWARD
         }else if( key == keys.FORWARD ){
-            window.forwardVideo();
+            window.forwardVideo(1);
             return true;
 
         // BACKWARD
         }else if( key == keys.BACKWARD ){
-            window.backwardVideo();
+            window.backwardVideo(1);
             return true;
 
         // RIGHT
         }else if( key == keys.RIGHT ){
-            window.forwardVideo();
+            window.forwardVideo(10);
             return true;
 
         // LEFT
         }else if( key == keys.LEFT ){
-            window.backwardVideo();
+            window.backwardVideo(10);
             return true;
 
         // BACK
