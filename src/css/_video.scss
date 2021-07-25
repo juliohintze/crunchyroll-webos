@@ -197,13 +197,13 @@ body.page-video {
     border-color: #ffc095;
 }
 
-#video .video-fullscreen {
+#video .video-fullscreen,
+#video .video-skip-intro {
     cursor: pointer;
     margin-left: 10px;
     width: 2rem;
 
     span {
-        background-image: url(../icons/fullscreen.svg);
         background-position: center;
         background-repeat: no-repeat;
         background-size: 100% auto;
@@ -213,4 +213,10 @@ body.page-video {
         text-indent: -9999em;
         width: 100%;
     }
+}
+#video .video-fullscreen span {
+    background-image: url(../icons/fullscreen.svg);
+}
+#video .video-skip-intro span {
+    background-image: url(../icons/skip.svg);
 }

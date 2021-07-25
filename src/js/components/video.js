@@ -68,6 +68,11 @@ V.component('[data-video]', {
             self.toggleFullScreen();
         });
 
+        self.on('click', '.video-skip-intro', function(e){
+            e.preventDefault();
+            self.forwardVideo(90);
+        });
+
         // Mouse Events
         V.on(element, 'mouseenter mousemove', function(){
 
