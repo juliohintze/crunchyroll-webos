@@ -681,14 +681,17 @@ V.component('[data-video]', {
         var elapsedDelta = 30;
         var playhead = video.currentTime;
 
-        await Api.request('POST', '/log', {
-            event: 'playback_status',
-            media_id: episodeId,
-            playhead: playhead,
-            elapsed: elapsed,
-            elapsedDelta: elapsedDelta
-        });
+        if( playhead != self.lastPlayhead ){
+            await Api.request('POST', '/log', {
+                event: 'playback_status',
+                media_id: episodeId,
+                playhead: playhead,
+                elapsed: elapsed,
+                elapsedDelta: elapsedDelta
+            });
+        }
 
+        self.lastPlayhead = playhead;
         self.trackProgress();
 
     },
