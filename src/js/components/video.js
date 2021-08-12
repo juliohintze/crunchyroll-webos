@@ -70,7 +70,7 @@ V.component('[data-video]', {
 
         self.on('click', '.video-skip-intro', function(e){
             e.preventDefault();
-            self.forwardVideo(90);
+            self.forwardVideo(80);
         });
 
         // Mouse Events
