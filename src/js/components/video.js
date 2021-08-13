@@ -396,7 +396,6 @@ V.component('[data-video]', {
             }
 
             var hls = new Hls({
-                debug: true,
                 autoStartLoad: false,
                 startLevel: -1, // auto
                 maxBufferLength: 15, // 15s
