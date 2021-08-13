@@ -41,9 +41,6 @@
     .select:focus-within {
         border-color: #F37521;
     }
-    .select:after {
-        filter: invert(100%);
-    }
     .select option {
         color: #000;
     }
@@ -216,6 +213,9 @@
 @media screen and (max-width: 860px) {
     #content {
         padding-left: 1.16rem;
+    }
+    #content .list-items {
+        justify-content: space-evenly;
     }
 }
 
