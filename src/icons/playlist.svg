@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24" viewBox="0 0 24 24" width="24"><g><rect fill="none" height="24" width="24"/></g><g><g><rect height="2" width="11" x="3" y="10" fill="#FFF"/><rect height="2" width="11" x="3" y="6" fill="#FFF"/><rect height="2" width="7" x="3" y="14" fill="#FFF"/><polygon points="16,13 16,21 22,17"  fill="#FFF"/></g></g></svg>
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M28 20H6V24H28V20Z" fill="white"/>
+<path d="M28 12H6V16H28V12Z" fill="white"/>
+<path d="M20 28H6V32H20V28Z" fill="white"/>
+<path d="M32 26V42L44 34L32 26Z" fill="white"/>
+</svg>

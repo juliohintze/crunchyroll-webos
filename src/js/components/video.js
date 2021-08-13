@@ -9,10 +9,22 @@ V.route.add({
 V.component('[data-video]', {
 
     /**
+     * HLS instance
+     * @var {Hls}
+     */
+    hls: null,
+
+    /**
      * Streams data
      * @var {Array}
      */
     streams: [],
+
+    /**
+     * Episodes
+     * @var {Array}
+     */
+    episodes: [],
 
     /**
      * Return template data
@@ -34,14 +46,11 @@ V.component('[data-video]', {
         var controlsTimeout = null;
 
         // UI Events
-        self.on('click', '.video-play', function(e){
+        self.on('click', '.video-close', function(e){
             e.preventDefault();
-            self.toggleVideo();
-        });
-
-        self.on('click', '.video-reload', function(e){
-            e.preventDefault();
-            self.render();
+            self.pauseVideo();
+            self.hideVideo();
+            V.route.redirect('/home');
         });
 
         self.on('click', '.video-watched', function(e){
@@ -56,11 +65,18 @@ V.component('[data-video]', {
             V.route.redirect('/serie/' + serieId);
         });
 
-        self.on('click', '.video-close', function(e){
+        self.on('click', '.video-previous-episode', function(e){
             e.preventDefault();
             self.pauseVideo();
-            self.hideVideo();
-            V.route.redirect('/home');
+            // V.route.redirect('/serie/' + serieId);
+            alert('GO TO PREVIOUS');
+        });
+
+        self.on('click', '.video-next-episode', function(e){
+            e.preventDefault();
+            self.pauseVideo();
+            // V.route.redirect('/serie/' + serieId);
+            alert('GO TO NEXT');
         });
 
         self.on('click', '.video-fullscreen', function(e){
@@ -68,9 +84,45 @@ V.component('[data-video]', {
             self.toggleFullScreen();
         });
 
+        self.on('click', '.video-pause', function(e){
+            e.preventDefault();
+            self.pauseVideo();
+        });
+
+        self.on('click', '.video-play', function(e){
+            e.preventDefault();
+            self.playVideo();
+        });
+
+        self.on('click', '.video-reload', function(e){
+            e.preventDefault();
+            self.render();
+        });
+
+        self.on('click', '.video-forward', function(e){
+            e.preventDefault();
+            self.forwardVideo(5);
+        });
+
+        self.on('click', '.video-backward', function(e){
+            e.preventDefault();
+            self.backwardVideo(5);
+        });
+
         self.on('click', '.video-skip-intro', function(e){
             e.preventDefault();
             self.forwardVideo(80);
+        });
+
+        // Quality
+        self.on('click', '.video-quality div', function(e){
+
+            e.preventDefault();
+            var level = Number(this.dataset.level);
+
+            self.hls.nextLoadLevel = level;
+            self.hls.autoLevelCapping = (level === -1) ? true : false;
+
         });
 
         // Mouse Events
@@ -158,6 +210,8 @@ V.component('[data-video]', {
                 self.updateProgress();
             });
 
+            window.showLoading();
+
             try {
                 await self.loadVideo();
                 await self.streamVideo();
@@ -166,6 +220,8 @@ V.component('[data-video]', {
             } catch (error) {
                 self.showError(error.message);
             }
+
+            window.hideLoading();
 
         });
 
@@ -244,6 +300,7 @@ V.component('[data-video]', {
         var self = this;
         var element = self.element;
         var video = self.video;
+        var serie = V.$('.video-serie', element);
         var title = V.$('.video-title', element);
         var episodeId = V.route.active().param('episodeId');
 
@@ -257,8 +314,6 @@ V.component('[data-video]', {
             'media.series_id',
             'media.series_name'
         ];
-
-        window.showLoading();
 
         try {
 
@@ -278,7 +333,8 @@ V.component('[data-video]', {
             var episodeName = response.data.name;
             var serieName = response.data.series_name;
 
-            title.innerHTML = serieName + ' / E' + episodeNumber + ' - ' + episodeName;
+            serie.innerHTML = serieName + ' / Episode ' + episodeNumber;
+            title.innerHTML = episodeName;
 
             var streams = response.data.stream_data.streams;
             var startTime = response.data.playhead || 0;
@@ -294,8 +350,6 @@ V.component('[data-video]', {
         } catch (error) {
             self.showError(error.message);
         }
-
-        window.hideLoading();
 
     },
 
@@ -342,10 +396,14 @@ V.component('[data-video]', {
             }
 
             var hls = new Hls({
-                startPosition: currentTime,
-                minAutoBitrate: 300000,
-                maxBufferLength: 15,
-                maxBufferSize: 30 * 1000 * 1000
+                debug: true,
+                autoStartLoad: false,
+                startLevel: -1, // auto
+                maxBufferLength: 15, // 15s
+                backBufferLength: 15, // 15s
+                maxBufferSize: 30 * 1000 * 1000, // 30MB
+                maxFragLookUpTolerance: 0.2,
+                nudgeMaxRetry: 10
             });
 
             hls.on(Hls.Events.MEDIA_ATTACHED, function () {
@@ -353,8 +411,29 @@ V.component('[data-video]', {
             });
 
             hls.on(Hls.Events.MANIFEST_PARSED, function(){
+                hls.startLoad(currentTime);
+            });
+
+            hls.on(Hls.Events.LEVEL_LOADED, function(){
                 element.classList.remove('video-is-loading');
                 element.classList.add('video-is-loaded');
+            });
+
+            hls.on(Hls.Events.LEVEL_SWITCHED, function(){
+
+                var level = hls.currentLevel;
+                var next = V.$('.video-quality div[data-level="' + level + '"]');
+
+                if( !next ){
+                    next = V.$('.video-quality div[data-level="-1"]');
+                }
+
+                V.$('.video-quality div.active').classList.remove('active');
+                next.classList.add('active');
+
+            });
+
+            hls.once(Hls.Events.FRAG_LOADED, function(){
                 resolve();
             });
 
@@ -394,6 +473,7 @@ V.component('[data-video]', {
             });
 
             hls.attachMedia(video);
+            self.hls = hls;
 
         });
     },
