@@ -66,17 +66,35 @@ V.component('[data-video]', {
         });
 
         self.on('click', '.video-previous-episode', function(e){
+
             e.preventDefault();
+
+            var previous = self.episodes[0];
+            var serieId = previous.series_id;
+            var episodeId = previous.media_id;
+            var url = '/serie/' + serieId + '/episode/' + episodeId + '/video';
+
+            V.route.redirect(url);
+
             self.pauseVideo();
-            // V.route.redirect('/serie/' + serieId);
-            alert('GO TO PREVIOUS');
+            self.render();
+
         });
 
         self.on('click', '.video-next-episode', function(e){
+
             e.preventDefault();
+
+            var next = self.episodes[2];
+            var serieId = next.series_id;
+            var episodeId = next.media_id;
+            var url = '/serie/' + serieId + '/episode/' + episodeId + '/video';
+
+            V.route.redirect(url);
+
             self.pauseVideo();
-            // V.route.redirect('/serie/' + serieId);
-            alert('GO TO NEXT');
+            self.render();
+
         });
 
         self.on('click', '.video-fullscreen', function(e){
@@ -96,6 +114,7 @@ V.component('[data-video]', {
 
         self.on('click', '.video-reload', function(e){
             e.preventDefault();
+            self.pauseVideo();
             self.render();
         });
 
@@ -331,6 +350,7 @@ V.component('[data-video]', {
 
             var episodeNumber = response.data.episode_number;
             var episodeName = response.data.name;
+            var serieId = response.data.series_id;
             var serieName = response.data.series_name;
 
             serie.innerHTML = serieName + ' / Episode ' + episodeNumber;
@@ -347,9 +367,48 @@ V.component('[data-video]', {
             self.streams = streams;
             video.currentTime = startTime;
 
+            self.loadClosestEpisodes(serieId, episodeNumber);
+
         } catch (error) {
             self.showError(error.message);
         }
+
+    },
+
+    /**
+     * Load next and previous episodes
+     * @param {Number} serieId
+     * @param {Number} episodeNumber
+     * @return {void}
+     */
+    loadClosestEpisodes: async function(serieId, episodeNumber){
+
+        var self = this;
+        var fields = [
+            'media',
+            'media.name',
+            'media.description',
+            'media.episode_number',
+            'media.duration',
+            'media.playhead',
+            'media.screenshot_image',
+            'media.media_id',
+            'media.series_id',
+            'media.series_name',
+            'media.collection_id',
+            'media.url',
+            'media.free_available'
+        ];
+
+        var response = await Api.request('POST', '/list_media', {
+            series_id: serieId,
+            sort: 'asc',
+            fields: fields.join(','),
+            limit: 3,
+            offset: episodeNumber - 2
+        });
+
+        self.episodes = response.data;
 
     },
 
