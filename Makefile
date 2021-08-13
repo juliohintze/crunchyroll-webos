@@ -5,7 +5,7 @@
 export TV_SDK=/usr/local/share/webOS_TV_SDK/CLI/bin
 export ID=com.crunchyroll.webos
 export DEVICE=emulator
-export VERSION=1.5.0
+export VERSION=1.5.1
 export PROJECT_PATH=$(shell pwd)
 
 # TV METHODS
