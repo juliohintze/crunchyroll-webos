@@ -1,5 +1,9 @@
 # Crunchyroll - WebOS TV App
 
+*Crunchyroll&trade; is a registered trademark of the Sony Pictures Entertainment Inc. This project is not affiliated with Crunchyroll, Team Crunchyroll, or the Sony Pictures Entertainment Inc.*
+
+## About
+
 Unofficial WebOS TV App for Crunchyroll.\
 The last Crunchyroll app you will ever need!
 
