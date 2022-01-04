@@ -1,0 +1,57 @@
+name: Build Test
+
+on:
+  push:
+    # Don't run for tags
+    tags-ignore:
+      - 'v*.*.*'
+    branches:
+      - '*'
+
+jobs:
+  build-webos:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install webOS CLI
+        run: |
+          sudo npm install -g @webosose/ares-cli
+          # Hack for Makefile
+          sudo mkdir -p /usr/local/share/webOS_TV_SDK/CLI/
+          sudo ln -s /usr/local/bin /usr/local/share/webOS_TV_SDK/CLI/bin
+
+      - name: Install compactor
+        run: |
+          sudo wget https://raw.githubusercontent.com/mateussouzaweb/compactor/master/bin/compactor -O /usr/local/bin/compactor
+          sudo chmod +x /usr/local/bin/compactor
+
+      - name: Install webosbrew publish tools
+        run: |
+          sudo npm install -g @webosbrew/pub-utils
+
+      - name: Build package
+        run: |
+          make build
+          make app_build
+          webosbrew-gen-manifest -a src/appinfo.json -p bin/*.ipk -o bin/webosbrew.manifest.json \
+            -i https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-webos/master/src/img/80px.png \
+            -l https://github.com/mateussouzaweb/crunchyroll-webos
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: webos-snapshot
+          path: |
+            bin/*.ipk
+            bin/webosbrew.manifest.json
