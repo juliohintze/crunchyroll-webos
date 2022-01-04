@@ -54,6 +54,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Release ${{ steps.tagName.outputs.tag }}
-          prerelease: true
+          prerelease: false
           allowUpdates: true
           artifacts: bin/*.ipk,bin/webosbrew.manifest.json
