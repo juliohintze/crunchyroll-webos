@@ -792,7 +792,7 @@ V.component('[data-video]', {
 
         self.trackTimeout = window.setTimeout(function(){
             self.updatePlaybackStatus();
-        }, 30000); // 30s
+        }, 15000); // 15s
 
     },
 
@@ -820,8 +820,8 @@ V.component('[data-video]', {
         var video = self.video;
         var episodeId = V.route.active().param('episodeId');
 
-        var elapsed = 30;
-        var elapsedDelta = 30;
+        var elapsed = 15;
+        var elapsedDelta = 15;
         var playhead = video.currentTime;
 
         if( playhead != self.lastPlayhead ){
