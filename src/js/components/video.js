@@ -253,9 +253,9 @@ V.component('[data-video]', {
      */
     formatTime: function(time){
 
-        var result = new Date(time * 1000).toISOString().substr(11, 8);
-        var minutes = result.substr(3, 2);
-        var seconds = result.substr(6, 2);
+        var result = new Date(time * 1000).toISOString().substring(11, 19);
+        var minutes = result.substring(3, 5);
+        var seconds = result.substring(6, 8);
 
         return {
             m: minutes,
