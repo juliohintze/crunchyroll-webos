@@ -210,6 +210,13 @@ V.component('[data-keyboard-navigation]', {
             this.activeElement.blur();
         }
 
+        if( !element ){
+            element = V.$('#content .list-item');
+        }
+        if( !element ){
+            element = V.$('#menu .links a');
+        }
+
         if( element ){
             element.scrollIntoView();
             element.classList.add('hover');

@@ -132,7 +132,7 @@ V.component('[data-history]', {
             });
 
             window.hideLoading();
-            window.setActiveElement( V.$('#content .list-item') );
+            window.setActiveElement();
 
         } catch (error) {
             console.log(error);

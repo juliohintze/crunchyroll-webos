@@ -145,7 +145,7 @@ V.component('[data-queue]', {
             });
 
             window.hideLoading();
-            window.setActiveElement( V.$('#content .list-item') );
+            window.setActiveElement();
 
         } catch (error) {
             console.log(error);
