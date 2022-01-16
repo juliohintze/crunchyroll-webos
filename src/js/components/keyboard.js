@@ -328,11 +328,11 @@ V.component('[data-keyboard-navigation]', {
             || key == keys.SPACE ){
 
             if( current && current.classList.contains('select') ){
-                current.firstChild.click();
+                V.trigger(current, 'click', 'select');
             }else if( current && current.nodeName == 'INPUT' ){
                 current.focus();
             }else if( current ){
-                current.click();
+                V.trigger(current, 'click');
             }
 
             return true;
