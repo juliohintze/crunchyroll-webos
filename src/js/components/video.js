@@ -139,8 +139,10 @@ V.component('[data-video]', {
             e.preventDefault();
             var level = Number(this.dataset.level);
 
-            self.hls.nextLoadLevel = level;
-            self.hls.autoLevelCapping = (level === -1) ? true : false;
+            if( self.hls ){
+                self.hls.currentLevel = level;
+                self.hls.loadLevel = level;
+            }
 
         });
 
