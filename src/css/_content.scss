@@ -101,12 +101,9 @@
         width: 100%;
     }
 
-    &.hover .list-item-inside {
-        border-color: #F37521;
-    }
-
 }
-.mouse #content .list-item:hover .list-item-inside {
+.mouse #content .list-item:hover .list-item-inside,
+#content .list-item.hover .list-item-inside {
     border-color: #F37521;
 }
 
