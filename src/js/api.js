@@ -1,4 +1,4 @@
-const Api = {
+var Api = {
 
     /**
      * Make request on Crunchyroll API
