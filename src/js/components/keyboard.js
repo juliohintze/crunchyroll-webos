@@ -54,8 +54,9 @@ V.component('[data-keyboard-navigation]', {
      */
     findClosest: function(direction, element, items){
 
+        var self = this;
         var matches = [];
-        var current = element.getBoundingClientRect();
+        var current = self.getPosition(element);
 
         // Find matches
         items.forEach(function(itemElement){
@@ -64,7 +65,7 @@ V.component('[data-keyboard-navigation]', {
                 return;
             }
 
-            var item = itemElement.getBoundingClientRect();
+            var item = self.getPosition(itemElement);
 
             // Item not visible in document
             if( item.width == 0 || item.height == 0 ){
@@ -82,8 +83,8 @@ V.component('[data-keyboard-navigation]', {
                     diff = item.top - current.bottom;
                 }
             }else if( direction == 'left' ){
-                if( item.left < current.left ){
-                    diff = current.left - item.left;
+                if( item.right < current.left ){
+                    diff = current.left - item.right;
                 }
             }else if( direction == 'right' ){
                 if( item.left > current.right ){
@@ -130,6 +131,51 @@ V.component('[data-keyboard-navigation]', {
         index = (direction == 'next') ? index + 1 : index - 1;
 
         return items[index] || items[0];
+    },
+
+    /**
+     * Retrieve the position of an element
+     * @param {Node} element
+     * @returns {Object}
+     */
+    getPosition: function(element){
+
+        var rect = element.getBoundingClientRect();
+        var style = window.getComputedStyle(element);
+        var margin = {
+            left: parseInt(style['margin-left']),
+            right: parseInt(style['margin-right']),
+            top: parseInt(style['margin-top']),
+            bottom: parseInt(style['margin-bottom'])
+        };
+        var padding = {
+            left: parseInt(style['padding-left']),
+            right: parseInt(style['padding-right']),
+            top: parseInt(style['padding-top']),
+            bottom: parseInt(style['padding-bottom'])
+        };
+        var border = {
+            left: parseInt(style['border-left']),
+            right: parseInt(style['border-right']),
+            top: parseInt(style['border-top']),
+            bottom: parseInt(style['border-bottom'])
+        };
+
+        var left = rect.left - margin.left;
+        var right = rect.right - margin.right - padding.left - padding.right;
+        var top = rect.top - margin.top;
+        var bottom = rect.bottom - margin.bottom - padding.top - padding.bottom - border.bottom;
+        var width = rect.right - rect.left;
+        var height = rect.bottom - rect.top;
+
+        return {
+            left: left,
+            right: right,
+            top: top,
+            bottom: bottom,
+            width: width,
+            height: height
+        };
     },
 
     /**
