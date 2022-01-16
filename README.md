@@ -50,3 +50,4 @@ make develop
 ## Know Bugs
 
 - Select dropdown does not trigger with LG TV Controller in arrow navigation mode.
+- Next and previous episode sometimes are buggy and don't work as expected giving a wrong episode.
