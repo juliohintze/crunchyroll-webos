@@ -235,7 +235,7 @@ V.component('[data-serie]', {
             });
 
             var base = 'serie/' + serieId + '/' + sort + "/";
-            var nextPage = base + (pageNumber + 1);
+            var nextPage = ( items.length ) ? base + (pageNumber + 1) : '';
             var previousPage = ( pageNumber > 1 ) ? base + (pageNumber - 1) : '';
 
             await self.render({

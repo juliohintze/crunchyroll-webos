@@ -244,35 +244,39 @@
             <p>Loading...</p>
         {{ end }}
 
-        <div class="list-items">
-            {{ each item in items }}
-            <div class="list-item queue-item"
-                tabindex="0"
-                data-episode
-                data-episode-id="{{ item.id }}"
-                data-episode-number="{{ item.number }}"
-                data-episode-name="{{ item.name }}"
-                data-episode-duration="{{ item.duration }}"
-                data-episode-playhead="{{ item.playhead }}"
-                data-episode-premium="{{ item.premium }}">
-                <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
-                    <div class="list-item-image">
-                        <img src="{{ item.image }}" title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}"/>
-                        <div class="list-item-progress hidden">&nbsp;</div>
-                        <div class="list-item-premium hidden">&nbsp;</div>
-                    </div>
-                    <div class="list-item-info">
-                        <h2>{{ item.serie_name }}</h2>
-                        <h3>E{{ item.number }} - {{ item.name }}</h3>
-                    </div>
-                </a>
+        {{ if items && items.length }}
+            <div class="list-items">
+                {{ each item in items }}
+                <div class="list-item queue-item"
+                    tabindex="0"
+                    data-episode
+                    data-episode-id="{{ item.id }}"
+                    data-episode-number="{{ item.number }}"
+                    data-episode-name="{{ item.name }}"
+                    data-episode-duration="{{ item.duration }}"
+                    data-episode-playhead="{{ item.playhead }}"
+                    data-episode-premium="{{ item.premium }}">
+                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
+                        <div class="list-item-image">
+                            <img src="{{ item.image }}" title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}"/>
+                            <div class="list-item-progress hidden">&nbsp;</div>
+                            <div class="list-item-premium hidden">&nbsp;</div>
+                        </div>
+                        <div class="list-item-info">
+                            <h2>{{ item.serie_name }}</h2>
+                            <h3>E{{ item.number }} - {{ item.name }}</h3>
+                        </div>
+                    </a>
+                </div>
+                {{ end }}
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
             </div>
-            {{ end }}
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-        </div>
+        {{ elseif loaded }}
+            <p>Looks like you don't have anything on queue yet. Try adding some series to the queue.</p>
+        {{ end }}
     </script>
 
     <script type="text/vanilla-template" id="template-history">
@@ -282,35 +286,39 @@
             <p>Loading...</p>
         {{ end }}
 
-        <div class="list-items">
-            {{ each item in items }}
-            <div class="list-item history-item"
-                tabindex="0"
-                data-episode
-                data-episode-id="{{ item.id }}"
-                data-episode-number="{{ item.number }}"
-                data-episode-name="{{ item.name }}"
-                data-episode-duration="{{ item.duration }}"
-                data-episode-playhead="{{ item.playhead }}"
-                data-episode-premium="{{ item.premium }}">
-                <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
-                    <div class="list-item-image">
-                        <img src="{{ item.image }}" title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}" />
-                        <div class="list-item-progress hidden">&nbsp;</div>
-                        <div class="list-item-premium hidden">&nbsp;</div>
-                    </div>
-                    <div class="list-item-info">
-                        <h2>{{ item.serie_name }}</h2>
-                        <h3>E{{ item.number }} - {{ item.name }}</h3>
-                    </div>
-                </a>
+        {{ if items && items.length }}
+            <div class="list-items">
+                {{ each item in items }}
+                <div class="list-item history-item"
+                    tabindex="0"
+                    data-episode
+                    data-episode-id="{{ item.id }}"
+                    data-episode-number="{{ item.number }}"
+                    data-episode-name="{{ item.name }}"
+                    data-episode-duration="{{ item.duration }}"
+                    data-episode-playhead="{{ item.playhead }}"
+                    data-episode-premium="{{ item.premium }}">
+                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
+                        <div class="list-item-image">
+                            <img src="{{ item.image }}" title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}" />
+                            <div class="list-item-progress hidden">&nbsp;</div>
+                            <div class="list-item-premium hidden">&nbsp;</div>
+                        </div>
+                        <div class="list-item-info">
+                            <h2>{{ item.serie_name }}</h2>
+                            <h3>E{{ item.number }} - {{ item.name }}</h3>
+                        </div>
+                    </a>
+                </div>
+                {{ end }}
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
             </div>
-            {{ end }}
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-        </div>
+        {{ elseif loaded }}
+            <p>Looks like you don't have any watch history yet... try watching something first.</p>
+        {{ end }}
     </script>
 
     <script type="text/vanilla-template" id="template-series">
@@ -333,26 +341,30 @@
             <p>Loading...</p>
         {{ end }}
 
-        <div class="list-items">
-            {{ each item in items }}
-            <div class="list-item series-item"
-                tabindex="0">
-                <a href="serie/{{ item.id }}" class="list-item-inside">
-                    <div class="list-item-image">
-                        <img src="{{ item.image }}" title="{{ item.name }}" width="640" height="960" />
-                    </div>
-                    <div class="list-item-info">
-                        <h2>{{ item.name }}</h2>
-                        <!-- <p>{{ item.description }}</p> -->
-                    </div>
-                </a>
+        {{ if items && items.length }}
+            <div class="list-items">
+                {{ each item in items }}
+                <div class="list-item series-item"
+                    tabindex="0">
+                    <a href="serie/{{ item.id }}" class="list-item-inside">
+                        <div class="list-item-image">
+                            <img src="{{ item.image }}" title="{{ item.name }}" width="640" height="960" />
+                        </div>
+                        <div class="list-item-info">
+                            <h2>{{ item.name }}</h2>
+                            <!-- <p>{{ item.description }}</p> -->
+                        </div>
+                    </a>
+                </div>
+                {{ end }}
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
             </div>
-            {{ end }}
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-        </div>
+        {{ elseif loaded }}
+            <p>No series found.</p>
+        {{ end }}
 
         {{ if previousPage || nextPage }}
             <div class="list-pagination">
@@ -391,34 +403,38 @@
             <p>Loading...</p>
         {{ end }}
 
-        <div class="list-items">
-            {{ each item in items }}
-            <div class="list-item serie-episode-item"
-                tabindex="0"
-                data-episode
-                data-episode-id="{{ item.id }}"
-                data-episode-number="{{ item.number }}"
-                data-episode-name="{{ item.name }}"
-                data-episode-duration="{{ item.duration }}"
-                data-episode-playhead="{{ item.playhead }}"
-                data-episode-premium="{{ item.premium }}">
-                <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
-                    <div class="list-item-image">
-                        <img src="{{ item.image }}" title="E{{ item.number }} - {{ item.name }}" />
-                        <div class="list-item-progress hidden">&nbsp;</div>
-                        <div class="list-item-premium hidden">&nbsp;</div>
-                    </div>
-                    <div class="list-item-info">
-                        <h3>E{{ item.number }} - {{ item.name }}</h3>
-                    </div>
-                </a>
+        {{ if items && items.length }}
+            <div class="list-items">
+                {{ each item in items }}
+                <div class="list-item serie-episode-item"
+                    tabindex="0"
+                    data-episode
+                    data-episode-id="{{ item.id }}"
+                    data-episode-number="{{ item.number }}"
+                    data-episode-name="{{ item.name }}"
+                    data-episode-duration="{{ item.duration }}"
+                    data-episode-playhead="{{ item.playhead }}"
+                    data-episode-premium="{{ item.premium }}">
+                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
+                        <div class="list-item-image">
+                            <img src="{{ item.image }}" title="E{{ item.number }} - {{ item.name }}" />
+                            <div class="list-item-progress hidden">&nbsp;</div>
+                            <div class="list-item-premium hidden">&nbsp;</div>
+                        </div>
+                        <div class="list-item-info">
+                            <h3>E{{ item.number }} - {{ item.name }}</h3>
+                        </div>
+                    </a>
+                </div>
+                {{ end }}
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
+                <div class="fill"></div>
             </div>
-            {{ end }}
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-            <div class="fill"></div>
-        </div>
+        {{ elseif loaded }}
+            <p>No episodes found.</p>
+        {{ end }}
 
         {{ if previousPage || nextPage }}
             <div class="list-pagination">
