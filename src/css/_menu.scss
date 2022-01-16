@@ -31,13 +31,13 @@
         text-decoration: none;
         transition: all 0.2s ease-in-out;
 
-        &.hover {
-            color: #F37521;
-            background: #FFF;
-        }
         &.active {
             background: #F37521;
             color: #FFF;
+        }
+        &.hover {
+            color: #F37521;
+            background: #FFF;
         }
     }
 
