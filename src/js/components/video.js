@@ -421,18 +421,21 @@ V.component('[data-video]', {
         var self = this;
         var element = self.element;
         var video = self.video;
-        var streams = self.streams;
+        var currentTime = video.currentTime || 0;
 
+        var streams = self.streams;
         if( !streams.length ){
             throw Error('No streams to load.');
         }
 
-        var stream = streams[ streams.length - 1 ].url;
-        var currentTime = video.currentTime || 0;
+        var stream = streams.find(function(item){ return item.quality == 'adaptive'; });
+        if( !stream ){
+            stream = [ streams.length - 1 ];
+        }
 
         var proxy = document.body.dataset.proxy;
         if( proxy ){
-            stream = proxy + encodeURI(stream);
+            stream.url = proxy + encodeURI(stream.url);
         }
 
         element.classList.add('video-is-loading');
@@ -442,7 +445,7 @@ V.component('[data-video]', {
             element.classList.remove('video-is-loading');
             element.classList.add('video-is-loaded');
 
-            video.src = stream;
+            video.src = stream.url;
             video.currentTime = currentTime;
 
             return;
@@ -465,7 +468,7 @@ V.component('[data-video]', {
             });
 
             hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-                hls.loadSource(stream);
+                hls.loadSource(stream.url);
             });
 
             hls.on(Hls.Events.MANIFEST_PARSED, function(){
