@@ -7,15 +7,14 @@
 Unofficial WebOS TV App for Crunchyroll.\
 The last Crunchyroll app you will ever need!
 
-## Usage - For Everyone
+## Download
 
-Just open the browser on your WebOS TV, then navigate to <https://tv.mateussouzaweb.com>.
+You can download and install this app in your WebOS TV following one of the guides below:
 
-Add to favorites and enjoy!
+- [Easy installation with dev-manager-desktop](https://github.com/webosbrew/dev-manager-desktop) (recommended).
+- Download IPK from [latest release](https://github.com/mateussouzaweb/crunchyroll-webos/releases/latest) page and install with the [WebOS SDK](<https://webostv.developer.lge.com/sdk/installation/>).
 
-PRO-TIP: You can use this mode in almost any device of any brand that has a browser and that is not iOS and iPadOS because of limitations that Apple defined on such devices.
-
-## Usage - For Developers
+## For Developers
 
 This method will install Crunchyroll as TV App, but is recommended only for developers:
 
@@ -47,10 +46,6 @@ If you want to develop changes on the project, use the ``develop`` command to op
 # You can test it direct from the browser
 make develop
 ```
-
-## Support
-
-Support me for future versions for Samsung, Android TV, ChromeCast and Others.
 
 ## Know Bugs
 
