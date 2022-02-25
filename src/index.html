@@ -209,21 +209,25 @@
 
                 <div>
                     <label for="locale">Locale:</label>
-                    <div class="select" tabindex="0">
-                        <select id="locale">
-                            <option value="enUS" {{ selected( store('locale') == 'enUS' ) }}>English (US)</option>
-                            <option value="enGB" {{ selected( store('locale') == 'enGB' ) }}>English (UK)</option>
-                            <option value="esLA" {{ selected( store('locale') == 'esLA' ) }}>Español</option>
-                            <option value="esES" {{ selected( store('locale') == 'esES' ) }}>Español (España)</option>
-                            <option value="ptBR" {{ selected( store('locale') == 'ptBR' ) }}>Português (Brasil)</option>
-                            <option value="ptPT" {{ selected( store('locale') == 'ptPT' ) }}>Português (Portugal)</option>
-                            <option value="frFR" {{ selected( store('locale') == 'frFR' ) }}>Français (France)</option>
-                            <option value="deDE" {{ selected( store('locale') == 'deDE' ) }}>Deutsch</option>
-                            <option value="itIT" {{ selected( store('locale') == 'itIT' ) }}>Italiano</option>
-                            <option value="ruRU" {{ selected( store('locale') == 'ruRU' ) }}>Русский</option>
-                            <option value="arME" {{ selected( store('locale') == 'arME' ) }}>العربية</option>
-                            <option value="jaJP" {{ selected( store('locale') == 'jaJP' ) }}>日本語</option>
-                        </select>
+                    <div class="dropdown" tabindex="0" data-dropdown>
+                        <input type="hidden" id="locale" name="locale" value="{{ store('locale', 'enUS') }}">
+                        <div class="dropdown-value"></div>
+                        <div class="dropdown-list">
+                            <ul>
+                                <li tabindex="0" data-value="enUS">English (US)</li>
+                                <li tabindex="0" data-value="enGB">English (UK)</li>
+                                <li tabindex="0" data-value="esLA">Español</li>
+                                <li tabindex="0" data-value="esES">Español (España)</li>
+                                <li tabindex="0" data-value="ptBR">Português (Brasil)</li>
+                                <li tabindex="0" data-value="ptPT">Português (Portugal)</li>
+                                <li tabindex="0" data-value="frFR">Français (France)</li>
+                                <li tabindex="0" data-value="deDE">Deutsch</li>
+                                <li tabindex="0" data-value="itIT">Italiano</li>
+                                <li tabindex="0" data-value="ruRU">Русский</li>
+                                <li tabindex="0" data-value="arME">العربية</li>
+                                <li tabindex="0" data-value="jaJP">日本語</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
@@ -325,10 +329,16 @@
         <h1>Series</h1>
 
         <div class="list-filters">
-            <div class="select" tabindex="0">
-                <select id="filter">
-                    {{ options }}
-                </select>
+            <div class="dropdown" tabindex="0" data-dropdown>
+                <input type="hidden" id="filter" name="filter" value="{{ filter }}">
+                <div class="dropdown-value"></div>
+                <div class="dropdown-list">
+                    <ul>
+                        {{ each option in filters }}
+                            <li tabindex="0" data-value="{{ option.id }}">{{ option.name }}</li>
+                        {{ end }}
+                    </ul>
+                </div>
             </div>
             <input type="text"
                 id="search"
@@ -384,11 +394,15 @@
             {{ serieName }} - Episodes
         </h1>
         <div class="list-filters">
-            <div class="select" tabindex="0">
-                <select id="sort">
-                    <option value="asc" {{ selected(sort == 'asc') }}>Ascending</option>
-                    <option value="desc" {{ selected(sort == 'desc') }}>Descending</option>
-                </select>
+            <div class="dropdown" tabindex="0" data-dropdown>
+                <input type="hidden" id="sort" name="sort" value="{{ sort }}">
+                <div class="dropdown-value"></div>
+                <div class="dropdown-list">
+                    <ul>
+                        <li tabindex="0" data-value="asc">Ascending</li>
+                        <li tabindex="0" data-value="desc">Descending</li>
+                    </ul>
+                </div>
             </div>
 
             <button

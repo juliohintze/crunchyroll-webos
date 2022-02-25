@@ -38,7 +38,7 @@ V.component('[data-serie]', {
 
         var self = this;
 
-        self.on('change', 'select', function(){
+        self.on('change', 'input#sort', function(){
             V.route.redirect('/serie/' + self.get('serieId') + '/' + this.value);
         });
 

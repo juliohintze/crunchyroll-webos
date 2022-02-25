@@ -38,11 +38,11 @@ V.component('[data-series]', {
 
         var self = this;
 
-        self.on('change', 'select' , function(){
+        self.on('change', 'input#filter' , function(){
             V.route.redirect('/series/' + this.value);
         });
 
-        self.on('change', 'input' , function(){
+        self.on('change', 'input#search' , function(){
             V.route.redirect('/series?search=' + encodeURI(this.value));
         });
 
@@ -52,6 +52,7 @@ V.component('[data-series]', {
         });
 
         self.parseParams();
+        self.retrieveFilters();
         self.listSeries();
 
     },
@@ -72,6 +73,71 @@ V.component('[data-series]', {
             pageNumber: pageNumber,
             filter: filter,
             search: search
+        });
+
+    },
+
+    /**
+     * Retrieve series filter options
+     * @return {void}
+     */
+    retrieveFilters: async function(){
+
+        var self = this;
+        var filters = [];
+        var categories = V.store.local.get('categories', []);
+
+        // Default filters
+        filters.push({id: '', name: '--- FILTERS'});
+        filters.push({id: 'alpha', name: 'Alphabetical'});
+        filters.push({id: 'featured', name: 'Featured'});
+        filters.push({id: 'newest', name: 'Newest'});
+        filters.push({id: 'popular', name: 'Popular'});
+        filters.push({id: 'updated', name: 'Updated'});
+        filters.push({id: 'simulcast', name: 'Simulcasts'});
+
+        // Retrieve category filters
+        if( !categories.length ){
+
+            try {
+
+                var response = await Api.request('POST', '/categories', {
+                    media_type: 'anime'
+                });
+
+                if( response.error
+                    && response.code == 'bad_session' ){
+                    return Api.tryLogin().then(function(){
+                        self.retrieveFilters();
+                    });
+                }
+
+                categories.push({id: '-', name: '--- GENRES'});
+                response.data.genre.map(function(item){
+                    categories.push({id: item.tag, name: item.label});
+                });
+
+                // categories.push({id: '-', name: '--- SEASONS'});
+                // response.data.season.map(function(item){
+                //     categories.push({id: item.tag, name: item.label});
+                // });
+
+                await V.store.local.set('categories', categories);
+
+            } catch (error) {
+                console.log(error);
+            }
+
+        }
+
+        if( categories && categories.length ){
+            categories.map(function(item){
+                filters.push({id: 'tag:' + item.id, name: item.name});
+            });
+        }
+
+        self.set({
+            filters: filters
         });
 
     },
@@ -138,7 +204,6 @@ V.component('[data-series]', {
                 return Api.toSerie(item);
             });
 
-            var options = await self.getFiltersOptions(filter);
             var base = 'series/' + filter + '/';
             var nextPage = ( items.length ) ? base + (pageNumber + 1) : '';
             var previousPage = ( pageNumber > 1 ) ? base + (pageNumber - 1) : '';
@@ -146,7 +211,6 @@ V.component('[data-series]', {
             await self.render({
                 loaded: true,
                 items: items,
-                options: options,
                 nextPage: nextPage,
                 previousPage: previousPage
             });
@@ -160,58 +224,6 @@ V.component('[data-series]', {
 
         window.hideLoading();
 
-    },
-
-    /**
-     * Retrieve series filter options
-     * @param {String} selected
-     * @return {String}
-     */
-    getFiltersOptions: async function(selected){
-
-        var options = [];
-        var categories = V.store.local.get('categories', []);
-
-        // Retrieve options
-        options.push({id: '', name: '--- FILTERS'});
-        options.push({id: 'alpha', name: 'Alphabetical'});
-        options.push({id: 'featured', name: 'Featured'});
-        options.push({id: 'newest', name: 'Newest'});
-        options.push({id: 'popular', name: 'Popular'});
-        options.push({id: 'updated', name: 'Updated'});
-        options.push({id: 'simulcast', name: 'Simulcasts'});
-
-        // Retrieve categories
-        if( !categories.length ){
-
-            var response = await Api.request('POST', '/categories', {
-                media_type: 'anime'
-            });
-
-            categories.push({id: '-', name: '--- GENRES'});
-            response.data.genre.map(function(item){
-                categories.push({id: item.tag, name: item.label});
-            });
-
-            // categories.push({id: '-', name: '--- SEASONS'});
-            // response.data.season.map(function(item){
-            //     categories.push({id: item.tag, name: item.label});
-            // });
-
-            await V.store.local.set('categories', categories);
-
-        }
-
-        categories.map(function(item){
-            options.push({id: 'tag:' + item.id, name: item.name});
-        });
-
-        return options.map(function(option){
-            return '<option {SELECTED} value="{VALUE}">{LABEL}</option>'
-                .replace('{SELECTED}', (option.id == selected) ? 'selected="selected"' : '')
-                .replace('{VALUE}', option.id)
-                .replace('{LABEL}', option.name);
-        }).join('');
     }
 
 });

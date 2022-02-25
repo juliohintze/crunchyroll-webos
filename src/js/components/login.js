@@ -42,7 +42,7 @@ V.component('[data-login]', {
 
         var email = V.$('input#email', element);
         var password = V.$('input#password', element);
-        var locale = V.$('select#locale', element);
+        var locale = V.$('input#locale', element);
 
         await V.store.local.set('email', email.value, true);
         await V.store.local.set('password', password.value, true);

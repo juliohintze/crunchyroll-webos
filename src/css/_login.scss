@@ -55,7 +55,7 @@ body.page-login {
     }
 
     input,
-    .select {
+    .dropdown {
         border-color: #000;
         margin-bottom: 2rem;
     }
@@ -63,13 +63,10 @@ body.page-login {
     input.hover,
     input:focus,
     input:active,
-    .select.hover,
-    .select:focus,
-    .select:active {
-        border-color: #000000;
-    }
-
-    .select:focus-within {
+    .dropdown.hover,
+    .dropdown:focus,
+    .dropdown:active,
+    .dropdown:focus-within {
         border-color: #000000;
     }
 
@@ -91,7 +88,7 @@ body.page-login {
 }
 
 .mouse #login input:hover,
-.mouse #login .select:hover {
+.mouse #login .dropdown:hover {
     border-color: #000000;
 }
 .mouse #login button:hover {

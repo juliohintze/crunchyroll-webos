@@ -5,10 +5,6 @@ V.on(window, 'load', function(){
         return V.store.local.get(key, _default);
     });
 
-    V.helper('selected', function(condition){
-        return (condition) ? 'selected="selected"' : ''
-    });
-
     // Route definitions
     var base = window.location.pathname.replace('index.html', '');
 

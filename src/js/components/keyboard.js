@@ -327,8 +327,8 @@ V.component('[data-keyboard-navigation]', {
             || key == keys.INFO
             || key == keys.SPACE ){
 
-            if( current && current.classList.contains('select') ){
-                V.trigger(current, 'click', 'select');
+            if( current && current.classList.contains('dropdown') ){
+                V.trigger(current, 'click', '.dropdown-value');
             }else if( current && current.nodeName == 'INPUT' ){
                 current.focus();
             }else if( current ){
