@@ -4,31 +4,30 @@
 
 ## About
 
-Unofficial WebOS TV App for Crunchyroll.\
+Unofficial WebOS TV app for Crunchyroll.\
 The last Crunchyroll app you will ever need!
 
 ## Download
 
 You can download and install this app in your WebOS TV following one of the guides below:
 
-- [Easy installation with dev-manager-desktop](https://github.com/webosbrew/dev-manager-desktop) (recommended).
-- Download IPK from [latest release](https://github.com/mateussouzaweb/crunchyroll-webos/releases/latest) page and install with the [WebOS SDK](<https://webostv.developer.lge.com/sdk/installation/>).
+- Using [HomeBrew](https://www.webosbrew.org) TV app (recommended).
+- Using [dev-manager-desktop](https://github.com/webosbrew/dev-manager-desktop) from computer.
+- Downloading IPK from [latest release](https://github.com/mateussouzaweb/crunchyroll-webos/releases/latest) page and install using [WebOS SDK](<https://webostv.developer.lge.com/sdk/installation/>).
 
 ## For Developers
 
-This method will install Crunchyroll as TV App, but is recommended only for developers:
+This method will install Crunchyroll as TV app, but is recommended only for developers:
 
-- Install Compactor (<https://github.com/mateussouzaweb/compactor/>)
-- Install Statiq (<https://github.com/mateussouzaweb/statiq/>)
-- Install WebOS SDK (<https://webostv.developer.lge.com/sdk/installation/>)
-- Enable TV for Testing (<https://webostv.developer.lge.com/develop/app-test/>)
-- Clone this repository, then run the following code to install the App:
+- Install [Compactor](<https://github.com/mateussouzaweb/compactor/>), [Statiq](<https://github.com/mateussouzaweb/statiq/>) and [Ares CLI](<https://www.npmjs.com/package/@webosose/ares-cli/>).
+- Enable TV for [testing with developer mode](<https://webostv.developer.lge.com/develop/app-test/>).
+- Clone this repository, then run the following code to install the app:
 
 ```bash
 # Build from SRC
 make build
 
-# Create App for TV
+# Create app for TV
 make app_build
 make app_install
 

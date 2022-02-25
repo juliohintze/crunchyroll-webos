@@ -2,38 +2,32 @@
 # http://webostv.developer.lge.com/sdk/tools/using-webos-tv-cli
 
 # VARIABLES
-export TV_SDK=/usr/local/share/webOS_TV_SDK/CLI/bin
 export ID=com.crunchyroll.webos
-export DEVICE=emulator
-export VERSION=1.5.1
+export VERSION=1.5.2
 export PROJECT_PATH=$(shell pwd)
 
 # TV METHODS
 device_list:
-	$(TV_SDK)/ares-setup-device -list
+	ares-setup-device -list
 
 device_setup:
-	$(TV_SDK)/ares-setup-device
-
-device_key:
-	$(TV_SDK)/ares-novacom --device $(DEVICE) --getkey
+	ares-setup-device
 
 device_check:
-	$(TV_SDK)/ares-install --device $(DEVICE) --list
+	ares-install --list
 
 # APP METHODS
 app_build:
-	$(TV_SDK)/ares-package --no-minify $(ID) --outdir $(PROJECT_PATH)/bin
+	ares-package --no-minify $(ID) --outdir $(PROJECT_PATH)/bin
 
 app_install:
-	$(TV_SDK)/ares-install -s internal \
-		--device $(DEVICE) $(PROJECT_PATH)/bin/$(ID)_$(VERSION)_all.ipk
+	ares-install $(PROJECT_PATH)/bin/$(ID)_$(VERSION)_all.ipk
 
 app_launch:
-	$(TV_SDK)/ares-launch --device $(DEVICE) $(ID)
+	ares-launch $(ID)
 
 app_inspect:
-	$(TV_SDK)/ares-inspect --device $(DEVICE) --app $(ID)
+	ares-inspect --app $(ID)
 
 # DEV METHODS
 build:
