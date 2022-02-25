@@ -3,7 +3,7 @@
 
 # VARIABLES
 export ID=com.crunchyroll.webos
-export VERSION=1.5.2
+export VERSION=1.5.3
 export PROJECT_PATH=$(shell pwd)
 
 # TV METHODS
