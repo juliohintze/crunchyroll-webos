@@ -29,6 +29,13 @@ V.component('[data-dropdown]', {
             }
         });
 
+        V.on(window, 'keyup', function(){
+            var active = window.getActiveElement();
+            if( !active || !active.closest('[data-vid="' + element.dataset.vid + '"]') ){
+                element.classList.remove('active');
+            }
+        });
+
         var current = V.$('li[data-value="' + input.value + '"]');
         if( current ){
             dropdownValue.innerText = current.innerText;

@@ -242,6 +242,10 @@ V.component('[data-keyboard-navigation]', {
             return self.setActiveElement(element);
         };
 
+        window.getActiveElement = function(){
+            return self.activeElement;
+        };
+
     },
 
     /**
