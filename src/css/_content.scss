@@ -99,11 +99,14 @@
         position: relative;
         transition: all 0.2s ease-in-out;
         width: 100%;
+
+        &.hover {
+            border-color: #F37521;
+        }
     }
 
 }
-.mouse #content .list-item:hover .list-item-inside,
-#content .list-item.hover .list-item-inside {
+.mouse #content .list-item-inside:hover {
     border-color: #F37521;
 }
 
@@ -165,9 +168,11 @@
         margin-top: 0.83rem;
     }
 
+    &.hover{
+        background: #000;
+    }
 }
-.mouse #content .list-item:hover .list-item-info,
-#content .list-item.hover .list-item-info {
+.mouse #content .list-item-inf:hover {
     background: #000;
 }
 
@@ -186,6 +191,14 @@
         opacity: 0;
         pointer-events: none;
     }
+    a.hover {
+        background: #F37521;
+        color: #FFF;
+    }
+}
+.mouse #content .list-pagination a:hover {
+    background: #F37521;
+    color: #FFF;
 }
 
 #content .series-item {

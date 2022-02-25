@@ -252,7 +252,6 @@
             <div class="list-items">
                 {{ each item in items }}
                 <div class="list-item queue-item"
-                    tabindex="0"
                     data-episode
                     data-episode-id="{{ item.id }}"
                     data-episode-number="{{ item.number }}"
@@ -260,7 +259,7 @@
                     data-episode-duration="{{ item.duration }}"
                     data-episode-playhead="{{ item.playhead }}"
                     data-episode-premium="{{ item.premium }}">
-                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
+                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside" tabindex="0">
                         <div class="list-item-image">
                             <img src="{{ item.image }}" title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}"/>
                             <div class="list-item-progress hidden">&nbsp;</div>
@@ -294,7 +293,6 @@
             <div class="list-items">
                 {{ each item in items }}
                 <div class="list-item history-item"
-                    tabindex="0"
                     data-episode
                     data-episode-id="{{ item.id }}"
                     data-episode-number="{{ item.number }}"
@@ -302,7 +300,7 @@
                     data-episode-duration="{{ item.duration }}"
                     data-episode-playhead="{{ item.playhead }}"
                     data-episode-premium="{{ item.premium }}">
-                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
+                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside" tabindex="0">
                         <div class="list-item-image">
                             <img src="{{ item.image }}" title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}" />
                             <div class="list-item-progress hidden">&nbsp;</div>
@@ -354,9 +352,8 @@
         {{ if items && items.length }}
             <div class="list-items">
                 {{ each item in items }}
-                <div class="list-item series-item"
-                    tabindex="0">
-                    <a href="serie/{{ item.id }}" class="list-item-inside">
+                <div class="list-item series-item">
+                    <a href="serie/{{ item.id }}" class="list-item-inside" tabindex="0">
                         <div class="list-item-image">
                             <img src="{{ item.image }}" title="{{ item.name }}" width="640" height="960" />
                         </div>
@@ -379,10 +376,10 @@
         {{ if previousPage || nextPage }}
             <div class="list-pagination">
                 {{ if previousPage }}
-                    <a href="{{ previousPage }}" title="Previous page"><span>Previous Page</span></a>
+                    <a href="{{ previousPage }}" title="Previous page" tabindex="0"><span>Previous Page</span></a>
                 {{ end }}
                 {{ if nextPage }}
-                    <a href="{{ nextPage }}" title="Next page"><span>Next Page</span></a>
+                    <a href="{{ nextPage }}" title="Next page" tabindex="0"><span>Next Page</span></a>
                 {{ end }}
             </div>
         {{ end }}
@@ -421,7 +418,6 @@
             <div class="list-items">
                 {{ each item in items }}
                 <div class="list-item serie-episode-item"
-                    tabindex="0"
                     data-episode
                     data-episode-id="{{ item.id }}"
                     data-episode-number="{{ item.number }}"
@@ -429,7 +425,7 @@
                     data-episode-duration="{{ item.duration }}"
                     data-episode-playhead="{{ item.playhead }}"
                     data-episode-premium="{{ item.premium }}">
-                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside">
+                    <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside" tabindex="0">
                         <div class="list-item-image">
                             <img src="{{ item.image }}" title="E{{ item.number }} - {{ item.name }}" />
                             <div class="list-item-progress hidden">&nbsp;</div>
@@ -453,10 +449,10 @@
         {{ if previousPage || nextPage }}
             <div class="list-pagination">
                 {{ if previousPage }}
-                    <a href="{{ previousPage }}" title="Previous page"><span>Previous Page</span></a>
+                    <a href="{{ previousPage }}" title="Previous page" tabindex="0"><span>Previous Page</span></a>
                 {{ end }}
                 {{ if nextPage }}
-                    <a href="{{ nextPage }}" title="Next page"><span>Next Page</span></a>
+                    <a href="{{ nextPage }}" title="Next page" tabindex="0"><span>Next Page</span></a>
                 {{ end }}
             </div>
         {{ end }}

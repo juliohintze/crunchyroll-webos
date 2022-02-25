@@ -10,6 +10,7 @@
     input {
         display: none;
     }
+
     .dropdown-value {
         border-radius: 5px;
         cursor: pointer;
@@ -61,13 +62,11 @@
             cursor: pointer;
             padding: 0.4rem 1rem;
         }
-        li:hover,
         li.hover {
             background: rgba(0, 0, 0, 0.10);
         }
     }
 
-    &:hover,
     &.hover,
     &:focus,
     &:active {
@@ -88,4 +87,7 @@
 .mouse .dropdown:hover {
     border-color: #F37521;
     outline: none;
+}
+.mouse .dropdown-list li:hover{
+    background: rgba(0, 0, 0, 0.10);
 }
