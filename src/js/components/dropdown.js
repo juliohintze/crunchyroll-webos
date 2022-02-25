@@ -13,6 +13,7 @@ V.component('[data-dropdown]', {
 
         self.on('click', '.dropdown-value', function(){
             element.classList.add('active');
+            window.setActiveElement( V.$('li', element) );
         });
 
         self.on('click', 'li', function(){

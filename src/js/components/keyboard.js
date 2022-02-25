@@ -331,6 +331,8 @@ V.component('[data-keyboard-navigation]', {
                 V.trigger(current, 'click', '.dropdown-value');
             }else if( current && current.nodeName == 'INPUT' ){
                 current.focus();
+            }else if( current && current.firstElementChild.nodeName == 'A' ){
+                V.trigger(current.firstElementChild, 'click');
             }else if( current ){
                 V.trigger(current, 'click');
             }
