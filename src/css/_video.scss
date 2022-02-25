@@ -103,6 +103,9 @@ body.page-video {
     &.video-skip-intro span {
         background-image: url(../icons/skip.svg);
     }
+    &.hide {
+        display: none;
+    }
 
 }
 .mouse #video .video-icon:hover {

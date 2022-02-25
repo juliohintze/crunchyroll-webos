@@ -21,12 +21,6 @@ V.component('[data-video]', {
     streams: [],
 
     /**
-     * Episodes
-     * @var {Array}
-     */
-    episodes: [],
-
-    /**
      * Return template data
      * @return {string}
      */
@@ -68,13 +62,7 @@ V.component('[data-video]', {
         self.on('click', '.video-previous-episode', function(e){
 
             e.preventDefault();
-
-            var previous = self.episodes[0];
-            var serieId = previous.series_id;
-            var episodeId = previous.media_id;
-            var url = '/serie/' + serieId + '/episode/' + episodeId + '/video';
-
-            V.route.redirect(url);
+            V.route.redirect(this.dataset.url);
 
             self.pauseVideo();
             self.render();
@@ -84,13 +72,7 @@ V.component('[data-video]', {
         self.on('click', '.video-next-episode', function(e){
 
             e.preventDefault();
-
-            var next = self.episodes[2];
-            var serieId = next.series_id;
-            var episodeId = next.media_id;
-            var url = '/serie/' + serieId + '/episode/' + episodeId + '/video';
-
-            V.route.redirect(url);
+            V.route.redirect(this.dataset.url);
 
             self.pauseVideo();
             self.render();
@@ -402,15 +384,41 @@ V.component('[data-video]', {
             'media.free_available'
         ];
 
+        var offset = Number(episodeNumber) - 2
         var response = await Api.request('POST', '/list_media', {
             series_id: serieId,
             sort: 'asc',
             fields: fields.join(','),
             limit: 3,
-            offset: episodeNumber - 2
+            offset: (offset >= 0) ? offset : 0
         });
 
-        self.episodes = response.data;
+        var episodes = response.data;
+        var element = self.element;
+        var next = V.$('.video-next-episode', element);
+        var previous = V.$('.video-previous-episode', element);
+
+        previous.classList.add('hide');
+        next.classList.add('hide');
+
+        if( episodes.length ){
+
+            var first = episodes[0];
+            var last = (episodes.length == 3) ? episodes[2] : episodes[1];
+
+            if( Number(first.episode_number) < Number(episodeNumber) ){
+                previous.dataset.url = '/serie/' + serieId + '/episode/' + first.media_id + '/video';
+                previous.title = 'Previous Episode - E' + first.episode_number;
+                previous.classList.remove('hide');
+            }
+
+            if( Number(last.episode_number) > Number(episodeNumber) ){
+                next.dataset.url = '/serie/' + serieId + '/episode/' + last.media_id + '/video';
+                next.title = 'Next Episode - E' + last.episode_number;
+                next.classList.remove('hide');
+            }
+
+        }
 
     },
 
