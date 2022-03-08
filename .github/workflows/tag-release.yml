@@ -25,7 +25,7 @@ jobs:
 
       - name: Install compactor
         run: |
-          sudo wget https://raw.githubusercontent.com/mateussouzaweb/compactor/master/bin/compactor -O /usr/local/bin/compactor
+          sudo wget https://github.com/mateussouzaweb/compactor/releases/download/latest/compactor -O /usr/local/bin/compactor
           sudo chmod +x /usr/local/bin/compactor
 
       - name: Install webosbrew publish tools
