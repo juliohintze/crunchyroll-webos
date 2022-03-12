@@ -1,3 +1,6 @@
+import Hls from "../../lib/hls.js";
+import { getTemplate } from "../template";
+
 V.route.add({
     id: 'video',
     path: '/serie/:serieId/episode/:episodeId/video',
@@ -22,17 +25,16 @@ V.component('[data-video]', {
 
     /**
      * Return template data
-     * @return {string}
+     * @returns
      */
-    template: function(){
-        return V.$('#template-video').innerHTML;
+    template: async function () {
+        return await getTemplate('/templates/video.html');
     },
 
     /**
      * On mount
-     * @return {void}
      */
-    onMount: function(){
+    onMount: function () {
 
         var self = this;
         var element = this.element;
@@ -40,26 +42,26 @@ V.component('[data-video]', {
         var controlsTimeout = null;
 
         // UI Events
-        self.on('click', '.video-close', function(e){
+        self.on('click', '.video-close', function (e: Event) {
             e.preventDefault();
             self.pauseVideo();
             self.hideVideo();
             V.route.redirect('/home');
         });
 
-        self.on('click', '.video-watched', function(e){
+        self.on('click', '.video-watched', function (e: Event) {
             e.preventDefault();
             self.setWatched();
         });
 
-        self.on('click', '.video-episodes', function(e){
+        self.on('click', '.video-episodes', function (e: Event) {
             e.preventDefault();
             self.pauseVideo();
             self.hideVideo();
             V.route.redirect('/serie/' + serieId);
         });
 
-        self.on('click', '.video-previous-episode', function(e){
+        self.on('click', '.video-previous-episode', function (e: Event) {
 
             e.preventDefault();
             V.route.redirect(this.dataset.url);
@@ -69,7 +71,7 @@ V.component('[data-video]', {
 
         });
 
-        self.on('click', '.video-next-episode', function(e){
+        self.on('click', '.video-next-episode', function (e: Event) {
 
             e.preventDefault();
             V.route.redirect(this.dataset.url);
@@ -79,49 +81,49 @@ V.component('[data-video]', {
 
         });
 
-        self.on('click', '.video-fullscreen', function(e){
+        self.on('click', '.video-fullscreen', function (e: Event) {
             e.preventDefault();
             self.toggleFullScreen();
         });
 
-        self.on('click', '.video-pause', function(e){
+        self.on('click', '.video-pause', function (e: Event) {
             e.preventDefault();
             self.pauseVideo();
         });
 
-        self.on('click', '.video-play', function(e){
+        self.on('click', '.video-play', function (e: Event) {
             e.preventDefault();
             self.playVideo();
         });
 
-        self.on('click', '.video-reload', function(e){
+        self.on('click', '.video-reload', function (e: Event) {
             e.preventDefault();
             self.pauseVideo();
             self.render();
         });
 
-        self.on('click', '.video-forward', function(e){
+        self.on('click', '.video-forward', function (e: Event) {
             e.preventDefault();
             self.forwardVideo(5);
         });
 
-        self.on('click', '.video-backward', function(e){
+        self.on('click', '.video-backward', function (e: Event) {
             e.preventDefault();
             self.backwardVideo(5);
         });
 
-        self.on('click', '.video-skip-intro', function(e){
+        self.on('click', '.video-skip-intro', function (e: Event) {
             e.preventDefault();
             self.forwardVideo(80);
         });
 
         // Quality
-        self.on('click', '.video-quality div', function(e){
+        self.on('click', '.video-quality div', function (e: Event) {
 
             e.preventDefault();
             var level = Number(this.dataset.level);
 
-            if( self.hls ){
+            if (self.hls) {
                 self.hls.currentLevel = level;
                 self.hls.loadLevel = level;
             }
@@ -129,49 +131,49 @@ V.component('[data-video]', {
         });
 
         // Mouse Events
-        V.on(element, 'mouseenter mousemove', function(){
+        V.on(element, 'mouseenter mousemove', function () {
 
             element.classList.add('show-controls');
 
-            if( controlsTimeout ){
+            if (controlsTimeout) {
                 window.clearTimeout(controlsTimeout);
             }
 
-            controlsTimeout = window.setTimeout(function(){
+            controlsTimeout = window.setTimeout(function () {
                 element.classList.remove('show-controls');
             }, 2000); // 2s
 
-        });
+        }, undefined);
 
-        V.on(element, 'mouseleave', function(){
+        V.on(element, 'mouseleave', function () {
             element.classList.remove('show-controls');
-        });
+        }, undefined);
 
-        V.on(element, 'mousemove touchmove', 'input[type="range"]', function(e){
+        V.on(element, 'mousemove touchmove', 'input[type="range"]', function (e: Event) {
             self.updateSeekTooltip(e);
         });
 
-        self.on('click input', 'input[type="range"]', function(e){
-            self.skipAhead(e.target.dataset.seek);
+        self.on('click input', 'input[type="range"]', function (e: Event) {
+            self.skipAhead((e.target as HTMLElement).dataset.seek);
         });
 
         // Public
-        window.playVideo = function(){
+        window.playVideo = function () {
             return self.playVideo();
         };
-        window.pauseVideo = function(){
+        window.pauseVideo = function () {
             return self.pauseVideo();
         };
-        window.stopVideo = function(){
+        window.stopVideo = function () {
             return self.stopVideo();
         };
-        window.toggleVideo = function(){
+        window.toggleVideo = function () {
             return self.toggleVideo();
         }
-        window.forwardVideo = function(seconds){
+        window.forwardVideo = function (seconds: number) {
             return self.forwardVideo(seconds);
         }
-        window.backwardVideo = function(seconds){
+        window.backwardVideo = function (seconds: number) {
             return self.backwardVideo(seconds);
         }
 
@@ -179,9 +181,8 @@ V.component('[data-video]', {
 
     /**
      * After render
-     * @return {void}
      */
-    afterRender: async function(){
+    afterRender: async function () {
 
         var self = this;
         var element = self.element;
@@ -193,25 +194,25 @@ V.component('[data-video]', {
         element.classList.remove('video-is-playing');
         element.classList.remove('video-is-paused');
 
-        window.setTimeout(async function(){
+        window.setTimeout(async function () {
 
             var video = V.$('video', self.element);
-                video.controls = false;
+            video.controls = false;
 
             self.video = video;
             self.playing = false;
 
             // Video Events
-            V.on(video, 'click', function(e){
+            V.on(video, 'click', function (e: Event) {
                 e.preventDefault();
                 self.toggleVideo();
-            });
+            }, undefined);
 
-            V.on(video, 'timeupdate', function(){
+            V.on(video, 'timeupdate', function () {
                 self.updateDuration();
                 self.updateTimeElapsed();
                 self.updateProgress();
-            });
+            }, undefined);
 
             window.showLoading();
 
@@ -232,10 +233,10 @@ V.component('[data-video]', {
 
     /**
      * Format time
-     * @param {Number} time
-     * @return {Object}
+     * @param time
+     * @returns
      */
-    formatTime: function(time){
+    formatTime: function (time: number) {
 
         var result = new Date(time * 1000).toISOString().substring(11, 19);
         var minutes = result.substring(3, 5);
@@ -249,9 +250,9 @@ V.component('[data-video]', {
 
     /**
      * Show error message
-     * @param {string} message
+     * @param message
      */
-    showError: function(message){
+    showError: function (message: string) {
 
         var self = this;
         var element = self.element;
@@ -264,9 +265,8 @@ V.component('[data-video]', {
 
     /**
      * Show video
-     * @return {void}
      */
-    showVideo: function(){
+    showVideo: function () {
 
         var self = this;
         var element = self.element;
@@ -279,16 +279,15 @@ V.component('[data-video]', {
 
     /**
      * Hide video
-     * @return {void}
      */
-    hideVideo: function(){
+    hideVideo: function () {
 
         var self = this;
         var element = self.element;
 
         element.classList.remove('video-is-active');
 
-        if( document.fullscreenElement ){
+        if (document.fullscreenElement) {
             document.exitFullscreen();
         }
 
@@ -296,9 +295,8 @@ V.component('[data-video]', {
 
     /**
      * Load video
-     * @return {Promise}
      */
-    loadVideo: async function(){
+    loadVideo: async function () {
 
         var self = this;
         var element = self.element;
@@ -325,9 +323,9 @@ V.component('[data-video]', {
                 fields: fields.join(',')
             });
 
-            if( response.error
-                && response.code == 'bad_session' ){
-                return Api.tryLogin().then(function(){
+            if (response.error
+                && response.code == 'bad_session') {
+                return Api.tryLogin().then(function () {
                     self.loadVideo();
                 });
             }
@@ -344,7 +342,7 @@ V.component('[data-video]', {
             var startTime = response.data.playhead || 0;
             var duration = response.data.duration || 0;
 
-            if( startTime / duration > 0.90 || startTime < 30 ){
+            if (startTime / duration > 0.90 || startTime < 30) {
                 startTime = 0;
             }
 
@@ -361,11 +359,10 @@ V.component('[data-video]', {
 
     /**
      * Load next and previous episodes
-     * @param {Number} serieId
-     * @param {Number} episodeNumber
-     * @return {void}
+     * @param serieId
+     * @param episodeNumber
      */
-    loadClosestEpisodes: async function(serieId, episodeNumber){
+    loadClosestEpisodes: async function (serieId: number, episodeNumber: number) {
 
         var self = this;
         var fields = [
@@ -401,18 +398,18 @@ V.component('[data-video]', {
         previous.classList.add('hide');
         next.classList.add('hide');
 
-        if( episodes.length ){
+        if (episodes.length) {
 
             var first = episodes[0];
             var last = (episodes.length == 3) ? episodes[2] : episodes[1];
 
-            if( Number(first.episode_number) < Number(episodeNumber) ){
+            if (Number(first.episode_number) < Number(episodeNumber)) {
                 previous.dataset.url = '/serie/' + serieId + '/episode/' + first.media_id + '/video';
                 previous.title = 'Previous Episode - E' + first.episode_number;
                 previous.classList.remove('hide');
             }
 
-            if( Number(last.episode_number) > Number(episodeNumber) ){
+            if (Number(last.episode_number) > Number(episodeNumber)) {
                 next.dataset.url = '/serie/' + serieId + '/episode/' + last.media_id + '/video';
                 next.title = 'Next Episode - E' + last.episode_number;
                 next.classList.remove('hide');
@@ -424,9 +421,8 @@ V.component('[data-video]', {
 
     /**
      * Stream video
-     * @return {void}
      */
-    streamVideo: async function(){
+    streamVideo: async function () {
 
         var self = this;
         var element = self.element;
@@ -434,23 +430,26 @@ V.component('[data-video]', {
         var currentTime = video.currentTime || 0;
 
         var streams = self.streams;
-        if( !streams.length ){
+        if (!streams.length) {
             throw Error('No streams to load.');
         }
 
-        var stream = streams.find(function(item){ return item.quality == 'adaptive'; });
-        if( !stream ){
-            stream = [ streams.length - 1 ];
+        var stream = streams.find(function (item: any) {
+            return item.quality == 'adaptive';
+        });
+
+        if (!stream) {
+            stream = [streams.length - 1];
         }
 
         var proxy = document.body.dataset.proxy;
-        if( proxy ){
+        if (proxy) {
             stream.url = proxy + encodeURI(stream.url);
         }
 
         element.classList.add('video-is-loading');
 
-        if( video.canPlayType('application/vnd.apple.mpegurl') ){
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
 
             element.classList.remove('video-is-loading');
             element.classList.add('video-is-loaded');
@@ -461,9 +460,9 @@ V.component('[data-video]', {
             return;
         }
 
-        return await new Promise(function (resolve){
+        return await new Promise(function (resolve) {
 
-            if( !Hls.isSupported() ) {
+            if (!Hls.isSupported()) {
                 throw Error('Video format not supported.');
             }
 
@@ -481,64 +480,64 @@ V.component('[data-video]', {
                 hls.loadSource(stream.url);
             });
 
-            hls.on(Hls.Events.MANIFEST_PARSED, function(){
+            hls.on(Hls.Events.MANIFEST_PARSED, function () {
                 hls.startLoad(currentTime);
             });
 
-            hls.on(Hls.Events.LEVEL_LOADED, function(){
+            hls.on(Hls.Events.LEVEL_LOADED, function () {
                 element.classList.remove('video-is-loading');
                 element.classList.add('video-is-loaded');
             });
 
-            hls.on(Hls.Events.LEVEL_SWITCHED, function(){
+            hls.on(Hls.Events.LEVEL_SWITCHED, function () {
 
                 var level = hls.currentLevel;
-                var next = V.$('.video-quality div[data-level="' + level + '"]');
+                var next = V.$('.video-quality div[data-level="' + level + '"]', undefined);
 
-                if( !next ){
-                    next = V.$('.video-quality div[data-level="-1"]');
+                if (!next) {
+                    next = V.$('.video-quality div[data-level="-1"]', undefined);
                 }
 
-                V.$('.video-quality div.active').classList.remove('active');
+                V.$('.video-quality div.active', undefined).classList.remove('active');
                 next.classList.add('active');
 
             });
 
-            hls.once(Hls.Events.FRAG_LOADED, function(){
-                resolve();
+            hls.once(Hls.Events.FRAG_LOADED, function () {
+                resolve({});
             });
 
-            hls.on(Hls.Events.ERROR, function(_event, data){
+            hls.on(Hls.Events.ERROR, function (_event, data) {
 
-                if( !data.fatal ){
+                if (!data.fatal) {
                     return;
                 }
 
                 switch (data.type) {
                     case Hls.ErrorTypes.OTHER_ERROR:
                         //hls.startLoad();
-                    break;
+                        break;
                     case Hls.ErrorTypes.NETWORK_ERROR:
 
-                        if( data.details == 'manifestLoadError' && data.response.code == 0 ){
+                        if (data.details == 'manifestLoadError') {
                             self.showError('Episode cannot be played because of CORS error. You must use a proxy.');
-                        }else{
+                        } else {
                             hls.startLoad();
                         }
 
-                    break;
+                        break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
 
                         self.showError('Media error: trying recovery...');
                         hls.recoverMediaError();
 
-                    break;
+                        break;
                     default:
 
                         self.showError('Media cannot be recovered: ' + data.details);
                         hls.destroy();
 
-                    break;
+                        break;
                 }
 
             });
@@ -551,17 +550,16 @@ V.component('[data-video]', {
 
     /**
      * Play video
-     * @return {void}
      */
-    playVideo: async function(){
+    playVideo: async function () {
 
         var self = this;
         var element = self.element;
         var video = self.video;
 
-        try{
+        try {
             await video.play();
-        } catch(err) {
+        } catch (err) {
         }
 
         element.classList.remove('video-is-paused');
@@ -574,9 +572,8 @@ V.component('[data-video]', {
 
     /**
      * Pause video
-     * @return {void}
      */
-    pauseVideo: function(){
+    pauseVideo: function () {
 
         var self = this;
         var element = self.element;
@@ -593,9 +590,8 @@ V.component('[data-video]', {
 
     /**
      * Stop video
-     * @return {void}
      */
-    stopVideo: function(){
+    stopVideo: function () {
 
         var self = this;
 
@@ -606,13 +602,12 @@ V.component('[data-video]', {
 
     /**
      * Toggle video
-     * @return {void}
      */
-    toggleVideo: function(){
+    toggleVideo: function () {
 
         var self = this;
 
-        if( self.playing ){
+        if (self.playing) {
             self.pauseVideo();
         } else {
             self.playVideo();
@@ -622,10 +617,9 @@ V.component('[data-video]', {
 
     /**
      * Forward video
-     * @param {Number} seconds
-     * @return {void}
+     * @param seconds
      */
-    forwardVideo: function(seconds){
+    forwardVideo: function (seconds: number) {
 
         var self = this;
         var video = self.video;
@@ -636,10 +630,9 @@ V.component('[data-video]', {
 
     /**
      * Backward video
-     * @param {Number} seconds
-     * @return {void}
+     * @param seconds
      */
-    backwardVideo: function(seconds){
+    backwardVideo: function (seconds: number) {
 
         var self = this;
         var video = self.video;
@@ -650,12 +643,11 @@ V.component('[data-video]', {
 
     /**
      * Skip ahead video
-     * @param {Number} skipTo
-     * @return {void}
+     * @param skipTo
      */
-    skipAhead: function(skipTo){
+    skipAhead: function (skipTo: number) {
 
-        if( !skipTo ){
+        if (!skipTo) {
             return;
         }
 
@@ -673,48 +665,47 @@ V.component('[data-video]', {
 
     /**
      * Toggle full screen mode
-     * @return {void}
      */
-    toggleFullScreen: function(){
+    toggleFullScreen: function () {
 
         var self = this;
         var element = self.element;
 
-        if( document.fullscreenElement ){
+        if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
-            element.requestFullscreen().catch(function(){});
+            element.requestFullscreen().catch(function () { });
         }
 
     },
 
     /**
      * Update seek tooltip text and position
-     * @param {Event} event
-     * @return {void}
+     * @param event
      */
-    updateSeekTooltip: function(event){
+    updateSeekTooltip: function (event: MouseEvent) {
 
         var self = this;
         var element = self.element;
         var tooltip = V.$('.tooltip', element);
         var seek = V.$('input[type="range"]', element);
-        var bcr = event.target.getBoundingClientRect();
+        var target = event.target as HTMLElement;
+        var bcr = target.getBoundingClientRect();
         var offsetX = event.offsetX;
         var pageX = event.pageX;
 
-        if( window.TouchEvent && event instanceof TouchEvent ){
+        if (window.TouchEvent && event instanceof TouchEvent) {
             offsetX = event.targetTouches[0].clientX - bcr.x;
             pageX = event.targetTouches[0].pageX;
         }
 
         var max = Number(seek.max);
         var skipTo = Math.round(
-            (offsetX / event.target.clientWidth)
-            * parseInt(event.target.getAttribute('max'), 10)
+            (offsetX / target.clientWidth)
+            * parseInt(target.getAttribute('max'), 10)
         );
 
-        if( skipTo > max ){
+        if (skipTo > max) {
             skipTo = max;
         }
 
@@ -728,9 +719,8 @@ V.component('[data-video]', {
 
     /**
      * Update video duration
-     * @return {void}
      */
-    updateDuration: function(){
+    updateDuration: function () {
 
         var self = this;
         var element = self.element;
@@ -752,9 +742,8 @@ V.component('[data-video]', {
 
     /**
      * Update video time elapsed
-     * @return {void}
      */
-    updateTimeElapsed: function(){
+    updateTimeElapsed: function () {
 
         var self = this;
         var element = self.element;
@@ -771,9 +760,8 @@ V.component('[data-video]', {
 
     /**
      * Update video progress
-     * @return {void}
      */
-    updateProgress: function(){
+    updateProgress: function () {
 
         var self = this;
         var element = self.element;
@@ -788,17 +776,16 @@ V.component('[data-video]', {
 
     /**
      * Start progress tracking
-     * @return {void}
      */
-    trackProgress: function(){
+    trackProgress: function () {
 
         var self = this;
 
-        if( self.trackTimeout ){
+        if (self.trackTimeout) {
             self.stopTrackProgress();
         }
 
-        self.trackTimeout = window.setTimeout(function(){
+        self.trackTimeout = window.setTimeout(function () {
             self.updatePlaybackStatus();
         }, 15000); // 15s
 
@@ -806,13 +793,12 @@ V.component('[data-video]', {
 
     /**
      * Stop progress tracking
-     * @return {void}
      */
-    stopTrackProgress: function(){
+    stopTrackProgress: function () {
 
         var self = this;
 
-        if( self.trackTimeout ){
+        if (self.trackTimeout) {
             window.clearTimeout(self.trackTimeout);
         }
 
@@ -820,9 +806,8 @@ V.component('[data-video]', {
 
     /**
      * Update playback status at Crunchyroll
-     * @return {Promise}
      */
-    updatePlaybackStatus: async function(){
+    updatePlaybackStatus: async function () {
 
         var self = this;
         var video = self.video;
@@ -832,7 +817,7 @@ V.component('[data-video]', {
         var elapsedDelta = 15;
         var playhead = video.currentTime;
 
-        if( playhead != self.lastPlayhead ){
+        if (playhead != self.lastPlayhead) {
             await Api.request('POST', '/log', {
                 event: 'playback_status',
                 media_id: episodeId,
@@ -849,9 +834,8 @@ V.component('[data-video]', {
 
     /**
      * Set video as watched at Crunchyroll
-     * @return {Promise}
      */
-    setWatched: async function(){
+    setWatched: async function () {
 
         var self = this;
         var video = self.video;

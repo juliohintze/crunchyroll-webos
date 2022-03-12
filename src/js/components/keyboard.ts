@@ -1,3 +1,9 @@
+interface CursorStateChangeEvent {
+    detail: {
+        visibility: any;
+    }
+}
+
 V.component('[data-keyboard-navigation]', {
 
     /**
@@ -25,19 +31,19 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * Find on parent elements the closest available navigable element
-     * @param {String} direction
-     * @param {Element} element
-     * @param {Element} parent
-     * @return {mixed}
+     * @param direction
+     * @param element
+     * @param parent
+     * @returns
      */
-    findClosestOnParents: function(direction, element, parent){
+    findClosestOnParents: function (direction: string, element: HTMLElement, parent: HTMLElement): any {
 
         var self = this;
         var items = [];
         var closest = null;
 
-        while( parent && closest == null ){
-            items = Array.from( V.$$('[tabindex]', parent) );
+        while (parent && closest == null) {
+            items = Array.from(V.$$('[tabindex]', parent));
             closest = self.findClosest(direction, element, items);
             parent = parent.parentElement;
         }
@@ -47,52 +53,52 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * Find next/closest available navigable element
-     * @param {String} direction
-     * @param {Element} element
-     * @param {Array} items
-     * @return {mixed}
+     * @param direction
+     * @param element
+     * @param items
+     * @returns
      */
-    findClosest: function(direction, element, items){
+    findClosest: function (direction: string, element: HTMLElement, items: Array<any>): any {
 
         var self = this;
         var matches = [];
         var current = self.getPosition(element);
 
         // Find matches
-        items.forEach(function(itemElement){
+        items.forEach(function (itemElement) {
 
-            if( itemElement === element ){
+            if (itemElement === element) {
                 return;
             }
 
             var item = self.getPosition(itemElement);
 
             // Item not visible in document
-            if( item.width == 0 || item.height == 0 ){
+            if (item.width == 0 || item.height == 0) {
                 return;
             }
 
-            var diff = false;
+            var diff: number;
 
-            if( direction == 'up' ){
-                if( item.top < current.top ){
+            if (direction == 'up') {
+                if (item.top < current.top) {
                     diff = current.top - item.top;
                 }
-            }else if( direction == 'down' ){
-                if( item.top > current.bottom ){
+            } else if (direction == 'down') {
+                if (item.top > current.bottom) {
                     diff = item.top - current.bottom;
                 }
-            }else if( direction == 'left' ){
-                if( item.right < current.left ){
+            } else if (direction == 'left') {
+                if (item.right < current.left) {
                     diff = current.left - item.right;
                 }
-            }else if( direction == 'right' ){
-                if( item.left > current.right ){
+            } else if (direction == 'right') {
+                if (item.left > current.right) {
                     diff = item.left - current.right;
                 }
             }
 
-            if( diff !== false ){
+            if (diff !== undefined) {
                 matches.push({
                     element: itemElement,
                     diff: diff,
@@ -103,7 +109,7 @@ V.component('[data-keyboard-navigation]', {
         });
 
         // Sort elements
-        matches = matches.sort(function(a, b){
+        matches = matches.sort(function (a, b) {
             return (a.diff + a.xDiff + a.yDiff) - (b.diff + b.xDiff + b.yDiff);
         });
 
@@ -112,33 +118,33 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * Find the next TAB stop element respecting only [tabindex]
-     * @param {String} direction
-     * @param {Element} element
-     * @return {Element}
+     * @param direction
+     * @param element
+     * @returns
      */
-    findTabStopElement: function(direction, element){
+    findTabStopElement: function (direction: string, element: HTMLElement): HTMLElement {
 
-        var items = Array.from( V.$$('[tabindex]') );
-        var index;
+        var items = Array.from(V.$$('[tabindex]', undefined));
+        var index: number;
 
-        items = items.filter(function(item){
+        items = items.filter(function (item: HTMLElement) {
             return item.offsetWidth > 0
-                  || item.offsetHeight > 0
-                  || item === element;
+                || item.offsetHeight > 0
+                || item === element;
         });
 
         index = items.indexOf(element);
         index = (direction == 'next') ? index + 1 : index - 1;
 
-        return items[index] || items[0];
+        return (items[index] || items[0]) as HTMLElement;
     },
 
     /**
      * Retrieve the position of an element
-     * @param {Node} element
-     * @returns {Object}
+     * @param element
+     * @returns
      */
-    getPosition: function(element){
+    getPosition: function (element: HTMLElement): object {
 
         var rect = element.getBoundingClientRect();
         var style = window.getComputedStyle(element);
@@ -180,69 +186,69 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * On mount
-     * @return {void}
      */
-    onMount: function(){
+    onMount: function () {
 
         var self = this;
-            self.lastKey = null;
-            self.lastKeyTime = null;
-            self.activeElement = null;
-            self.usingMouse = false;
+        self.lastKey = null;
+        self.lastKeyTime = null;
+        self.activeElement = null;
+        self.usingMouse = false;
 
         // Mouse events
-        var handleMouse = function(){
+        var handleMouse = function () {
 
-            if( self.usingMouse ){
+            if (self.usingMouse) {
                 document.body.classList.add('mouse');
-            }else{
+            } else {
                 document.body.classList.remove('mouse');
             }
 
-            if( !self.activeElement ){
+            if (!self.activeElement) {
                 return;
             }
 
-            if( self.usingMouse ){
+            if (self.usingMouse) {
                 self.activeElement.classList.remove('hover');
-            }else{
+            } else {
                 self.activeElement.classList.add('hover');
             }
 
         }
 
-        V.on(document, 'cursorStateChange', function(e){
+        V.on(document, 'cursorStateChange', function (e: CursorStateChangeEvent) {
             self.usingMouse = e.detail.visibility;
             handleMouse();
-        });
+        }, undefined);
 
-        V.on(document, 'mouseenter mousemove', function(){
+        V.on(document, 'mouseenter mousemove', function () {
             self.usingMouse = true;
             handleMouse();
-        });
+        }, undefined);
 
-        V.on(document, 'mouseleave', function(){
+        V.on(document, 'mouseleave', function () {
             self.usingMouse = false;
             handleMouse();
-        });
+        }, undefined);
 
         // Keyboard Events
-        var keys = self.keys;
-        var _keys = Object.values(keys);
-
-        V.on(window, 'keydown', function(e){
-            if( _keys.indexOf(e.keyCode) !== -1
-                && self.handleKeyPress(e) ){
-                e.preventDefault();
-            }
+        var keys = Object.keys(self.keys).map(function(i) {
+            return self.keys[i];
         });
 
+        V.on(window, 'keydown', function (e: KeyboardEvent) {
+            if (keys.indexOf(e.key) !== -1
+                && self.handleKeyPress(e)) {
+                e.preventDefault();
+            }
+        }, undefined);
+
         // Public
-        window.setActiveElement = function(element){
+        window.setActiveElement = function (element: any) {
             return self.setActiveElement(element);
         };
 
-        window.getActiveElement = function(){
+        window.getActiveElement = function () {
             return self.activeElement;
         };
 
@@ -250,28 +256,27 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * Set the current active element for navigation
-     * @param {Element} element
-     * @return {void}
+     * @param element
      */
-    setActiveElement: function(element){
+    setActiveElement: function (element: HTMLElement) {
 
-        if( this.activeElement ){
+        if (this.activeElement) {
             this.activeElement.classList.remove('hover');
             this.activeElement.blur();
         }
 
-        if( !element ){
-            element = V.$('#content .list-item');
+        if (!element) {
+            element = V.$('#content .list-item', undefined);
         }
-        if( !element ){
-            element = V.$('#menu .links a');
+        if (!element) {
+            element = V.$('#menu .links a', undefined);
         }
 
-        if( element ){
+        if (element) {
             element.scrollIntoView();
             element.classList.add('hover');
 
-            if( element.nodeName !== 'INPUT' ){
+            if (element.nodeName !== 'INPUT') {
                 element.focus();
             }
 
@@ -282,23 +287,23 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * Handle key press
-     * @param {Event} event
-     * @return {Boolean}
+     * @param event
+     * @returns
      */
-    handleKeyPress: function(event){
+    handleKeyPress: function (event: KeyboardEvent): boolean {
 
         var self = this;
         var body = document.body;
         var videoActive = body.classList.contains('page-video');
-        var result;
+        var result: boolean;
 
-        if( videoActive ){
+        if (videoActive) {
             result = self.handleKeyOnVideo(event);
-        }else{
+        } else {
             result = self.handleKeyNavigation(event);
         }
 
-        self.lastKey = event.keyCode;
+        self.lastKey = event.key;
         self.lastKeyTime = new Date();
 
         return result;
@@ -306,57 +311,57 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * Handle key press for navigation
-     * @param {Event} event
-     * @return {Boolean}
+     * @param event
+     * @returns
      */
-    handleKeyNavigation: function(event){
+    handleKeyNavigation: function (event: KeyboardEvent): boolean {
 
         var self = this;
         var keys = self.keys;
         var current = self.activeElement;
-        var key = event.keyCode;
+        var key = event.key;
 
-        if( !current ){
+        if (!current) {
             return;
         }
 
         var directions = {};
-            directions[ keys.RIGHT ] = 'right';
-            directions[ keys.LEFT ] = 'left';
-            directions[ keys.UP ] = 'up';
-            directions[ keys.DOWN ] = 'down';
+        directions[keys.RIGHT] = 'right';
+        directions[keys.LEFT] = 'left';
+        directions[keys.UP] = 'up';
+        directions[keys.DOWN] = 'down';
 
         // OK / INFO / SPACE
-        if( key == keys.OK
+        if (key == keys.OK
             || key == keys.INFO
-            || key == keys.SPACE ){
+            || key == keys.SPACE) {
 
-            if( current && current.classList.contains('dropdown') ){
+            if (current && current.classList.contains('dropdown')) {
                 V.trigger(current, 'click', '.dropdown-value');
-            }else if( current && current.nodeName == 'INPUT' ){
+            } else if (current && current.nodeName == 'INPUT') {
                 current.focus();
-            }else if( current ){
-                V.trigger(current, 'click');
+            } else if (current) {
+                V.trigger(current, 'click', undefined);
             }
 
             return true;
 
         // TAB
-        }else if( key == keys.TAB ){
+        } else if (key == keys.TAB) {
 
             var next = self.findTabStopElement(
                 (event.shiftKey) ? 'prev' : 'next',
                 current
             );
 
-            if( next != null ){
+            if (next != null) {
                 self.setActiveElement(next);
             }
 
             return true;
 
         // RIGHT / LEFT / UP / DOWN
-        }else if( directions[key] ){
+        } else if (directions[key]) {
 
             var closest = self.findClosestOnParents(
                 directions[key],
@@ -364,7 +369,7 @@ V.component('[data-keyboard-navigation]', {
                 current.parentElement
             );
 
-            if( closest != null ){
+            if (closest != null) {
                 self.setActiveElement(closest);
             }
 
@@ -376,67 +381,67 @@ V.component('[data-keyboard-navigation]', {
 
     /**
      * Handle key press specific to video
-     * @param {Event} event
-     * @return {Boolean}
+     * @param event
+     * @returns
      */
-    handleKeyOnVideo: function(event){
+    handleKeyOnVideo: function (event: KeyboardEvent): boolean {
 
         var self = this;
         var keys = self.keys;
-        var key = event.keyCode;
+        var key = event.key;
 
         // STOP
-        if( key == keys.STOP ){
+        if (key == keys.STOP) {
             window.stopVideo();
             return true;
 
         // PAUSE
-        }else if( key == keys.PAUSE ){
+        } else if (key == keys.PAUSE) {
             window.pauseVideo();
             return true;
 
         // PLAY
-        }else if( key == keys.PLAY ){
+        } else if (key == keys.PLAY) {
             window.playVideo();
             return true;
 
         // OK / SPACE
-        }else if( key == keys.OK
-                  || key == keys.SPACE ){
+        } else if (key == keys.OK
+            || key == keys.SPACE) {
             window.toggleVideo();
             return true;
 
         // FORWARD
-        }else if( key == keys.FORWARD ){
+        } else if (key == keys.FORWARD) {
             window.forwardVideo(1);
             return true;
 
         // BACKWARD
-        }else if( key == keys.BACKWARD ){
+        } else if (key == keys.BACKWARD) {
             window.backwardVideo(1);
             return true;
 
         // RIGHT
-        }else if( key == keys.RIGHT ){
+        } else if (key == keys.RIGHT) {
             window.forwardVideo(10);
             return true;
 
         // LEFT
-        }else if( key == keys.LEFT ){
+        } else if (key == keys.LEFT) {
             window.backwardVideo(10);
             return true;
 
         // BACK
-        }else if( key == keys.BACK
-                  || key == keys.BACKSPACE
-                  || key == keys.DELETE ){
+        } else if (key == keys.BACK
+            || key == keys.BACKSPACE
+            || key == keys.DELETE) {
             window.pauseVideo();
             return true;
 
         // UP (behavior as left navigation)
         // DOWN (behavior as right navigation)
-        }else if( key == keys.UP
-                  || key == keys.DOWN ){
+        } else if (key == keys.UP
+            || key == keys.DOWN) {
 
             var current = self.activeElement;
             var parent = self.element;
@@ -447,7 +452,7 @@ V.component('[data-keyboard-navigation]', {
                 parent
             );
 
-            if( closest != null ){
+            if (closest != null) {
                 self.setActiveElement(closest);
             }
 

@@ -2,28 +2,27 @@ V.component('[data-loading]', {
 
     /**
      * On mount
-     * @return {void}
      */
-    onMount: function(){
+    onMount: function () {
 
         var self = this;
 
         // Private
-        self.on('show', function(e){
+        self.on('show', function (e: Event) {
             e.preventDefault();
             self.showLoading();
         });
 
-        self.on('hide', function(e){
+        self.on('hide', function (e: Event) {
             e.preventDefault();
             self.hideLoading();
         });
 
         // Public
-        window.showLoading = function(){
+        window.showLoading = function () {
             return self.showLoading();
         };
-        window.hideLoading = function(){
+        window.hideLoading = function () {
             return self.hideLoading();
         };
 
@@ -31,20 +30,18 @@ V.component('[data-loading]', {
 
     /**
      * Show loading box
-     * @return {void}
      */
-    showLoading: function(){
+    showLoading: function () {
         var element = this.element;
-            element.classList.add('active');
+        element.classList.add('active');
     },
 
     /**
      * Hide loading box
-     * @return {void}
      */
-    hideLoading: function(){
+    hideLoading: function () {
         var element = this.element;
-            element.classList.remove('active');
+        element.classList.remove('active');
     }
 
 });

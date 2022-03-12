@@ -1,3 +1,5 @@
+import { getTemplate } from "../template";
+
 V.route.add({
     id: 'login',
     path: '/login',
@@ -10,21 +12,20 @@ V.component('[data-login]', {
 
     /**
      * Return template data
-     * @return {string}
+     * @returns
      */
-    template: function(){
-        return V.$('#template-login').innerHTML;
+    template: async function () {
+        return await getTemplate('/templates/login.html');
     },
 
     /**
      * On mount
-     * @return {void}
      */
-    onMount: function(){
+    onMount: function () {
 
         var self = this;
 
-        self.on('submit', 'form', function(e){
+        self.on('submit', 'form', function (e: Event) {
             e.preventDefault();
             self.makeLogin();
         });
@@ -33,9 +34,8 @@ V.component('[data-login]', {
 
     /**
      * Try make login from input data
-     * @return {Promise}
      */
-    makeLogin: async function(){
+    makeLogin: async function () {
 
         var self = this;
         var element = self.element;
@@ -44,9 +44,9 @@ V.component('[data-login]', {
         var password = V.$('input#password', element);
         var locale = V.$('input#locale', element);
 
-        await V.store.local.set('email', email.value, true);
-        await V.store.local.set('password', password.value, true);
-        await V.store.local.set('locale', locale.value, true);
+        V.store.local.set('email', email.value);
+        V.store.local.set('password', password.value);
+        V.store.local.set('locale', locale.value);
 
         window.showLoading();
 
@@ -54,7 +54,7 @@ V.component('[data-login]', {
             await Api.tryLogin();
             V.route.redirect('/home');
         } catch (error) {
-            self.render({message: error.message});
+            self.render({ message: error.message });
         }
 
         window.hideLoading();

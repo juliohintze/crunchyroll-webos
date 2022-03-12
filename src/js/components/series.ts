@@ -1,3 +1,5 @@
+import { getTemplate } from "../template";
+
 V.route.add({
     id: 'series',
     path: '/series',
@@ -24,29 +26,28 @@ V.component('[data-series]', {
 
     /**
      * Return template data
-     * @return {string}
+     * @returns
      */
-    template: function(){
-        return V.$('#template-series').innerHTML;
+    template: async function () {
+        return await getTemplate('/templates/series.html');
     },
 
-     /**
-     * On mount
-     * @return {void}
-     */
-    onMount: async function(){
+    /**
+    * On mount
+    */
+    onMount: async function () {
 
         var self = this;
 
-        self.on('change', 'input#filter' , function(){
+        self.on('change', 'input#filter', function () {
             V.route.redirect('/series/' + this.value);
         });
 
-        self.on('change', 'input#search' , function(){
+        self.on('change', 'input#search', function () {
             V.route.redirect('/series?search=' + encodeURI(this.value));
         });
 
-        self.watch('currentViewReload', function(){
+        self.watch('currentViewReload', function () {
             self.parseParams();
             self.listSeries();
         });
@@ -59,15 +60,14 @@ V.component('[data-series]', {
 
     /**
      * Parse route params to the component
-     * @return {void}
      */
-    parseParams: function(){
+    parseParams: function () {
 
         var self = this;
         var active = V.route.active();
-        var pageNumber = Number( active.param('pageNumber') || 1 );
-        var filter = String( active.param('filter') || 'popular' );
-        var search = String( active.query('search') || '' );
+        var pageNumber = Number(active.param('pageNumber') || 1);
+        var filter = String(active.param('filter') || 'popular');
+        var search = String(active.query('search') || '');
 
         self.set({
             pageNumber: pageNumber,
@@ -79,25 +79,29 @@ V.component('[data-series]', {
 
     /**
      * Retrieve series filter options
-     * @return {void}
      */
-    retrieveFilters: async function(){
+    retrieveFilters: async function () {
 
         var self = this;
         var filters = [];
-        var categories = V.store.local.get('categories', []);
+        var categories = [];
+        var local = V.store.local.get('categories', null);
+
+        if( local ){
+            categories = local as unknown as Array<any>
+        }
 
         // Default filters
-        filters.push({id: '', name: '--- FILTERS'});
-        filters.push({id: 'alpha', name: 'Alphabetical'});
-        filters.push({id: 'featured', name: 'Featured'});
-        filters.push({id: 'newest', name: 'Newest'});
-        filters.push({id: 'popular', name: 'Popular'});
-        filters.push({id: 'updated', name: 'Updated'});
-        filters.push({id: 'simulcast', name: 'Simulcasts'});
+        filters.push({ id: '', name: '--- FILTERS' });
+        filters.push({ id: 'alpha', name: 'Alphabetical' });
+        filters.push({ id: 'featured', name: 'Featured' });
+        filters.push({ id: 'newest', name: 'Newest' });
+        filters.push({ id: 'popular', name: 'Popular' });
+        filters.push({ id: 'updated', name: 'Updated' });
+        filters.push({ id: 'simulcast', name: 'Simulcasts' });
 
         // Retrieve category filters
-        if( !categories.length ){
+        if (!categories.length) {
 
             try {
 
@@ -105,16 +109,16 @@ V.component('[data-series]', {
                     media_type: 'anime'
                 });
 
-                if( response.error
-                    && response.code == 'bad_session' ){
-                    return Api.tryLogin().then(function(){
+                if (response.error
+                    && response.code == 'bad_session') {
+                    return Api.tryLogin().then(function () {
                         self.retrieveFilters();
                     });
                 }
 
-                categories.push({id: '-', name: '--- GENRES'});
-                response.data.genre.map(function(item){
-                    categories.push({id: item.tag, name: item.label});
+                categories.push({ id: '-', name: '--- GENRES' });
+                response.data.genre.map(function (item: { tag: any; label: any; }) {
+                    categories.push({ id: item.tag, name: item.label });
                 });
 
                 // categories.push({id: '-', name: '--- SEASONS'});
@@ -122,7 +126,7 @@ V.component('[data-series]', {
                 //     categories.push({id: item.tag, name: item.label});
                 // });
 
-                await V.store.local.set('categories', categories);
+                V.store.local.set('categories', categories);
 
             } catch (error) {
                 console.log(error);
@@ -130,9 +134,9 @@ V.component('[data-series]', {
 
         }
 
-        if( categories && categories.length ){
-            categories.map(function(item){
-                filters.push({id: 'tag:' + item.id, name: item.name});
+        if (categories && categories.length) {
+            categories.map(function (item) {
+                filters.push({ id: 'tag:' + item.id, name: item.name });
             });
         }
 
@@ -144,17 +148,16 @@ V.component('[data-series]', {
 
     /**
      * List series
-     * @return {Promise}
      */
-    listSeries: async function(){
+    listSeries: async function () {
 
         var self = this;
-        var pageNumber = Number( self.get('pageNumber') );
-        var filter = String( self.get('filter') );
-        var search = String( self.get('search') );
+        var pageNumber = Number(self.get('pageNumber'));
+        var filter = String(self.get('filter'));
+        var search = String(self.get('search'));
         var limit = 20;
 
-        if( search ){
+        if (search) {
             filter = 'prefix:' + search;
         }
 
@@ -193,20 +196,20 @@ V.component('[data-series]', {
                 offset: (pageNumber - 1) * limit
             });
 
-            if( response.error
-                && response.code == 'bad_session' ){
-                return Api.tryLogin().then(function(){
+            if (response.error
+                && response.code == 'bad_session') {
+                return Api.tryLogin().then(function () {
                     self.listSeries();
                 });
             }
 
-            var items = response.data.map(function(item){
+            var items = response.data.map(function (item: object) {
                 return Api.toSerie(item);
             });
 
             var base = 'series/' + filter + '/';
-            var nextPage = ( items.length ) ? base + (pageNumber + 1) : '';
-            var previousPage = ( pageNumber > 1 ) ? base + (pageNumber - 1) : '';
+            var nextPage = (items.length) ? base + (pageNumber + 1) : '';
+            var previousPage = (pageNumber > 1) ? base + (pageNumber - 1) : '';
 
             await self.render({
                 loaded: true,

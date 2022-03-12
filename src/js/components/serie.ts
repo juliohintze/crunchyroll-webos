@@ -1,3 +1,5 @@
+import { getTemplate } from "../template";
+
 V.route.add({
     id: 'series',
     path: '/serie/:serieId',
@@ -24,35 +26,34 @@ V.component('[data-serie]', {
 
     /**
      * Return template data
-     * @return {string}
+     * @returns
      */
-    template: function(){
-        return V.$('#template-serie').innerHTML;
+    template: async function () {
+        return await getTemplate('/templates/serie.html');
     },
 
     /**
      * On mount
-     * @return {void}
      */
-    onMount: function(){
+    onMount: function () {
 
         var self = this;
 
-        self.on('change', 'input#sort', function(){
+        self.on('change', 'input#sort', function () {
             V.route.redirect('/serie/' + self.get('serieId') + '/' + this.value);
         });
 
-        self.on('click', '.add-to-queue', function(e){
+        self.on('click', '.add-to-queue', function (e: Event) {
             e.preventDefault();
             self.addToQueue();
         });
 
-        self.on('click', '.remove-from-queue', function(e){
+        self.on('click', '.remove-from-queue', function (e: Event) {
             e.preventDefault();
             self.removeFromQueue();
         });
 
-        self.watch('currentViewReload', function(){
+        self.watch('currentViewReload', function () {
 
             self.parseParams();
             self.listSerieInfo();
@@ -68,9 +69,8 @@ V.component('[data-serie]', {
 
     /**
      * Parse route params to the component
-     * @return {void}
      */
-    parseParams: function(){
+    parseParams: function () {
 
         var self = this;
         var active = V.route.active();
@@ -88,15 +88,15 @@ V.component('[data-serie]', {
 
     /**
      * Add serie to queue
-     * @return {Promise}
+     * @returns
      */
-    addToQueue: function(){
+    addToQueue: function () {
 
         var self = this;
         var serieId = self.get('serieId');
 
-        V.$('.add-to-queue').classList.add('hidden');
-        V.$('.remove-from-queue').classList.remove('hidden');
+        V.$('.add-to-queue', undefined).classList.add('hidden');
+        V.$('.remove-from-queue', undefined).classList.remove('hidden');
 
         return Api.request('POST', '/add_to_queue', {
             series_id: serieId,
@@ -106,15 +106,15 @@ V.component('[data-serie]', {
 
     /**
      * Remove serie from queue
-     * @return {Promise}
+     * @returns
      */
-    removeFromQueue: function(){
+    removeFromQueue: function () {
 
         var self = this;
         var serieId = self.get('serieId');
 
-        V.$('.add-to-queue').classList.remove('hidden');
-        V.$('.remove-from-queue').classList.add('hidden');
+        V.$('.add-to-queue', undefined).classList.remove('hidden');
+        V.$('.remove-from-queue', undefined).classList.add('hidden');
 
         return Api.request('POST', '/remove_from_queue', {
             series_id: serieId,
@@ -124,9 +124,8 @@ V.component('[data-serie]', {
 
     /**
      * List serie info
-     * @return {Promise}
      */
-    listSerieInfo: async function(){
+    listSerieInfo: async function () {
 
         var self = this;
         var serieId = self.get('serieId');
@@ -159,9 +158,9 @@ V.component('[data-serie]', {
                 fields: fields.join(',')
             })
 
-            if( response.error
-                && response.code == 'bad_session' ){
-                return Api.tryLogin().then(function(){
+            if (response.error
+                && response.code == 'bad_session') {
+                return Api.tryLogin().then(function () {
                     self.listSerieInfo();
                 });
             }
@@ -184,14 +183,13 @@ V.component('[data-serie]', {
 
     /**
      * List episodes
-     * @return {Promise}
      */
-    listEpisodes: async function(){
+    listEpisodes: async function () {
 
         var self = this;
-        var serieId = Number( self.get('serieId') );
-        var pageNumber = Number( self.get('pageNumber') );
-        var sort = String( self.get('sort') );
+        var serieId = Number(self.get('serieId'));
+        var pageNumber = Number(self.get('pageNumber'));
+        var sort = String(self.get('sort'));
         var limit = 20;
 
         var fields = [
@@ -223,20 +221,20 @@ V.component('[data-serie]', {
                 offset: (pageNumber - 1) * limit
             });
 
-            if( response.error
-                && response.code == 'bad_session' ){
-                return Api.tryLogin().then(function(){
+            if (response.error
+                && response.code == 'bad_session') {
+                return Api.tryLogin().then(function () {
                     self.listEpisodes();
                 });
             }
 
-            var items = response.data.map(function(item){
+            var items = response.data.map(function (item: object) {
                 return Api.toSerieEpisode(item, 'serie');
             });
 
             var base = 'serie/' + serieId + '/' + sort + "/";
-            var nextPage = ( items.length ) ? base + (pageNumber + 1) : '';
-            var previousPage = ( pageNumber > 1 ) ? base + (pageNumber - 1) : '';
+            var nextPage = (items.length) ? base + (pageNumber + 1) : '';
+            var previousPage = (pageNumber > 1) ? base + (pageNumber - 1) : '';
 
             await self.render({
                 loaded: true,

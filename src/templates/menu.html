@@ -1,0 +1,21 @@
+<div class="links">
+    <a href="series"
+        class="link"
+        tabindex="0">Series</a>
+    <a href="queue"
+        class="link"
+        data-content="queue"
+        tabindex="0">Queue</a>
+    <a href="history"
+        class="link"
+        tabindex="0">History</a>
+</div>
+
+{{ if store('sessionId') }}
+    <div class="account">
+        <div class="account-name">{{ store('userName') }}</div>
+        <a href="logout"
+            class="account-logout"
+            tabindex="0">Logout</a>
+    </div>
+{{ end }}

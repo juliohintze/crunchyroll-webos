@@ -1,19 +1,22 @@
+interface Data {
+    [key: string]: any;
+}
+
 var Api = {
 
     /**
      * Make request on Crunchyroll API
-     * @param {String} method
-     * @param {String} endpoint
-     * @param {Object} data
-     * @return {Promise}
+     * @param method
+     * @param endpoint
+     * @param data
+     * @returns
      */
-    request: function(method, endpoint, data){
+    request: function (method: string, endpoint: string, data: Data): Promise<any> {
 
         var url = 'https://api.crunchyroll.com';
-            url += endpoint + '.0.json';
+        url += endpoint + '.0.json';
 
         // var proxy = document.body.dataset.proxy;
-
         // if( proxy ){
         //     url = proxy + encodeURI(url);
         // }
@@ -21,50 +24,50 @@ var Api = {
         data.version = '0';
         data.connectivity_type = 'ethernet';
 
-        var sessionId = V.store.local.get('sessionId');
-        var locale = V.store.local.get('locale');
+        var sessionId = V.store.local.get('sessionId', undefined);
+        var locale = V.store.local.get('locale', undefined);
 
-        if( sessionId && !data.session_id ){
+        if (sessionId && !data.session_id) {
             data.session_id = sessionId;
         }
-        if( locale && !data.locale ){
+        if (locale && !data.locale) {
             data.locale = locale;
         }
 
-        if( method == 'POST' ){
+        if (method == 'POST') {
 
             var formData = new FormData();
-            for ( var key in data ) {
+            for (var key in data) {
                 formData.append(key, data[key]);
             }
 
-            return V.http.request(method, url, formData);
+            return V.http.request(method, url, formData, {});
         }
 
-        return V.http.request(method, url, data);
+        return V.http.request(method, url, data, {});
     },
 
     /**
      * Create UUID V4
-     * @return {String}
+     * @returns
      */
-    createUuid: function(){
+    createUuid: function (): string {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
-        replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+            replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
     },
 
     /**
      * Try login within the set session data on API
-     * @return {Promise}
+     * @returns
      */
-    tryLogin: async function(){
+    tryLogin: async function (): Promise<any> {
 
-        var email = V.store.local.get('email');
-        var password = V.store.local.get('password');
-        var locale = V.store.local.get('locale');
+        var email = V.store.local.get('email', null);
+        var password = V.store.local.get('password', null);
+        var locale = V.store.local.get('locale', null);
 
         var accessToken = 'LNDJgOit5yaRIWN';
         var deviceType = 'com.crunchyroll.windows.desktop';
@@ -78,7 +81,7 @@ var Api = {
             locale: locale
         });
 
-        if( response.error ){
+        if (response.error) {
             throw new Error('Session cannot be started.');
         }
 
@@ -90,33 +93,33 @@ var Api = {
             locale: locale
         });
 
-        if( response.error ){
+        if (response.error) {
             throw new Error('Invalid login.');
         }
 
-        await V.store.local.set('accessToken', accessToken, true);
-        await V.store.local.set('deviceType', deviceType, true);
-        await V.store.local.set('deviceId', deviceId, true);
-        await V.store.local.set('sessionId', sessionId, true);
-        await V.store.local.set('locale', locale, true);
-        await V.store.local.set('email', email, true);
-        await V.store.local.set('password', password, true);
-        await V.store.local.set('userId', response.data.user.user_id, true);
-        await V.store.local.set('userName', response.data.user.username, true);
-        await V.store.local.set('auth', response.data.auth, true);
-        await V.store.local.set('expires', response.data.expires, true);
+        V.store.local.set('accessToken', accessToken);
+        V.store.local.set('deviceType', deviceType);
+        V.store.local.set('deviceId', deviceId);
+        V.store.local.set('sessionId', sessionId);
+        V.store.local.set('locale', locale);
+        V.store.local.set('email', email);
+        V.store.local.set('password', password);
+        V.store.local.set('userId', response.data.user.user_id);
+        V.store.local.set('userName', response.data.user.username);
+        V.store.local.set('auth', response.data.auth);
+        V.store.local.set('expires', response.data.expires);
 
-        await V.fire('authChanged');
+        await V.fire('authChanged', {});
 
         return true;
     },
 
     /**
      * Transform data into serie item
-     * @param {Object} data
-     * @return {Object}
+     * @param data
+     * @returns
      */
-    toSerie: function(data){
+    toSerie: function (data: Data): object {
         return {
             id: data.series_id,
             name: data.name,
@@ -127,23 +130,23 @@ var Api = {
 
     /**
      * Transform data to serie episode item
-     * @param {Object} data
-     * @param {string} source
-     * @return {Object}
+     * @param data
+     * @param source
+     * @returns
      */
-    toSerieEpisode: function(data, source){
+    toSerieEpisode: function (data: Data, source: string): object {
 
         var serie = data.series || {};
         var episode = data;
 
-        if( source == 'history' ){
+        if (source == 'history') {
             episode = data.media;
         }
-        if( source == 'queue' ){
+        if (source == 'queue') {
             episode = data.most_likely_media;
         }
 
-        if( !episode ){
+        if (!episode) {
             return;
         }
 
