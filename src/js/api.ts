@@ -1,7 +1,3 @@
-interface Data {
-    [key: string]: any;
-}
-
 var Api = {
 
     /**

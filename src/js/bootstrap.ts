@@ -1,16 +1,3 @@
-interface Window {
-    showLoading: Function
-    hideLoading: Function
-    setActiveElement: Function
-    getActiveElement: Function
-    playVideo: Function
-    pauseVideo: Function
-    stopVideo: Function
-    toggleVideo: Function
-    forwardVideo: Function
-    backwardVideo: Function
-}
-
 V.on(window, 'load', function () {
 
     // Template helpers

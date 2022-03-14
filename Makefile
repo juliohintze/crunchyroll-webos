@@ -14,6 +14,7 @@ build:
 		--destination $(PROJECT_PATH)/$(ID)/ \
 		--progressive false \
 		--exclude "lib/*.d.ts,lib/*.map" \
+		--exclude "js/*.d.ts,js/*.map" \
 		--bundle "css/styles.scss:css/_*.scss:css/styles.css" \
 		--bundle "js/components.ts:js/components/*.ts:js/components.js"
 
@@ -25,6 +26,7 @@ watch:
 		--progressive false \
 		--hashed false \
 		--exclude "lib/*.d.ts,lib/*.map" \
+		--exclude "js/*.d.ts,js/*.map" \
 		--bundle "css/styles.scss:css/_*.scss:css/styles.css" \
 		--bundle "js/components.ts:js/components/*.ts:js/components.js"
 
