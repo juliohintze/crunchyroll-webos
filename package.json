@@ -1,0 +1,26 @@
+{
+  "name": "crunchyroll-webos",
+  "author": "mateussouzaweb@gmail.com",
+  "homepage": "https://github.com/mateussouzaweb/crunchyroll-webos",
+  "license": "GPL3",
+  "source": "src/index.html",
+  "version": "1.5.4",
+  "scripts": {
+    "build": "make build",
+    "watch": "make watch",
+    "server": "make server",
+    "develop": "make develop",
+    "devices": "make devices",
+    "setup": "make setup",
+    "check": "make check",
+    "package": "make package",
+    "manifest": "make manifest",
+    "install": "make install",
+    "launch": "make launch",
+    "inspect": "make inspect"
+  },
+  "devDependencies": {
+    "@webosbrew/pub-utils": "latest",
+    "@webosose/ares-cli": "latest"
+  }
+}

@@ -20,26 +20,20 @@ jobs:
         with:
           node-version: 14
 
-      - name: Install webOS CLI
-        run: |
-          sudo npm install -g @webosose/ares-cli
-
-      - name: Install compactor
+      - name: Install Compactor
         run: |
           sudo wget https://github.com/mateussouzaweb/compactor/releases/download/latest/compactor -O /usr/local/bin/compactor
           sudo chmod +x /usr/local/bin/compactor
 
-      - name: Install webosbrew publish tools
+      - name: Install NPM packages
         run: |
-          sudo npm install -g @webosbrew/pub-utils
+          sudo npm install
 
-      - name: Build package
+      - name: Build TV package
         run: |
-          make build
-          make app_build
-          webosbrew-gen-manifest -a src/appinfo.json -p bin/*.ipk -o bin/webosbrew.manifest.json \
-            -i https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-webos/master/src/img/80px.png \
-            -l https://github.com/mateussouzaweb/crunchyroll-webos
+          npm run build
+          npm run package
+          npm run manifest
 
       - uses: actions/upload-artifact@v2
         with:

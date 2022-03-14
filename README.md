@@ -19,31 +19,32 @@ You can download and install this app in your WebOS TV following one of the guid
 
 This method will install Crunchyroll as TV app, but is recommended only for developers:
 
-- Install [Compactor](<https://github.com/mateussouzaweb/compactor/>), [Statiq](<https://github.com/mateussouzaweb/statiq/>) and [Ares CLI](<https://www.npmjs.com/package/@webosose/ares-cli/>).
+- Install [Compactor](<https://github.com/mateussouzaweb/compactor/>) and [Statiq](<https://github.com/mateussouzaweb/statiq/>).
 - Enable TV for [testing with developer mode](<https://webostv.developer.lge.com/develop/app-test/>).
 - Clone this repository, then run the following code to install the app:
 
 ```bash
-# Build from SRC
-make build
+# Install packages
+npm install
 
-# Create app for TV
-make app_build
-make app_install
+# Build from SRC
+npm run build
+npm run package
+
+# Install app for TV
+npm run install
 
 # Launch or inspect
-make app_launch
-make app_inspect
+npm run launch
+npm run inspect
 ```
 
-Developer Mode is enabled only for 50 hours, so you will need to renew developer session every 50 hours to keep using Crunchyroll as app... :(
-
-If you want to develop changes on the project, use the ``develop`` command to open a static web server and watch changes / build while you develop:
+Developer Mode is enabled only for 50 hours, so you will need to renew developer session every 50 hours to keep using Crunchyroll as app... If you want to develop changes on the project, use the ``develop`` command to open a static web server and watch changes / build while you develop:
 
 ```bash
 # This command creates a static web server available on your desktop
 # You can test it direct from the browser
-make develop
+npm run develop
 ```
 
 ## Know Bugs
