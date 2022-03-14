@@ -1,5 +1,4 @@
 import Hls from "../../lib/hls.js";
-import { getTemplate } from "../template";
 
 V.route.add({
     id: 'video',

@@ -1,5 +1,3 @@
-import { getTemplate } from "../template";
-
 V.route.add({
     id: 'series',
     path: '/series',

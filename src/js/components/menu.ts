@@ -1,5 +1,3 @@
-import { getTemplate } from "../template";
-
 V.component('[data-menu]', {
 
     /**
