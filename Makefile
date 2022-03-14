@@ -1,6 +1,7 @@
 # VARIABLES
 export PROJECT_PATH=$(shell pwd)
 export BINARIES=${PROJECT_PATH}/node_modules/.bin
+
 export VERSION=1.5.4
 export ID=com.crunchyroll.webos
 export HOMEPAGE="https://github.com/mateussouzaweb/crunchyroll-webos"
@@ -9,8 +10,8 @@ export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-w
 # DEV METHODS
 build:
 	compactor \
-		--source src/ \
-		--destination $(ID)/ \
+		--source $(PROJECT_PATH)/src/ \
+		--destination $(PROJECT_PATH)/$(ID)/ \
 		--progressive false \
 		--exclude "lib/*.d.ts,lib/*.map" \
 		--bundle "css/styles.scss:css/_*.scss:css/styles.css" \
@@ -19,8 +20,8 @@ build:
 watch:
 	compactor \
 		--watch \
-		--source src/ \
-		--destination $(ID)/ \
+		--source $(PROJECT_PATH)/src/ \
+		--destination $(PROJECT_PATH)/$(ID)/ \
 		--progressive false \
 		--hashed false \
 		--exclude "lib/*.d.ts,lib/*.map" \
@@ -45,12 +46,15 @@ check:
 
 # APP METHODS
 package:
-	$(BINARIES)/ares-package --no-minify $(ID) --outdir $(PROJECT_PATH)/bin
+	$(BINARIES)/ares-package $(PROJECT_PATH)/$(ID) \
+		--no-minify \
+		--outdir $(PROJECT_PATH)/bin
 
 manifest:
 	$(BINARIES)/webosbrew-gen-manifest \
-		-a src/appinfo.json -p bin/*.ipk \
-		-o bin/webosbrew.manifest.json \
+		-a $(PROJECT_PATH)/src/appinfo.json \
+		-p $(PROJECT_PATH)/bin/*.ipk \
+		-o $(PROJECT_PATH)/bin/webosbrew.manifest.json \
 		-i $(THUMBNAIL) -l $(HOMEPAGE)
 
 install:
