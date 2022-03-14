@@ -7,3 +7,5 @@
 .settings
 
 com.crunchyroll.webos/
+node_modules/
+bin/
