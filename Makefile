@@ -51,7 +51,7 @@ package:
 manifest:
 	$(BINARIES)/webosbrew-gen-manifest \
 		-a $(PROJECT_PATH)/src/appinfo.json \
-		-p $(PROJECT_PATH)/bin/*.ipk \
+		-p $(PROJECT_PATH)/bin/$(ID)_$(VERSION)_all.ipk \
 		-o $(PROJECT_PATH)/bin/webosbrew.manifest.json \
 		-i $(THUMBNAIL) -l $(HOMEPAGE)
 
