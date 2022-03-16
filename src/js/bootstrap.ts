@@ -19,4 +19,4 @@ V.on(window, 'load', function () {
     // Component mounts
     V.mount(document.body);
 
-}, undefined);
+});

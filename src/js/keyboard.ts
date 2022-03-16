@@ -124,7 +124,7 @@ V.component('[data-keyboard-navigation]', {
      */
     findTabStopElement: function (direction: string, element: HTMLElement): HTMLElement {
 
-        var items = Array.from(V.$$('[tabindex]', undefined));
+        var items = Array.from(V.$$('[tabindex]'));
         var index: number;
 
         items = items.filter(function (item: HTMLElement) {
@@ -219,17 +219,17 @@ V.component('[data-keyboard-navigation]', {
         V.on(document, 'cursorStateChange', function (e: CursorStateChangeEvent) {
             self.usingMouse = e.detail.visibility;
             handleMouse();
-        }, undefined);
+        });
 
         V.on(document, 'mouseenter mousemove', function () {
             self.usingMouse = true;
             handleMouse();
-        }, undefined);
+        });
 
         V.on(document, 'mouseleave', function () {
             self.usingMouse = false;
             handleMouse();
-        }, undefined);
+        });
 
         // Keyboard Events
         var keys = Object.keys(self.keys).map(function(i) {
@@ -241,14 +241,14 @@ V.component('[data-keyboard-navigation]', {
                 && self.handleKeyPress(e)) {
                 e.preventDefault();
             }
-        }, undefined);
+        });
 
         // Public
-        window.setActiveElement = function (element: any) {
+        Connector.setActiveElement = function (element: any) {
             return self.setActiveElement(element);
         };
 
-        window.getActiveElement = function () {
+        Connector.getActiveElement = function () {
             return self.activeElement;
         };
 
@@ -266,10 +266,10 @@ V.component('[data-keyboard-navigation]', {
         }
 
         if (!element) {
-            element = V.$('#content .list-item', undefined);
+            element = V.$('#content .list-item');
         }
         if (!element) {
-            element = V.$('#menu .links a', undefined);
+            element = V.$('#menu .links a');
         }
 
         if (element) {
@@ -341,7 +341,7 @@ V.component('[data-keyboard-navigation]', {
             } else if (current && current.nodeName == 'INPUT') {
                 current.focus();
             } else if (current) {
-                V.trigger(current, 'click', undefined);
+                V.trigger(current, 'click');
             }
 
             return true;
@@ -392,50 +392,50 @@ V.component('[data-keyboard-navigation]', {
 
         // STOP
         if (key == keys.STOP) {
-            window.stopVideo();
+            Connector.stopVideo();
             return true;
 
         // PAUSE
         } else if (key == keys.PAUSE) {
-            window.pauseVideo();
+            Connector.pauseVideo();
             return true;
 
         // PLAY
         } else if (key == keys.PLAY) {
-            window.playVideo();
+            Connector.playVideo();
             return true;
 
         // OK / SPACE
         } else if (key == keys.OK
             || key == keys.SPACE) {
-            window.toggleVideo();
+            Connector.toggleVideo();
             return true;
 
         // FORWARD
         } else if (key == keys.FORWARD) {
-            window.forwardVideo(1);
+            Connector.forwardVideo(1);
             return true;
 
         // BACKWARD
         } else if (key == keys.BACKWARD) {
-            window.backwardVideo(1);
+            Connector.backwardVideo(1);
             return true;
 
         // RIGHT
         } else if (key == keys.RIGHT) {
-            window.forwardVideo(10);
+            Connector.forwardVideo(10);
             return true;
 
         // LEFT
         } else if (key == keys.LEFT) {
-            window.backwardVideo(10);
+            Connector.backwardVideo(10);
             return true;
 
         // BACK
         } else if (key == keys.BACK
             || key == keys.BACKSPACE
             || key == keys.DELETE) {
-            window.pauseVideo();
+            Connector.pauseVideo();
             return true;
 
         // UP (behavior as left navigation)

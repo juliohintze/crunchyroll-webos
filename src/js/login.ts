@@ -13,7 +13,7 @@ V.component('[data-login]', {
      * @returns
      */
     template: async function () {
-        return await getTemplate('/templates/login.html');
+        return await Api.getTemplate('/templates/login.html');
     },
 
     /**
@@ -46,7 +46,7 @@ V.component('[data-login]', {
         V.store.local.set('password', password.value);
         V.store.local.set('locale', locale.value);
 
-        window.showLoading();
+        Connector.showLoading();
 
         try {
             await Api.tryLogin();
@@ -55,7 +55,7 @@ V.component('[data-login]', {
             self.render({ message: error.message });
         }
 
-        window.hideLoading();
+        Connector.hideLoading();
 
     }
 

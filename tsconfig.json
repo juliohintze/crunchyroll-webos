@@ -1,6 +1,25 @@
 {
-    "include": ["src/**/*"],
     "compilerOptions": {
-        "target": "ES6"
-    }
+        "allowJs": true,
+        "allowUmdGlobalAccess": true,
+        "isolatedModules": false,
+        "module": "None",
+        "target": "ES3",
+        "noEmit": true,
+        "lib": [
+            "DOM",
+            "ES6"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "*": ["./types/*"]
+        }
+    },
+    "files": [
+        "./types/index.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "com.crunchyroll.webos"
+    ]
 }

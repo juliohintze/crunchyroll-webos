@@ -1,68 +1,59 @@
 V.route.add({
-    id: 'queue',
-    path: '/queue',
-    title: 'Queue',
-    component: '<div data-queue></div>',
+    id: 'history',
+    path: '/history',
+    title: 'History',
+    component: '<div data-history></div>',
     authenticated: true
 });
 V.route.add({
-    id: 'queue',
-    path: '/home',
-    title: 'Queue',
-    component: '<div data-queue></div>',
-    authenticated: true
-});
-V.route.add({
-    id: 'queue',
-    path: '/',
-    title: 'Queue',
-    component: '<div data-queue></div>',
+    id: 'history',
+    path: '/history/:pageNumber',
+    title: 'History',
+    component: '<div data-history></div>',
     authenticated: true
 });
 
-V.component('[data-queue]', {
+V.component('[data-history]', {
 
     /**
      * Return template data
      * @returns
      */
     template: async function () {
-        return await getTemplate('/templates/queue.html');
+        return await Api.getTemplate('/templates/history.html');
     },
 
     /**
      * On mount
      */
-    onMount: function () {
+    onMount: async function () {
 
         var self = this;
+        var pageNumber = V.route.active().param('pageNumber') || 1;
 
-        self.watch('currentViewReload', function () {
-            self.listQueue();
+        self.set({
+            pageNumber: pageNumber
         });
 
-        self.listQueue();
+        self.watch('currentViewReload', function () {
+            self.listHistory();
+        });
+
+        self.listHistory();
 
     },
 
     /**
-     * List queue
+     * List history
      */
-    listQueue: async function () {
+    listHistory: async function () {
 
         var self = this;
+        var pageNumber = Number(self.get('pageNumber'));
+        var limit = 8;
+
         var fields = [
-            'image.full_url',
-            'image.fwide_url',
-            'image.fwidestar_url',
-            'image.height',
-            'image.large_url',
-            'image.medium_url',
-            'image.small_url',
-            'image.thumb_url',
-            'image.wide_url',
-            'image.widestar_url',
-            'image.width',
+            'media',
             'media.availability_notes',
             'media.available',
             'media.available_time',
@@ -92,13 +83,8 @@ V.component('[data-queue]', {
             'media.stream_data',
             'media.unavailable_time',
             'media.url',
-            'last_watched_media',
-            'last_watched_media_playhead',
-            'most_likely_media',
-            'most_likely_media_playhead',
-            'ordering',
             'playhead',
-            'queue_entry_id',
+            'timestamp',
             'series',
             'series.class',
             'series.collection_count',
@@ -117,39 +103,40 @@ V.component('[data-queue]', {
             'series.year'
         ];
 
-        window.showLoading();
+        Connector.showLoading();
 
         try {
 
-            var response = await Api.request('POST', '/queue', {
-                media_types: 'anime',
-                fields: fields.join(',')
-            })
+            var response = await Api.request('POST', '/recently_watched', {
+                fields: fields.join(','),
+                limit: limit,
+                offset: (pageNumber - 1) * limit
+            });
 
             if (response.error
                 && response.code == 'bad_session') {
                 return Api.tryLogin().then(function () {
-                    self.listQueue();
+                    self.listHistory();
                 });
             }
 
             var items = response.data.map(function (item: object) {
-                return Api.toSerieEpisode(item, 'queue');
-            }).filter(Boolean);
+                return Api.toSerieEpisode(item, 'history');
+            });
 
             await self.render({
                 loaded: true,
                 items: items
             });
 
-            window.hideLoading();
-            window.setActiveElement();
+            Connector.hideLoading();
+            Connector.setActiveElement();
 
         } catch (error) {
             console.log(error);
         }
 
-        window.hideLoading();
+        Connector.hideLoading();
 
     }
 

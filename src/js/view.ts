@@ -82,7 +82,7 @@ V.component('[data-view]', {
      * Trigger initial popstate event
      */
     afterRender: function () {
-        V.trigger(window, 'popstate', undefined);
+        V.trigger(window, 'popstate');
     }
 
 });

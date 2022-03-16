@@ -19,10 +19,10 @@ V.component('[data-loading]', {
         });
 
         // Public
-        window.showLoading = function () {
+        Connector.showLoading = function () {
             return self.showLoading();
         };
-        window.hideLoading = function () {
+        Connector.hideLoading = function () {
             return self.hideLoading();
         };
 

@@ -13,7 +13,7 @@ V.component('[data-logout]', {
      */
     onMount: async function () {
 
-        window.showLoading();
+        Connector.showLoading();
 
         var sessionId = V.store.local.get('sessionId', null);
         var locale = V.store.local.get('locale', null);
@@ -44,7 +44,7 @@ V.component('[data-logout]', {
         await V.fire('authChanged', {});
 
         setTimeout(function () {
-            window.hideLoading();
+            Connector.hideLoading();
             V.route.redirect('/login');
         }, 1000);
 

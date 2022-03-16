@@ -27,7 +27,7 @@ V.component('[data-serie]', {
      * @returns
      */
     template: async function () {
-        return await getTemplate('/templates/serie.html');
+        return await Api.getTemplate('/templates/serie.html');
     },
 
     /**
@@ -93,8 +93,8 @@ V.component('[data-serie]', {
         var self = this;
         var serieId = self.get('serieId');
 
-        V.$('.add-to-queue', undefined).classList.add('hidden');
-        V.$('.remove-from-queue', undefined).classList.remove('hidden');
+        V.$('.add-to-queue').classList.add('hidden');
+        V.$('.remove-from-queue').classList.remove('hidden');
 
         return Api.request('POST', '/add_to_queue', {
             series_id: serieId,
@@ -111,8 +111,8 @@ V.component('[data-serie]', {
         var self = this;
         var serieId = self.get('serieId');
 
-        V.$('.add-to-queue', undefined).classList.remove('hidden');
-        V.$('.remove-from-queue', undefined).classList.add('hidden');
+        V.$('.add-to-queue').classList.remove('hidden');
+        V.$('.remove-from-queue').classList.add('hidden');
 
         return Api.request('POST', '/remove_from_queue', {
             series_id: serieId,
@@ -147,7 +147,7 @@ V.component('[data-serie]', {
             'series.year'
         ];
 
-        window.showLoading();
+        Connector.showLoading();
 
         try {
 
@@ -175,7 +175,7 @@ V.component('[data-serie]', {
             console.log(error);
         }
 
-        window.hideLoading();
+        Connector.hideLoading();
 
     },
 
@@ -207,7 +207,7 @@ V.component('[data-serie]', {
             'media.free_available'
         ];
 
-        window.showLoading();
+        Connector.showLoading();
 
         try {
 
@@ -241,14 +241,14 @@ V.component('[data-serie]', {
                 previousPage: previousPage
             });
 
-            window.hideLoading();
-            window.setActiveElement();
+            Connector.hideLoading();
+            Connector.setActiveElement();
 
         } catch (error) {
             console.log(error);
         }
 
-        window.hideLoading();
+        Connector.hideLoading();
 
     }
 

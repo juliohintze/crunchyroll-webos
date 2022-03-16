@@ -1,4 +1,11 @@
-var Api = {
+interface Data {
+    [key: string]: any;
+}
+
+const _timestamp = Date.now();
+
+// @ts-ignore
+const Api = {
 
     /**
      * Make request on Crunchyroll API
@@ -20,8 +27,8 @@ var Api = {
         data.version = '0';
         data.connectivity_type = 'ethernet';
 
-        var sessionId = V.store.local.get('sessionId', undefined);
-        var locale = V.store.local.get('locale', undefined);
+        var sessionId = V.store.local.get('sessionId', null);
+        var locale = V.store.local.get('locale', null);
 
         if (sessionId && !data.session_id) {
             data.session_id = sessionId;
@@ -157,6 +164,17 @@ var Api = {
             playhead: episode.playhead,
             premium: (!episode.free_available) ? 1 : 0
         };
+    },
+
+    /**
+     * Retrieve template as text
+     * @param name
+     * @returns
+     */
+    getTemplate: async function(name: string) {
+        var request = await fetch(name + '?t=' + _timestamp);
+        var text = request.text();
+        return text;
     }
 
 }

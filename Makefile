@@ -13,10 +13,8 @@ build:
 		--source $(PROJECT_PATH)/src/ \
 		--destination $(PROJECT_PATH)/$(ID)/ \
 		--progressive false \
-		--exclude "lib/*.d.ts,lib/*.map" \
-		--exclude "js/*.d.ts,js/*.map" \
-		--bundle "css/styles.scss:css/_*.scss:css/styles.css" \
-		--bundle "js/components.ts:js/components/*.ts:js/components.js"
+		--exclude "lib/*.map,js/*.map" \
+		--bundle "css/styles.scss:css/_*.scss:css/styles.css"
 
 watch:
 	compactor \
@@ -25,10 +23,8 @@ watch:
 		--destination $(PROJECT_PATH)/$(ID)/ \
 		--progressive false \
 		--hashed false \
-		--exclude "lib/*.d.ts,lib/*.map" \
-		--exclude "js/*.d.ts,js/*.map" \
-		--bundle "css/styles.scss:css/_*.scss:css/styles.css" \
-		--bundle "js/components.ts:js/components/*.ts:js/components.js"
+		--exclude "lib/*.map,js/*.map" \
+		--bundle "css/styles.scss:css/_*.scss:css/styles.css"
 
 server:
 	statiq --port 5000 --root $(PROJECT_PATH)/$(ID)/

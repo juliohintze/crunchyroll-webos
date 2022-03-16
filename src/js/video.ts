@@ -1,5 +1,3 @@
-import Hls from "../../lib/hls.js";
-
 V.route.add({
     id: 'video',
     path: '/serie/:serieId/episode/:episodeId/video',
@@ -27,7 +25,7 @@ V.component('[data-video]', {
      * @returns
      */
     template: async function () {
-        return await getTemplate('/templates/video.html');
+        return await Api.getTemplate('/templates/video.html');
     },
 
     /**
@@ -142,11 +140,11 @@ V.component('[data-video]', {
                 element.classList.remove('show-controls');
             }, 2000); // 2s
 
-        }, undefined);
+        });
 
         V.on(element, 'mouseleave', function () {
             element.classList.remove('show-controls');
-        }, undefined);
+        });
 
         V.on(element, 'mousemove touchmove', 'input[type="range"]', function (e: Event) {
             self.updateSeekTooltip(e);
@@ -157,22 +155,22 @@ V.component('[data-video]', {
         });
 
         // Public
-        window.playVideo = function () {
+        Connector.playVideo = function () {
             return self.playVideo();
         };
-        window.pauseVideo = function () {
+        Connector.pauseVideo = function () {
             return self.pauseVideo();
         };
-        window.stopVideo = function () {
+        Connector.stopVideo = function () {
             return self.stopVideo();
         };
-        window.toggleVideo = function () {
+        Connector.toggleVideo = function () {
             return self.toggleVideo();
         }
-        window.forwardVideo = function (seconds: number) {
+        Connector.forwardVideo = function (seconds: number) {
             return self.forwardVideo(seconds);
         }
-        window.backwardVideo = function (seconds: number) {
+        Connector.backwardVideo = function (seconds: number) {
             return self.backwardVideo(seconds);
         }
 
@@ -205,15 +203,15 @@ V.component('[data-video]', {
             V.on(video, 'click', function (e: Event) {
                 e.preventDefault();
                 self.toggleVideo();
-            }, undefined);
+            });
 
             V.on(video, 'timeupdate', function () {
                 self.updateDuration();
                 self.updateTimeElapsed();
                 self.updateProgress();
-            }, undefined);
+            });
 
-            window.showLoading();
+            Connector.showLoading();
 
             try {
                 await self.loadVideo();
@@ -224,7 +222,7 @@ V.component('[data-video]', {
                 self.showError(error.message);
             }
 
-            window.hideLoading();
+            Connector.hideLoading();
 
         });
 
@@ -272,7 +270,7 @@ V.component('[data-video]', {
         var playButton = V.$('.video-play', element);
 
         element.classList.add('video-is-active');
-        window.setActiveElement(playButton);
+        Connector.setActiveElement(playButton);
 
     },
 
@@ -491,13 +489,13 @@ V.component('[data-video]', {
             hls.on(Hls.Events.LEVEL_SWITCHED, function () {
 
                 var level = hls.currentLevel;
-                var next = V.$('.video-quality div[data-level="' + level + '"]', undefined);
+                var next = V.$('.video-quality div[data-level="' + level + '"]');
 
                 if (!next) {
-                    next = V.$('.video-quality div[data-level="-1"]', undefined);
+                    next = V.$('.video-quality div[data-level="-1"]');
                 }
 
-                V.$('.video-quality div.active', undefined).classList.remove('active');
+                V.$('.video-quality div.active').classList.remove('active');
                 next.classList.add('active');
 
             });

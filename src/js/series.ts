@@ -27,7 +27,7 @@ V.component('[data-series]', {
      * @returns
      */
     template: async function () {
-        return await getTemplate('/templates/series.html');
+        return await Api.getTemplate('/templates/series.html');
     },
 
     /**
@@ -182,7 +182,7 @@ V.component('[data-series]', {
             'image.full_url'
         ];
 
-        window.showLoading();
+        Connector.showLoading();
 
         try {
 
@@ -216,14 +216,14 @@ V.component('[data-series]', {
                 previousPage: previousPage
             });
 
-            window.hideLoading();
-            window.setActiveElement();
+            Connector.hideLoading();
+            Connector.setActiveElement();
 
         } catch (error) {
             console.log(error);
         }
 
-        window.hideLoading();
+        Connector.hideLoading();
 
     }
 
