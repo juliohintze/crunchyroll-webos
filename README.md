@@ -46,7 +46,3 @@ Developer Mode is enabled only for 50 hours, so you will need to renew developer
 # You can test it direct from the browser
 npm run develop
 ```
-
-## Know Bugs
-
-- Next and previous episode sometimes are buggy and don't work as expected giving a wrong episode.

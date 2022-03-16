@@ -303,6 +303,7 @@ V.component('[data-video]', {
         var episodeId = V.route.active().param('episodeId');
 
         var fields = [
+            'media.collection_id',
             'media.episode_number',
             'media.name',
             'media.stream_data',
@@ -331,6 +332,7 @@ V.component('[data-video]', {
             var episodeName = response.data.name;
             var serieId = response.data.series_id;
             var serieName = response.data.series_name;
+            var collectionId = response.data.collection_id;
 
             serie.innerHTML = serieName + ' / Episode ' + episodeNumber;
             title.innerHTML = episodeName;
@@ -346,7 +348,7 @@ V.component('[data-video]', {
             self.streams = streams;
             video.currentTime = startTime;
 
-            self.loadClosestEpisodes(serieId, episodeNumber);
+            self.loadClosestEpisodes(serieId, collectionId, episodeNumber);
 
         } catch (error) {
             self.showError(error.message);
@@ -357,9 +359,10 @@ V.component('[data-video]', {
     /**
      * Load next and previous episodes
      * @param serieId
+     * @param collectionId
      * @param episodeNumber
      */
-    loadClosestEpisodes: async function (serieId: number, episodeNumber: number) {
+    loadClosestEpisodes: async function (serieId: number, collectionId: number, episodeNumber: number) {
 
         var self = this;
         var fields = [
@@ -378,9 +381,9 @@ V.component('[data-video]', {
             'media.free_available'
         ];
 
-        var offset = Number(episodeNumber) - 2
+        var offset = Number(episodeNumber) + 1
         var response = await Api.request('POST', '/list_media', {
-            series_id: serieId,
+            collection_id: collectionId,
             sort: 'asc',
             fields: fields.join(','),
             limit: 3,
