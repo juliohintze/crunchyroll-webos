@@ -1262,4 +1262,3 @@ var V = (function (exports) {
     Object.defineProperty(exports, '__esModule', { value: true });
     return exports;
 })({});
-//# sourceMappingURL=vanilla.js.map
