@@ -13,7 +13,7 @@ V.component('[data-login]', {
      * @returns
      */
     template: async function () {
-        return await Api.getTemplate('/templates/login.html');
+        return await Connector.getTemplate('login');
     },
 
     /**

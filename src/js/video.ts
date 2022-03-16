@@ -25,7 +25,7 @@ V.component('[data-video]', {
      * @returns
      */
     template: async function () {
-        return await Api.getTemplate('/templates/video.html');
+        return await Connector.getTemplate('video');
     },
 
     /**

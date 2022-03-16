@@ -20,7 +20,7 @@ V.component('[data-history]', {
      * @returns
      */
     template: async function () {
-        return await Api.getTemplate('/templates/history.html');
+        return await Connector.getTemplate('history');
     },
 
     /**

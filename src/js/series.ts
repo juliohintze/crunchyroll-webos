@@ -27,7 +27,7 @@ V.component('[data-series]', {
      * @returns
      */
     template: async function () {
-        return await Api.getTemplate('/templates/series.html');
+        return await Connector.getTemplate('series');
     },
 
     /**

@@ -2,8 +2,6 @@ interface Data {
     [key: string]: any;
 }
 
-const _timestamp = Date.now();
-
 // @ts-ignore
 const Api = {
 
@@ -164,17 +162,5 @@ const Api = {
             playhead: episode.playhead,
             premium: (!episode.free_available) ? 1 : 0
         };
-    },
-
-    /**
-     * Retrieve template as text
-     * @param name
-     * @returns
-     */
-    getTemplate: async function(name: string) {
-        var request = await fetch(name + '?t=' + _timestamp);
-        var text = request.text();
-        return text;
     }
-
 }

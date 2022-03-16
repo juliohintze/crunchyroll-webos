@@ -27,7 +27,7 @@ V.component('[data-queue]', {
      * @returns
      */
     template: async function () {
-        return await Api.getTemplate('/templates/queue.html');
+        return await Connector.getTemplate('queue');
     },
 
     /**

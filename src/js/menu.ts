@@ -5,7 +5,7 @@ V.component('[data-menu]', {
      * @returns
      */
     template: async function () {
-        return await Api.getTemplate('/templates/menu.html');
+        return await Connector.getTemplate('menu');
     },
 
     /**
