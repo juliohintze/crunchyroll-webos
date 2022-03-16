@@ -224,7 +224,7 @@ V.component('[data-video]', {
 
             Connector.hideLoading();
 
-        });
+        }, 500);
 
     },
 
