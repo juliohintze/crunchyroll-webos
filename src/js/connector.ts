@@ -1,6 +1,3 @@
-const _timestamp = Date.now();
-const _templates = {};
-
 // @ts-ignore
 const Connector = {
 
@@ -10,17 +7,8 @@ const Connector = {
      * @returns
      */
     getTemplate: async function(name: string) {
-
-        if( _templates[name] ){
-            return _templates[name];
-        }
-
-        var path = 'templates/' + name + '.html?t=' + _timestamp;
-        var request = await fetch(path);
-        var text = request.text();
-        _templates[name] = text;
-
-        return text;
+        var template = V.$('script#template-' + name).innerHTML;
+        return template;
     },
 
     // Keyboard
