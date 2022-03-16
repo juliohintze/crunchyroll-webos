@@ -29,14 +29,14 @@ npm install
 
 # Build from SRC
 npm run build
-npm run package
+npm run app-package
 
 # Install app for TV
-npm run install
+npm run app-install
 
 # Launch or inspect
-npm run launch
-npm run inspect
+npm run app-launch
+npm run app-inspect
 ```
 
 Developer Mode is enabled only for 50 hours, so you will need to renew developer session every 50 hours to keep using Crunchyroll as app... If you want to develop changes on the project, use the ``develop`` command to open a static web server and watch changes / build while you develop:

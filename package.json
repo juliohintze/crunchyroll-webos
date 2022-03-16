@@ -11,13 +11,13 @@
     "server": "make server",
     "develop": "make develop",
     "devices": "make devices",
-    "setup": "make setup",
-    "check": "make check",
-    "package": "make package",
-    "manifest": "make manifest",
-    "install": "make install",
-    "launch": "make launch",
-    "inspect": "make inspect"
+    "device-setup": "make setup",
+    "device-check": "make check",
+    "app-package": "make package",
+    "app-manifest": "make manifest",
+    "app-install": "make install",
+    "app-launch": "make launch",
+    "app-inspect": "make inspect"
   },
   "devDependencies": {
     "@webosbrew/pub-utils": "latest",

@@ -31,8 +31,8 @@ jobs:
       - name: Build package
         run: |
           npm run build
-          npm run package
-          npm run manifest
+          npm run app-package
+          npm run app-manifest
 
       - name: Create Release
         id: create_release_webos
