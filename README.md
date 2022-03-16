@@ -7,6 +7,8 @@
 Unofficial WebOS TV app for Crunchyroll.\
 The last Crunchyroll app you will ever need!
 
+Compatible with webOS TV 4.x or more recent.
+
 ## Download
 
 You can download and install this app in your WebOS TV following one of the guides below:
