@@ -62,4 +62,4 @@ launch:
 	$(BINARIES)/ares-launch $(ID)
 
 inspect:
-	$(BINARIES)/ares-inspect --app $(ID)
+	$(BINARIES)/ares-inspect --app $(ID) --host-port 9222
