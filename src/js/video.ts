@@ -235,6 +235,10 @@ V.component('[data-video]', {
      */
     formatTime: function (time: number) {
 
+        if( !time ){
+            time = 0;
+        }
+
         var result = new Date(time * 1000).toISOString().substring(11, 19);
         var minutes = result.substring(3, 5);
         var seconds = result.substring(6, 8);
