@@ -1,7 +1,8 @@
+const _timestamp = Date.now();
+const _templates = {};
+
 // @ts-ignore
 const Connector = {
-    _timestamp: Date.now(),
-    _templates: {},
 
     /**
      * Retrieve template as text
@@ -10,14 +11,14 @@ const Connector = {
      */
     getTemplate: async function(name: string) {
 
-        if( this._template[name] ){
-            return this._template[name];
+        if( _templates[name] ){
+            return _templates[name];
         }
 
-        var path = 'templates/' + name + '.html?t=' + this._timestamp;
+        var path = 'templates/' + name + '.html?t=' + _timestamp;
         var request = await fetch(path);
         var text = request.text();
-        this._template[name] = text;
+        _templates[name] = text;
 
         return text;
     },
