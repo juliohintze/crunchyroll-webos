@@ -23,8 +23,8 @@ const onMount: Callback = ({ element }) => {
 
     on(element, 'click', '.dropdown-value', () => {
         element.classList.add('active')
-        const firstLi = $('li', element) as HTMLElement
-        fire('setActiveElement', firstLi)
+        const firstLI = $('li', element) as HTMLElement
+        fire('setActiveElement', firstLI)
     })
 
     on(element, 'click', 'li', function(){

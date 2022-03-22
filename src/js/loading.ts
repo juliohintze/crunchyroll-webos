@@ -1,4 +1,4 @@
-import { Callback, on, register, watch } from "../lib/vine"
+import { Callback, on, register, unwatch, watch } from "../lib/vine"
 
 /**
  * On mount
@@ -30,6 +30,15 @@ const onMount: Callback = ({ element }) => {
 
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+    unwatch('showLoading')
+    unwatch('hideLoading')
+}
+
 register('[data-loading]', {
-    onMount
+    onMount,
+    onDestroy
 })

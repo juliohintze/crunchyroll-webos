@@ -1,4 +1,4 @@
-import { $, Callback, fire, on, register, Route, Template, watch } from "../lib/vine"
+import { $, Callback, fire, on, register, Route, Template, unwatch, watch } from "../lib/vine"
 import { Hls } from "../lib/hls"
 import { Api } from "./api"
 
@@ -757,10 +757,23 @@ const onRender: Callback = async ({ element }) => {
 
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+    unwatch('playVideo')
+    unwatch('pauseVideo')
+    unwatch('stopVideo')
+    unwatch('toggleVideo')
+    unwatch('forwardVideo')
+    unwatch('backwardVideo')
+}
+
 register('[data-video]', {
     template,
     onMount,
-    onRender
+    onRender,
+    onDestroy
 })
 
 Route.add({

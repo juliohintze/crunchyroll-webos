@@ -34,7 +34,7 @@ const onMount: Callback = async () => {
     localStorage.removeItem('auth')
     localStorage.removeItem('expires')
 
-    await fire('authChanged', {})
+    await fire('authChanged')
 
     setTimeout(() => {
         fire('hideLoading')

@@ -1,4 +1,4 @@
-import { Callback, fire, register, Route, State, Template, watch } from "../lib/vine"
+import { Callback, fire, register, Route, State, Template, unwatch, watch } from "../lib/vine"
 import { Api } from "./api"
 
 /**
@@ -133,7 +133,7 @@ const listQueue: Callback = async function (component) {
  */
 const onMount: Callback = (component) => {
 
-    watch('currentViewReload', () => {
+    watch('queueViewReload', () => {
         listQueue(component)
     })
 
@@ -141,10 +141,18 @@ const onMount: Callback = (component) => {
 
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+    unwatch('queueViewReload')
+}
+
 register('[data-queue]', {
     state,
     template,
-    onMount
+    onMount,
+    onDestroy
 })
 
 Route.add({

@@ -1,4 +1,4 @@
-import { Callback, fire, register, Route, State, Template, watch } from "../lib/vine"
+import { Callback, fire, register, Route, State, Template, unwatch, watch } from "../lib/vine"
 import { Api } from "./api"
 
 /**
@@ -122,7 +122,7 @@ const listHistory: Callback = async (component) => {
  */
 const onMount: Callback = (component) => {
 
-    watch('currentViewReload', function () {
+    watch('historyViewReload', function () {
         listHistory(component)
     })
 
@@ -130,10 +130,18 @@ const onMount: Callback = (component) => {
 
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+    unwatch('historyViewReload')
+}
+
 register('[data-history]', {
     state,
     template,
-    onMount
+    onMount,
+    onDestroy
 })
 
 Route.add({

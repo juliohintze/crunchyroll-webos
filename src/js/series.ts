@@ -1,4 +1,4 @@
-import { Callback, fire, on, register, Route, State, Template, watch } from "../lib/vine"
+import { Callback, fire, on, register, Route, State, Template, unwatch, watch } from "../lib/vine"
 import { Api } from "./api"
 
 /**
@@ -214,7 +214,7 @@ const onMount: Callback = async (component) => {
         Route.redirect('/series?search=' + encodeURI(this.value))
     })
 
-    watch('currentViewReload', async () => {
+    watch('seriesViewReload', async () => {
         await parseParams(component)
         await listSeries(component)
     })
@@ -225,10 +225,18 @@ const onMount: Callback = async (component) => {
 
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+    unwatch('seriesViewReload')
+}
+
 register('[data-series]', {
     state,
     template,
-    onMount
+    onMount,
+    onDestroy
 })
 
 Route.add({

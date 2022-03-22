@@ -1,4 +1,4 @@
-import { $, $$, Callback, fire, on, register, trigger, watch } from "../lib/vine"
+import { $, $$, Callback, fire, on, register, trigger, unwatch, watch } from "../lib/vine"
 
 interface CursorStateChangeEvent {
     detail: {
@@ -447,7 +447,15 @@ const onMount: Callback = () => {
 
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+    unwatch('setActiveElement')
+    unwatch('getActiveElement')
+}
+
 register('[data-keyboard-navigation]', {
-    state: {},
-    onMount
+    onMount,
+    onDestroy
 })

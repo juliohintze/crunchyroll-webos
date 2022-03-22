@@ -109,7 +109,7 @@ const tryLogin = async () => {
     localStorage.setItem('auth', loginResponse.data.auth)
     localStorage.setItem('expires', loginResponse.data.expires)
 
-    await fire('authChanged', {})
+    await fire('authChanged')
 
     return true
 }

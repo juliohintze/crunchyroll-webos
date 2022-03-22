@@ -1,4 +1,4 @@
-import { $, Callback, register, Route, Template, watch } from "../lib/vine"
+import { $, Callback, register, Route, Template, unwatch, watch } from "../lib/vine"
 import { Api } from "./api"
 
 /**
@@ -56,8 +56,16 @@ const onRender: Callback = (component) => {
     setActive(component)
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+    unwatch('authChanged')
+}
+
 register('[data-menu]', {
     template,
     onMount,
-    onRender
+    onRender,
+    onDestroy
 })
