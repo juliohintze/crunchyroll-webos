@@ -138,7 +138,7 @@ const findTabStopElement = (direction: string, element: HTMLElement) => {
     index = items.indexOf(element)
     index = (direction == 'next') ? index + 1 : index - 1
 
-    return (items[index] || items[0]) as HTMLElement
+    return (items[index] || items[0])
 }
 
 /**
@@ -198,10 +198,10 @@ const setActiveElement = (element: HTMLElement) => {
     }
 
     if (!element) {
-        element = $('#content .list-item') as HTMLElement
+        element = $('#content .list-item')
     }
     if (!element) {
-        element = $('#menu .links a') as HTMLElement
+        element = $('#menu .links a')
     }
 
     if (element) {

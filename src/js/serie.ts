@@ -56,8 +56,8 @@ const addToQueue: Callback = (component) => {
     const serieId = component.state.serieId
     const element = component.element
 
-    const addToQueue = $('.add-to-queue', element) as HTMLElement
-    const removeFromQueue = $('.remove-from-queue', element) as HTMLElement
+    const addToQueue = $('.add-to-queue', element)
+    const removeFromQueue = $('.remove-from-queue', element)
 
     addToQueue.classList.add('hidden')
     removeFromQueue.classList.remove('hidden')
@@ -78,8 +78,8 @@ const removeFromQueue: Callback = (component) => {
     const serieId = component.state.serieId
     const element = component.element
 
-    const addToQueue = $('.add-to-queue', element) as HTMLElement
-    const removeFromQueue = $('.remove-from-queue', element) as HTMLElement
+    const addToQueue = $('.add-to-queue', element)
+    const removeFromQueue = $('.remove-from-queue', element)
 
     addToQueue.classList.remove('hidden')
     removeFromQueue.classList.add('hidden')

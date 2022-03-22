@@ -121,7 +121,7 @@ const tryLogin = async () => {
  * @returns
  */
 const getTemplate = async (name: string, data: any) => {
-    const element = $('script#template-' + name) as HTMLElement
+    const element = $('script#template-' + name)
     const template = element.innerHTML
     return Engine.parse(template, data)
 }

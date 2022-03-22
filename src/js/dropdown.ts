@@ -7,7 +7,7 @@ import { $, Callback, fire, on, register, trigger } from "../lib/vine"
 const onMount: Callback = ({ element }) => {
 
     const input = $('input', element) as HTMLInputElement
-    const dropdownValue = $('.dropdown-value', element) as HTMLElement
+    const dropdownValue = $('.dropdown-value', element)
 
     const isParentOf = (child: HTMLElement) => {
 
@@ -23,7 +23,7 @@ const onMount: Callback = ({ element }) => {
 
     on(element, 'click', '.dropdown-value', () => {
         element.classList.add('active')
-        const firstLI = $('li', element) as HTMLElement
+        const firstLI = $('li', element)
         fire('setActiveElement', firstLI)
     })
 
@@ -49,7 +49,7 @@ const onMount: Callback = ({ element }) => {
         }
     })
 
-    const current = $('li[data-value="' + input.value + '"]', element) as HTMLElement
+    const current = $('li[data-value="' + input.value + '"]', element)
     if (current) {
         dropdownValue.innerText = current.innerText
     }

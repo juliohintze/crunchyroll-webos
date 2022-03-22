@@ -19,8 +19,8 @@ const setActive: Callback = ({ element }) => {
     const path = Route.active()
     const id = path.id ? path.id : ''
 
-    const next = $('a[href="' + id + '"]', element) as HTMLElement
-    const current = $('a.active', element) as HTMLElement
+    const next = $('a[href="' + id + '"]', element)
+    const current = $('a.active', element)
 
     if (current) {
         current.classList.remove('active')

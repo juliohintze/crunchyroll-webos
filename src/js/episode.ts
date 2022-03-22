@@ -12,13 +12,13 @@ const onMount: Callback = ({ element }) => {
     const progress = (100 / Number(duration)) * Number(playhead)
 
     if (progress) {
-        const progressElement = $('.list-item-progress', element) as HTMLElement
+        const progressElement = $('.list-item-progress', element)
         progressElement.style.width = progress + '%'
         progressElement.classList.remove('hidden')
     }
 
     if (Number(premium) == 1) {
-        const premiumElement = $('.list-item-premium', element) as HTMLElement
+        const premiumElement = $('.list-item-premium', element)
         premiumElement.classList.remove('hidden')
     }
 

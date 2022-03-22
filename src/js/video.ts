@@ -46,7 +46,7 @@ const formatTime = (time: number) => {
  */
 const showError = (message: string) => {
 
-    const error = $('.video-error', area) as HTMLElement
+    const error = $('.video-error', area)
 
     area.classList.add('video-has-error')
     error.innerHTML = message
@@ -58,7 +58,7 @@ const showError = (message: string) => {
  */
 const showVideo = async () => {
 
-    const playButton = $('.video-play', area) as HTMLElement
+    const playButton = $('.video-play', area)
 
     area.classList.add('video-is-active')
     fire('setActiveElement', playButton)
@@ -83,8 +83,8 @@ const hideVideo = () => {
  */
 const loadVideo = async () => {
 
-    const serie = $('.video-serie', area) as HTMLElement
-    const title = $('.video-title', area) as HTMLElement
+    const serie = $('.video-serie', area)
+    const title = $('.video-title', area)
     const episodeId = Route.getParam('episodeId')
 
     const fields = [
@@ -177,8 +177,8 @@ const loadClosestEpisodes = async (
     })
 
     const episodes = response.data
-    const next = $('.video-next-episode', area) as HTMLElement
-    const previous = $('.video-previous-episode', area) as HTMLElement
+    const next = $('.video-next-episode', area)
+    const previous = $('.video-previous-episode', area)
 
     previous.classList.add('hide')
     next.classList.add('hide')
@@ -273,11 +273,11 @@ const streamVideo = async () => {
         hls.on(Hls.Events.LEVEL_SWITCHED, () => {
 
             let level = hls.currentLevel
-            let next = $('.video-quality div[data-level="' + level + '"]', area) as HTMLElement
-            let active = $('.video-quality div.active', area) as HTMLElement
+            let next = $('.video-quality div[data-level="' + level + '"]', area)
+            let active = $('.video-quality div.active', area)
 
             if (!next) {
-                next = $('.video-quality div[data-level="-1"]', area) as HTMLElement
+                next = $('.video-quality div[data-level="-1"]', area)
             }
 
             active.classList.remove('active')
@@ -428,7 +428,7 @@ const toggleFullScreen = () => {
  */
 const updateSeekTooltip = (event: MouseEvent) => {
 
-    const tooltip = $('.tooltip', area) as HTMLElement
+    const tooltip = $('.tooltip', area)
     const seek = $('input[type="range"]', area) as HTMLInputElement
     const target = event.target as HTMLElement
     const bcr = target.getBoundingClientRect()
@@ -463,7 +463,7 @@ const updateSeekTooltip = (event: MouseEvent) => {
  */
 const updateDuration = () => {
 
-    const duration = $('.duration', area) as HTMLElement
+    const duration = $('.duration', area)
     const seek = $('input[type="range"]', area) as HTMLInputElement
     const progress = $('progress', area) as HTMLProgressElement
 
@@ -483,7 +483,7 @@ const updateDuration = () => {
  */
 const updateTimeElapsed = () => {
 
-    const elapsed = $('.elapsed', area) as HTMLElement
+    const elapsed = $('.elapsed', area)
     const time = Math.round(video.currentTime)
     const format = formatTime(time)
 
