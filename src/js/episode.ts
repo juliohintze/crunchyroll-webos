@@ -1,29 +1,29 @@
-V.component('[data-episode]', {
+import { $, Callback, register } from "../lib/vine"
 
-    /**
-     * On mount
-     */
-    onMount: function (): void {
+/**
+ * On mount
+ * @param component
+ */
+const onMount: Callback = ({ element }) => {
 
-        var self = this;
-        var element = self.element;
+    const duration = element.dataset.episodeDuration
+    const playhead = element.dataset.episodePlayhead
+    const premium = element.dataset.episodePremium
+    const progress = (100 / Number(duration)) * Number(playhead)
 
-        var duration = element.dataset.episodeDuration;
-        var playhead = element.dataset.episodePlayhead;
-        var premium = element.dataset.episodePremium;
-        var progress = (100 / Number(duration)) * Number(playhead);
-
-        if (progress) {
-            var progressElement = V.$('.list-item-progress', element);
-            progressElement.style.width = progress + '%';
-            progressElement.classList.remove('hidden');
-        }
-
-        if (premium == 1) {
-            var premiumElement = V.$('.list-item-premium', element);
-            premiumElement.classList.remove('hidden');
-        }
-
+    if (progress) {
+        const progressElement = $('.list-item-progress', element) as HTMLElement
+        progressElement.style.width = progress + '%'
+        progressElement.classList.remove('hidden')
     }
 
-});
+    if (Number(premium) == 1) {
+        const premiumElement = $('.list-item-premium', element) as HTMLElement
+        premiumElement.classList.remove('hidden')
+    }
+
+}
+
+register('[data-episode]', {
+    onMount
+})

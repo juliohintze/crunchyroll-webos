@@ -1,47 +1,35 @@
-V.component('[data-loading]', {
+import { Callback, on, register, watch } from "../lib/vine"
 
-    /**
-     * On mount
-     */
-    onMount: function () {
+/**
+ * On mount
+ * @param component
+ */
+const onMount: Callback = ({ element }) => {
 
-        var self = this;
-
-        // Private
-        self.on('show', function (e: Event) {
-            e.preventDefault();
-            self.showLoading();
-        });
-
-        self.on('hide', function (e: Event) {
-            e.preventDefault();
-            self.hideLoading();
-        });
-
-        // Public
-        Connector.showLoading = function () {
-            return self.showLoading();
-        };
-        Connector.hideLoading = function () {
-            return self.hideLoading();
-        };
-
-    },
-
-    /**
-     * Show loading box
-     */
-    showLoading: function () {
-        var element = this.element;
-        element.classList.add('active');
-    },
-
-    /**
-     * Hide loading box
-     */
-    hideLoading: function () {
-        var element = this.element;
-        element.classList.remove('active');
+    const showLoading = () => {
+        element.classList.add('active')
+    }
+    const hideLoading = () => {
+        element.classList.remove('active')
     }
 
-});
+    // Private
+    on(element, 'show', (e: Event) => {
+        e.preventDefault()
+        showLoading()
+    })
+
+    on(element, 'hide', (e: Event) => {
+        e.preventDefault()
+        hideLoading()
+    })
+
+    // Public
+    watch('showLoading', showLoading)
+    watch('hideLoading', hideLoading)
+
+}
+
+register('[data-loading]', {
+    onMount
+})

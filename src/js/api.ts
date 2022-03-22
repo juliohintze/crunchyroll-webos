@@ -1,166 +1,182 @@
+import { $, Engine, fire, HTTP } from "../lib/vine"
+
 interface Data {
-    [key: string]: any;
+    [key: string]: any
 }
 
-// @ts-ignore
-const Api = {
+/**
+ * Make request on Crunchyroll API
+ * @param method
+ * @param endpoint
+ * @param data
+ * @returns
+ */
+const request = (method: string, endpoint: string, data: Data) => {
 
-    /**
-     * Make request on Crunchyroll API
-     * @param method
-     * @param endpoint
-     * @param data
-     * @returns
-     */
-    request: function (method: string, endpoint: string, data: Data): Promise<any> {
+    let url = 'https://api.crunchyroll.com'
+    url += endpoint + '.0.json'
 
-        var url = 'https://api.crunchyroll.com';
-        url += endpoint + '.0.json';
+    // const proxy = document.body.dataset.proxy
+    // if( proxy ){
+    //     url = proxy + encodeURI(url)
+    // }
 
-        // var proxy = document.body.dataset.proxy;
-        // if( proxy ){
-        //     url = proxy + encodeURI(url);
-        // }
+    data.version = '0'
+    data.connectivity_type = 'ethernet'
 
-        data.version = '0';
-        data.connectivity_type = 'ethernet';
+    const sessionId = localStorage.getItem('sessionId')
+    const locale = localStorage.getItem('locale')
 
-        var sessionId = V.store.local.get('sessionId', null);
-        var locale = V.store.local.get('locale', null);
-
-        if (sessionId && !data.session_id) {
-            data.session_id = sessionId;
-        }
-        if (locale && !data.locale) {
-            data.locale = locale;
-        }
-
-        if (method == 'POST') {
-
-            var formData = new FormData();
-            for (var key in data) {
-                formData.append(key, data[key]);
-            }
-
-            return V.http.request(method, url, formData, {});
-        }
-
-        return V.http.request(method, url, data, {});
-    },
-
-    /**
-     * Create UUID V4
-     * @returns
-     */
-    createUuid: function (): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
-            replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-    },
-
-    /**
-     * Try login within the set session data on API
-     * @returns
-     */
-    tryLogin: async function (): Promise<any> {
-
-        var email = V.store.local.get('email', null);
-        var password = V.store.local.get('password', null);
-        var locale = V.store.local.get('locale', null);
-
-        var accessToken = 'LNDJgOit5yaRIWN';
-        var deviceType = 'com.crunchyroll.windows.desktop';
-        var deviceId = this.createUuid();
-        var sessionId = null;
-
-        var response = await this.request('GET', '/start_session', {
-            access_token: accessToken,
-            device_type: deviceType,
-            device_id: deviceId,
-            locale: locale
-        });
-
-        if (response.error) {
-            throw new Error('Session cannot be started.');
-        }
-
-        sessionId = response.data.session_id;
-        response = await this.request('POST', '/login', {
-            session_id: sessionId,
-            account: email,
-            password: password,
-            locale: locale
-        });
-
-        if (response.error) {
-            throw new Error('Invalid login.');
-        }
-
-        V.store.local.set('accessToken', accessToken);
-        V.store.local.set('deviceType', deviceType);
-        V.store.local.set('deviceId', deviceId);
-        V.store.local.set('sessionId', sessionId);
-        V.store.local.set('locale', locale);
-        V.store.local.set('email', email);
-        V.store.local.set('password', password);
-        V.store.local.set('userId', response.data.user.user_id);
-        V.store.local.set('userName', response.data.user.username);
-        V.store.local.set('auth', response.data.auth);
-        V.store.local.set('expires', response.data.expires);
-
-        await V.fire('authChanged', {});
-
-        return true;
-    },
-
-    /**
-     * Transform data into serie item
-     * @param data
-     * @returns
-     */
-    toSerie: function (data: Data): object {
-        return {
-            id: data.series_id,
-            name: data.name,
-            description: data.description,
-            image: data.portrait_image.full_url
-        };
-    },
-
-    /**
-     * Transform data to serie episode item
-     * @param data
-     * @param source
-     * @returns
-     */
-    toSerieEpisode: function (data: Data, source: string): object {
-
-        var serie = data.series || {};
-        var episode = data;
-
-        if (source == 'history') {
-            episode = data.media;
-        }
-        if (source == 'queue') {
-            episode = data.most_likely_media;
-        }
-
-        if (!episode) {
-            return;
-        }
-
-        return {
-            serie_id: serie.series_id || episode.series_id,
-            serie_name: serie.name || '',
-            id: episode.media_id,
-            name: episode.name,
-            number: episode.episode_number,
-            image: episode.screenshot_image.full_url,
-            duration: episode.duration,
-            playhead: episode.playhead,
-            premium: (!episode.free_available) ? 1 : 0
-        };
+    if (sessionId && !data.session_id) {
+        data.session_id = sessionId
     }
+    if (locale && !data.locale) {
+        data.locale = locale
+    }
+
+    if (method == 'POST') {
+
+        const formData = new FormData()
+        for (const key in data) {
+            formData.append(key, data[key])
+        }
+
+        return HTTP.request(method, url, formData, {})
+    }
+
+    return HTTP.request(method, url, data as BodyInit, {})
+}
+
+/**
+ * Create UUID V4
+ * @returns
+ */
+const createUuid = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
+        replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8)
+            return v.toString(16)
+        })
+}
+
+/**
+ * Try login within the set session data on API
+ * @returns
+ */
+const tryLogin = async () => {
+
+    const email = localStorage.getItem('email')
+    const password = localStorage.getItem('password')
+    const locale = localStorage.getItem('locale')
+
+    const accessToken = 'LNDJgOit5yaRIWN'
+    const deviceType = 'com.crunchyroll.windows.desktop'
+    const deviceId = createUuid()
+    let sessionId = null
+
+    const response = await Api.request('GET', '/start_session', {
+        access_token: accessToken,
+        device_type: deviceType,
+        device_id: deviceId,
+        locale: locale
+    })
+
+    if (response.error) {
+        throw new Error('Session cannot be started.')
+    }
+
+    sessionId = response.data.session_id
+    const loginResponse = await Api.request('POST', '/login', {
+        session_id: sessionId,
+        account: email,
+        password: password,
+        locale: locale
+    })
+
+    if (loginResponse.error) {
+        throw new Error('Invalid login.')
+    }
+
+    localStorage.setItem('accessToken', accessToken)
+    localStorage.setItem('deviceType', deviceType)
+    localStorage.setItem('deviceId', deviceId)
+    localStorage.setItem('sessionId', sessionId)
+    localStorage.setItem('locale', locale)
+    localStorage.setItem('email', email)
+    localStorage.setItem('password', password)
+    localStorage.setItem('userId', loginResponse.data.user.user_id)
+    localStorage.setItem('userName', loginResponse.data.user.username)
+    localStorage.setItem('auth', loginResponse.data.auth)
+    localStorage.setItem('expires', loginResponse.data.expires)
+
+    await fire('authChanged', {})
+
+    return true
+}
+
+/**
+ * Retrieve template as text
+ * @param name
+ * @param data
+ * @returns
+ */
+const getTemplate = async (name: string, data: any) => {
+    const element = $('script#template-' + name) as HTMLElement
+    const template = element.innerHTML
+    return Engine.parse(template, data)
+}
+
+/**
+ * Transform data into serie item
+ * @param data
+ * @returns
+ */
+const toSerie = (data: Data) => ({
+    id: data.series_id,
+    name: data.name,
+    description: data.description,
+    image: data.portrait_image.full_url
+})
+
+/**
+ * Transform data to serie episode item
+ * @param data
+ * @param source
+ * @returns
+ */
+const toSerieEpisode = (data: Data, source: string) => {
+
+    let serie = data.series || {}
+    let episode = data
+
+    if (source == 'history') {
+        episode = data.media
+    }
+    if (source == 'queue') {
+        episode = data.most_likely_media
+    }
+
+    if (!episode) {
+        return
+    }
+
+    return {
+        serie_id: serie.series_id || episode.series_id,
+        serie_name: serie.name || '',
+        id: episode.media_id,
+        name: episode.name,
+        number: episode.episode_number,
+        image: episode.screenshot_image.full_url,
+        duration: episode.duration,
+        playhead: episode.playhead,
+        premium: (!episode.free_available) ? 1 : 0
+    }
+}
+
+export const Api = {
+    request,
+    tryLogin,
+    getTemplate,
+    toSerie,
+    toSerieEpisode
 }

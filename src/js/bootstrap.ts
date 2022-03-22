@@ -1,22 +1,25 @@
-V.on(window, 'load', function () {
+import { Engine, mount, on, Route } from "../lib/vine"
+
+on(window, 'load', () => {
 
     // Template helpers
-    V.helper('store', function (key: string, _default: any) {
-        return V.store.local.get(key, _default);
-    });
+    Engine.helper('store', (key: string, _default: any) => {
+        const value = localStorage.getItem(key)
+        return value !== null ? value : _default
+    })
 
     // Route definitions
-    var base = window.location.pathname.replace('index.html', '');
-
+    let base = window.location.pathname.replace('index.html', '')
     if (window.location.protocol == 'file:') {
-        base = 'file://' + base;
+        base = 'file://' + base
     }
 
-    V.route.options.mode = 'hash';
-    V.route.options.base = base;
-    V.route.attachEvents();
+    Route.init({
+        mode: 'hash',
+        base: base
+    })
 
     // Component mounts
-    V.mount(document.body);
+    mount(document.body)
 
-});
+})

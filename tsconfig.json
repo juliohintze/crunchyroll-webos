@@ -2,18 +2,13 @@
     "compilerOptions": {
         "allowJs": true,
         "allowUmdGlobalAccess": true,
-        "isolatedModules": false,
-        "module": "None",
-        "target": "ES5",
+        "module": "ES6",
+        "target": "ES3",
         "noEmit": true,
         "lib": [
-            "DOM",
-            "ES6"
-        ],
-        "baseUrl": ".",
-        "paths": {
-            "*": ["./types/*"]
-        }
+            "ES6",
+            "DOM"
+        ]
     },
     "files": [
         "./types/index.d.ts"

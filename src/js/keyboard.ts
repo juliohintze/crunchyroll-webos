@@ -1,465 +1,453 @@
+import { $, $$, Callback, fire, on, register, trigger, watch } from "../lib/vine"
+
 interface CursorStateChangeEvent {
     detail: {
-        visibility: any;
+        visibility: any
     }
 }
 
-V.component('[data-keyboard-navigation]', {
-
-    /**
-     * Keys mapping
-     * @var {Object}
-     */
-    keys: {
-        STOP: 413,
-        PAUSE: 19,
-        PLAY: 415,
-        OK: 13,
-        FORWARD: 417,
-        BACKWARD: 412,
-        BACK: 461,
-        RIGHT: 39,
-        LEFT: 37,
-        UP: 38,
-        DOWN: 40,
-        INFO: 457,
-        TAB: 9,
-        SPACE: 32,
-        BACKSPACE: 8,
-        DELETE: 46
-    },
-
-    /**
-     * Find on parent elements the closest available navigable element
-     * @param direction
-     * @param element
-     * @param parent
-     * @returns
-     */
-    findClosestOnParents: function (direction: string, element: HTMLElement, parent: HTMLElement): any {
-
-        var self = this;
-        var items = [];
-        var closest = null;
-
-        while (parent && closest == null) {
-            items = Array.from(V.$$('[tabindex]', parent));
-            closest = self.findClosest(direction, element, items);
-            parent = parent.parentElement;
-        }
-
-        return closest;
-    },
-
-    /**
-     * Find next/closest available navigable element
-     * @param direction
-     * @param element
-     * @param items
-     * @returns
-     */
-    findClosest: function (direction: string, element: HTMLElement, items: Array<any>): any {
-
-        var self = this;
-        var matches = [];
-        var current = self.getPosition(element);
-
-        // Find matches
-        items.forEach(function (itemElement) {
-
-            if (itemElement === element) {
-                return;
-            }
-
-            var item = self.getPosition(itemElement);
-
-            // Item not visible in document
-            if (item.width == 0 || item.height == 0) {
-                return;
-            }
-
-            var diff: number;
-
-            if (direction == 'up') {
-                if (item.top < current.top) {
-                    diff = current.top - item.top;
-                }
-            } else if (direction == 'down') {
-                if (item.top > current.bottom) {
-                    diff = item.top - current.bottom;
-                }
-            } else if (direction == 'left') {
-                if (item.right < current.left) {
-                    diff = current.left - item.right;
-                }
-            } else if (direction == 'right') {
-                if (item.left > current.right) {
-                    diff = item.left - current.right;
-                }
-            }
-
-            if (diff !== undefined) {
-                matches.push({
-                    element: itemElement,
-                    diff: diff,
-                    xDiff: Math.abs(current.top - item.top),
-                    yDiff: Math.abs(current.left - item.left)
-                });
-            }
-        });
-
-        // Sort elements
-        matches = matches.sort(function (a, b) {
-            return (a.diff + a.xDiff + a.yDiff) - (b.diff + b.xDiff + b.yDiff);
-        });
-
-        return (matches.length) ? matches[0].element : null;
-    },
-
-    /**
-     * Find the next TAB stop element respecting only [tabindex]
-     * @param direction
-     * @param element
-     * @returns
-     */
-    findTabStopElement: function (direction: string, element: HTMLElement): HTMLElement {
-
-        var items = Array.from(V.$$('[tabindex]'));
-        var index: number;
-
-        items = items.filter(function (item: HTMLElement) {
-            return item.offsetWidth > 0
-                || item.offsetHeight > 0
-                || item === element;
-        });
-
-        index = items.indexOf(element);
-        index = (direction == 'next') ? index + 1 : index - 1;
-
-        return (items[index] || items[0]) as HTMLElement;
-    },
-
-    /**
-     * Retrieve the position of an element
-     * @param element
-     * @returns
-     */
-    getPosition: function (element: HTMLElement): object {
-
-        var rect = element.getBoundingClientRect();
-        var style = window.getComputedStyle(element);
-        var margin = {
-            left: parseInt(style['margin-left']),
-            right: parseInt(style['margin-right']),
-            top: parseInt(style['margin-top']),
-            bottom: parseInt(style['margin-bottom'])
-        };
-        var padding = {
-            left: parseInt(style['padding-left']),
-            right: parseInt(style['padding-right']),
-            top: parseInt(style['padding-top']),
-            bottom: parseInt(style['padding-bottom'])
-        };
-        var border = {
-            left: parseInt(style['border-left']),
-            right: parseInt(style['border-right']),
-            top: parseInt(style['border-top']),
-            bottom: parseInt(style['border-bottom'])
-        };
-
-        var left = rect.left - margin.left;
-        var right = rect.right - margin.right - padding.left - padding.right;
-        var top = rect.top - margin.top;
-        var bottom = rect.bottom - margin.bottom - padding.top - padding.bottom - border.bottom;
-        var width = rect.right - rect.left;
-        var height = rect.bottom - rect.top;
-
-        return {
-            left: left,
-            right: right,
-            top: top,
-            bottom: bottom,
-            width: width,
-            height: height
-        };
-    },
-
-    /**
-     * On mount
-     */
-    onMount: function () {
-
-        var self = this;
-        self.lastKey = null;
-        self.lastKeyTime = null;
-        self.activeElement = null;
-        self.usingMouse = false;
-
-        // Mouse events
-        var handleMouse = function () {
-
-            if (self.usingMouse) {
-                document.body.classList.add('mouse');
-            } else {
-                document.body.classList.remove('mouse');
-            }
-
-            if (!self.activeElement) {
-                return;
-            }
-
-            if (self.usingMouse) {
-                self.activeElement.classList.remove('hover');
-            } else {
-                self.activeElement.classList.add('hover');
-            }
-
-        }
-
-        V.on(document, 'cursorStateChange', function (e: CursorStateChangeEvent) {
-            self.usingMouse = e.detail.visibility;
-            handleMouse();
-        });
-
-        V.on(document, 'mouseenter mousemove', function () {
-            self.usingMouse = true;
-            handleMouse();
-        });
-
-        V.on(document, 'mouseleave', function () {
-            self.usingMouse = false;
-            handleMouse();
-        });
-
-        // Keyboard Events
-        var keys = Object.keys(self.keys).map(function(i) {
-            return self.keys[i];
-        });
-
-        V.on(window, 'keydown', function (e: KeyboardEvent) {
-            if (keys.indexOf(e.key) !== -1
-                && self.handleKeyPress(e)) {
-                e.preventDefault();
-            }
-        });
-
-        // Public
-        Connector.setActiveElement = function (element: any) {
-            return self.setActiveElement(element);
-        };
-
-        Connector.getActiveElement = function () {
-            return self.activeElement;
-        };
-
-    },
-
-    /**
-     * Set the current active element for navigation
-     * @param element
-     */
-    setActiveElement: function (element: HTMLElement) {
-
-        if (this.activeElement) {
-            this.activeElement.classList.remove('hover');
-            this.activeElement.blur();
-        }
-
-        if (!element) {
-            element = V.$('#content .list-item');
-        }
-        if (!element) {
-            element = V.$('#menu .links a');
-        }
-
-        if (element) {
-            element.scrollIntoView();
-            element.classList.add('hover');
-
-            if (element.nodeName !== 'INPUT') {
-                element.focus();
-            }
-
-            this.activeElement = element;
-        }
-
-    },
-
-    /**
-     * Handle key press
-     * @param event
-     * @returns
-     */
-    handleKeyPress: function (event: KeyboardEvent): boolean {
-
-        var self = this;
-        var body = document.body;
-        var videoActive = body.classList.contains('page-video');
-        var result: boolean;
-
-        if (videoActive) {
-            result = self.handleKeyOnVideo(event);
-        } else {
-            result = self.handleKeyNavigation(event);
-        }
-
-        self.lastKey = event.key;
-        self.lastKeyTime = new Date();
-
-        return result;
-    },
-
-    /**
-     * Handle key press for navigation
-     * @param event
-     * @returns
-     */
-    handleKeyNavigation: function (event: KeyboardEvent): boolean {
-
-        var self = this;
-        var keys = self.keys;
-        var current = self.activeElement;
-        var key = event.key;
-
-        if (!current) {
-            return;
-        }
-
-        var directions = {};
-        directions[keys.RIGHT] = 'right';
-        directions[keys.LEFT] = 'left';
-        directions[keys.UP] = 'up';
-        directions[keys.DOWN] = 'down';
-
-        // OK / INFO / SPACE
-        if (key == keys.OK
-            || key == keys.INFO
-            || key == keys.SPACE) {
-
-            if (current && current.classList.contains('dropdown')) {
-                V.trigger(current, 'click', '.dropdown-value');
-            } else if (current && current.nodeName == 'INPUT') {
-                current.focus();
-            } else if (current) {
-                V.trigger(current, 'click');
-            }
-
-            return true;
-
-        // TAB
-        } else if (key == keys.TAB) {
-
-            var next = self.findTabStopElement(
-                (event.shiftKey) ? 'prev' : 'next',
-                current
-            );
-
-            if (next != null) {
-                self.setActiveElement(next);
-            }
-
-            return true;
-
-        // RIGHT / LEFT / UP / DOWN
-        } else if (directions[key]) {
-
-            var closest = self.findClosestOnParents(
-                directions[key],
-                current,
-                current.parentElement
-            );
-
-            if (closest != null) {
-                self.setActiveElement(closest);
-            }
-
-            return true;
-        }
-
-        return false;
-    },
-
-    /**
-     * Handle key press specific to video
-     * @param event
-     * @returns
-     */
-    handleKeyOnVideo: function (event: KeyboardEvent): boolean {
-
-        var self = this;
-        var keys = self.keys;
-        var key = event.key;
-
-        // STOP
-        if (key == keys.STOP) {
-            Connector.stopVideo();
-            return true;
-
-        // PAUSE
-        } else if (key == keys.PAUSE) {
-            Connector.pauseVideo();
-            return true;
-
-        // PLAY
-        } else if (key == keys.PLAY) {
-            Connector.playVideo();
-            return true;
-
-        // OK / SPACE
-        } else if (key == keys.OK
-            || key == keys.SPACE) {
-            Connector.toggleVideo();
-            return true;
-
-        // FORWARD
-        } else if (key == keys.FORWARD) {
-            Connector.forwardVideo(1);
-            return true;
-
-        // BACKWARD
-        } else if (key == keys.BACKWARD) {
-            Connector.backwardVideo(1);
-            return true;
-
-        // RIGHT
-        } else if (key == keys.RIGHT) {
-            Connector.forwardVideo(10);
-            return true;
-
-        // LEFT
-        } else if (key == keys.LEFT) {
-            Connector.backwardVideo(10);
-            return true;
-
-        // BACK
-        } else if (key == keys.BACK
-            || key == keys.BACKSPACE
-            || key == keys.DELETE) {
-            Connector.pauseVideo();
-            return true;
-
-        // UP (behavior as left navigation)
-        // DOWN (behavior as right navigation)
-        } else if (key == keys.UP
-            || key == keys.DOWN) {
-
-            var current = self.activeElement;
-            var parent = self.element;
-
-            var closest = self.findClosestOnParents(
-                (key == keys.UP) ? 'left' : 'right',
-                current,
-                parent
-            );
-
-            if (closest != null) {
-                self.setActiveElement(closest);
-            }
-
-            return true;
-        }
-
-        return false;
+/**
+ * Keys mapping
+ */
+const keys = {
+    STOP: 413,
+    PAUSE: 19,
+    PLAY: 415,
+    OK: 13,
+    FORWARD: 417,
+    BACKWARD: 412,
+    BACK: 461,
+    RIGHT: 39,
+    LEFT: 37,
+    UP: 38,
+    DOWN: 40,
+    INFO: 457,
+    TAB: 9,
+    SPACE: 32,
+    BACKSPACE: 8,
+    DELETE: 46
+}
+
+let lastKey = null
+let lastKeyTime = null
+let activeElement = null
+let usingMouse = false
+
+/**
+ * Find on parent elements the closest available navigable element
+ * @param direction
+ * @param element
+ * @param parent
+ * @returns
+ */
+const findClosestOnParents = (direction: string, element: HTMLElement, parent: HTMLElement) => {
+
+    let items = []
+    let closest = null
+
+    while (parent && closest == null) {
+        items = $$('[tabindex]', parent)
+        closest = findClosest(direction, element, items)
+        parent = parent.parentElement
     }
 
-});
+    return closest
+}
+
+/**
+ * Find next/closest available navigable element
+ * @param direction
+ * @param element
+ * @param items
+ * @returns
+ */
+const findClosest = (direction: string, element: HTMLElement, items: Array<any>) => {
+
+    const current = getPosition(element)
+    let matches = []
+
+    // Find matches
+    items.forEach(function (itemElement) {
+
+        if (itemElement === element) {
+            return
+        }
+
+        const item = getPosition(itemElement)
+
+        // Item not visible in document
+        if (item.width == 0 || item.height == 0) {
+            return
+        }
+
+        let diff: number
+
+        if (direction == 'up') {
+            if (item.top < current.top) {
+                diff = current.top - item.top
+            }
+        } else if (direction == 'down') {
+            if (item.top > current.bottom) {
+                diff = item.top - current.bottom
+            }
+        } else if (direction == 'left') {
+            if (item.right < current.left) {
+                diff = current.left - item.right
+            }
+        } else if (direction == 'right') {
+            if (item.left > current.right) {
+                diff = item.left - current.right
+            }
+        }
+
+        if (diff !== undefined) {
+            matches.push({
+                element: itemElement,
+                diff: diff,
+                xDiff: Math.abs(current.top - item.top),
+                yDiff: Math.abs(current.left - item.left)
+            })
+        }
+    })
+
+    // Sort elements
+    matches = matches.sort(function (a, b) {
+        return (a.diff + a.xDiff + a.yDiff) - (b.diff + b.xDiff + b.yDiff)
+    })
+
+    return (matches.length) ? matches[0].element : null
+}
+
+/**
+ * Find the next TAB stop element respecting only [tabindex]
+ * @param direction
+ * @param element
+ * @returns
+ */
+const findTabStopElement = (direction: string, element: HTMLElement) => {
+
+    let items = $$('[tabindex]') as Array<HTMLElement>
+    let index: number
+
+    items = items.filter((item) => {
+        return item.offsetWidth > 0
+            || item.offsetHeight > 0
+            || item === element
+    })
+
+    index = items.indexOf(element)
+    index = (direction == 'next') ? index + 1 : index - 1
+
+    return (items[index] || items[0]) as HTMLElement
+}
+
+/**
+ * Retrieve the position of an element
+ * @param element
+ * @returns
+ */
+const getPosition = (element: HTMLElement) => {
+
+    const rect = element.getBoundingClientRect()
+    const style = window.getComputedStyle(element)
+    const margin = {
+        left: parseInt(style['margin-left']),
+        right: parseInt(style['margin-right']),
+        top: parseInt(style['margin-top']),
+        bottom: parseInt(style['margin-bottom'])
+    }
+    const padding = {
+        left: parseInt(style['padding-left']),
+        right: parseInt(style['padding-right']),
+        top: parseInt(style['padding-top']),
+        bottom: parseInt(style['padding-bottom'])
+    }
+    const border = {
+        left: parseInt(style['border-left']),
+        right: parseInt(style['border-right']),
+        top: parseInt(style['border-top']),
+        bottom: parseInt(style['border-bottom'])
+    }
+
+    const left = rect.left - margin.left
+    const right = rect.right - margin.right - padding.left - padding.right
+    const top = rect.top - margin.top
+    const bottom = rect.bottom - margin.bottom - padding.top - padding.bottom - border.bottom
+    const width = rect.right - rect.left
+    const height = rect.bottom - rect.top
+
+    return {
+        left: left,
+        right: right,
+        top: top,
+        bottom: bottom,
+        width: width,
+        height: height
+    }
+}
+
+/**
+ * Set the current active element for navigation
+ * @param element
+ */
+const setActiveElement = (element: HTMLElement) => {
+
+    if (activeElement) {
+        activeElement.classList.remove('hover')
+        activeElement.blur()
+    }
+
+    if (!element) {
+        element = $('#content .list-item') as HTMLElement
+    }
+    if (!element) {
+        element = $('#menu .links a') as HTMLElement
+    }
+
+    if (element) {
+        element.scrollIntoView()
+        element.classList.add('hover')
+
+        if (element.nodeName !== 'INPUT') {
+            element.focus()
+        }
+
+        activeElement = element
+    }
+
+}
+
+/**
+ * Handle key press
+ * @param event
+ * @returns
+ */
+const handleKeyPress = (event: KeyboardEvent) => {
+
+    const body = document.body
+    const videoActive = body.classList.contains('page-video')
+    let result: boolean
+
+    if (videoActive) {
+        result = handleKeyOnVideo(event)
+    } else {
+        result = handleKeyNavigation(event)
+    }
+
+    lastKey = event.key
+    lastKeyTime = new Date()
+
+    return result
+}
+
+/**
+ * Handle key press for navigation
+ * @param event
+ * @returns
+ */
+const handleKeyNavigation = (event: KeyboardEvent) => {
+
+    const current = activeElement
+    const key = Number(event.key)
+
+    if (!current) {
+        return
+    }
+
+    const directions = {}
+    directions[keys.RIGHT] = 'right'
+    directions[keys.LEFT] = 'left'
+    directions[keys.UP] = 'up'
+    directions[keys.DOWN] = 'down'
+
+    // OK / INFO / SPACE
+    if (key == keys.OK
+        || key == keys.INFO
+        || key == keys.SPACE) {
+
+        if (current && current.classList.contains('dropdown')) {
+            trigger(current, 'click', '.dropdown-value')
+        } else if (current && current.nodeName == 'INPUT') {
+            current.focus()
+        } else if (current) {
+            trigger(current, 'click')
+        }
+
+        return true
+
+    // TAB
+    } else if (key == keys.TAB) {
+
+        const next = findTabStopElement(
+            (event.shiftKey) ? 'prev' : 'next',
+            current
+        )
+
+        if (next != null) {
+            setActiveElement(next)
+        }
+
+        return true
+
+    // RIGHT / LEFT / UP / DOWN
+    } else if (directions[key]) {
+
+        const closest = findClosestOnParents(
+            directions[key],
+            current,
+            current.parentElement
+        )
+
+        if (closest != null) {
+            setActiveElement(closest)
+        }
+
+        return true
+    }
+
+    return false
+}
+
+/**
+ * Handle key press specific to video
+ * @param event
+ * @returns
+ */
+const handleKeyOnVideo = (event: KeyboardEvent) => {
+
+    const key = Number(event.key)
+
+    // STOP
+    if (key == keys.STOP) {
+        fire('stopVideo')
+        return true
+
+    // PAUSE
+    } else if (key == keys.PAUSE) {
+        fire('pauseVideo')
+        return true
+
+    // PLAY
+    } else if (key == keys.PLAY) {
+        fire('playVideo')
+        return true
+
+    // OK / SPACE
+    } else if (key == keys.OK
+        || key == keys.SPACE) {
+        fire('toggleVideo')
+        return true
+
+    // FORWARD
+    } else if (key == keys.FORWARD) {
+        fire('forwardVideo', 1)
+        return true
+
+    // BACKWARD
+    } else if (key == keys.BACKWARD) {
+        fire('backwardVideo', 1)
+        return true
+
+    // RIGHT
+    } else if (key == keys.RIGHT) {
+        fire('forwardVideo', 10)
+        return true
+
+    // LEFT
+    } else if (key == keys.LEFT) {
+        fire('backwardVideo', 10)
+        return true
+
+    // BACK
+    } else if (key == keys.BACK
+        || key == keys.BACKSPACE
+        || key == keys.DELETE) {
+        fire('pauseVideo')
+        return true
+
+    // UP (behavior as left navigation)
+    // DOWN (behavior as right navigation)
+    } else if (key == keys.UP
+        || key == keys.DOWN) {
+
+        const current = activeElement
+        const parent = current.parentElement;
+
+        const closest = findClosestOnParents(
+            (key == keys.UP) ? 'left' : 'right',
+            current,
+            parent
+        )
+
+        if (closest != null) {
+            setActiveElement(closest)
+        }
+
+        return true
+    }
+
+    return false
+}
+
+/**
+ * On mount
+ */
+const onMount: Callback = () => {
+
+    // Mouse events
+    const handleMouse = () => {
+
+        if (usingMouse) {
+            document.body.classList.add('mouse')
+        } else {
+            document.body.classList.remove('mouse')
+        }
+
+        if (!activeElement) {
+            return
+        }
+
+        if (usingMouse) {
+            activeElement.classList.remove('hover')
+        } else {
+            activeElement.classList.add('hover')
+        }
+
+    }
+
+    on(document, 'cursorStateChange', (e: CursorStateChangeEvent) => {
+        usingMouse = e.detail.visibility
+        handleMouse()
+    })
+
+    on(document, 'mouseenter mousemove', () => {
+        usingMouse = true
+        handleMouse()
+    })
+
+    on(document, 'mouseleave', () => {
+        usingMouse = false
+        handleMouse()
+    })
+
+    // Keyboard Events
+    on(window, 'keydown', (e: KeyboardEvent) => {
+        const values = Object.values(keys)
+        if (values.indexOf(Number(e.key)) !== -1
+            && handleKeyPress(e)) {
+            e.preventDefault()
+        }
+    })
+
+    // Public
+    watch('setActiveElement', setActiveElement)
+    watch('getActiveElement', (result: any) => {
+        result.active = activeElement
+    })
+
+}
+
+register('[data-keyboard-navigation]', {
+    state: {},
+    onMount
+})

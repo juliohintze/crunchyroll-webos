@@ -1,88 +1,89 @@
-V.component('[data-view]', {
+import { Callback, destroy, fire, mount, register, Route, trigger } from "../lib/vine"
 
-    /**
-     * Attach route component changes
-     */
-    onMount: function () {
+/**
+ * Attach route component changes
+ * @param component
+ */
+const onMount: Callback = ({ element }) => {
 
-        var self = this;
-        var element = self.element;
-
-        var isLoggedIn = function () {
-            var expires = V.store.local.get('expires', false);
-            return expires && new Date() < new Date(expires);
-        }
-
-        V.route.beforeChange(function () {
-
-            // Kind of 404
-            if (!this.next) {
-                this.next = V.route.match('/queue');
-            }
-
-            // Check login
-            if (!isLoggedIn()) {
-                this.next = V.route.match('/login');
-            }
-
-        });
-
-        V.route.afterChange(async function () {
-
-            var previous = this.previous;
-            var next = this.next;
-            var body = document.body;
-
-            // Prevent in case of change to the same URL
-            if (previous && next) {
-                if (previous.path === next.path) {
-                    V.fire('currentViewReload', {});
-                    return;
-                }
-            }
-
-            // Destroy previous route
-            if (previous && previous.id) {
-                body.classList.remove('page-' + previous.id)
-            }
-
-            if (previous && previous.component) {
-                await V.destroy(element);
-            }
-
-            // Route unauthenticated only
-            if (next && next.unauthenticated) {
-                if (isLoggedIn()) {
-                    return V.route.redirect('/queue');
-                }
-            }
-
-            // Route authenticated only
-            if (next && next.authenticated) {
-                if (!isLoggedIn()) {
-                    return V.route.redirect('/login');
-                }
-            }
-
-            // Mount next component
-            if (next && next.id) {
-                body.classList.add('page-' + next.id);
-            }
-
-            if (next && next.component) {
-                element.innerHTML = next.component;
-                await V.mount(element);
-            }
-
-        });
-
-    },
-
-    /**
-     * Trigger initial popstate event
-     */
-    afterRender: function () {
-        V.trigger(window, 'popstate');
+    const isLoggedIn = () => {
+        const expires = localStorage.getItem('expires')
+        return expires && new Date() < new Date(expires)
     }
 
-});
+    Route.beforeChange( (change) => {
+
+        // Kind of 404
+        if (!change.next) {
+            change.next = Route.match('/queue')
+        }
+
+        // Check login
+        if (!isLoggedIn()) {
+            change.next = Route.match('/login')
+        }
+
+    })
+
+    Route.afterChange(async (change) => {
+
+        const previous = change.previous
+        const next = change.next
+        const body = document.body
+
+        // Prevent in case of change to the same URL
+        if (previous && next) {
+            if (previous.path === next.path) {
+                fire('currentViewReload', {})
+                return
+            }
+        }
+
+        // Destroy previous route
+        if (previous && previous.id) {
+            body.classList.remove('page-' + previous.id)
+        }
+
+        if (previous && previous.component) {
+            await destroy(element)
+        }
+
+        // Route unauthenticated only
+        if (next && next.unauthenticated) {
+            if (isLoggedIn()) {
+                return Route.redirect('/queue')
+            }
+        }
+
+        // Route authenticated only
+        if (next && next.authenticated) {
+            if (!isLoggedIn()) {
+                return Route.redirect('/login')
+            }
+        }
+
+        // Mount next component
+        if (next && next.id) {
+            body.classList.add('page-' + next.id)
+        }
+
+        if (next && next.component) {
+            element.innerHTML = next.component
+            await mount(element)
+        }
+
+    })
+
+}
+
+/**
+ * Trigger initial popstate event
+ */
+const onRender: Callback = () => {
+    trigger(window, 'popstate')
+}
+
+register('[data-view]', {
+    onMount,
+    onRender
+})

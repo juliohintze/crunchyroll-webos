@@ -1,45 +1,61 @@
-V.component('[data-dropdown]', {
+import { $, Callback, fire, on, register, trigger } from "../lib/vine"
 
-    /**
-     * On mount
-     */
-    onMount: function (): void {
+/**
+ * On mount
+ * @param component
+ */
+const onMount: Callback = ({ element }) => {
 
-        var self = this;
-        var element = this.element;
-        var input = V.$('input', element);
-        var dropdownValue = V.$('.dropdown-value', element);
+    const input = $('input', element) as HTMLInputElement
+    const dropdownValue = $('.dropdown-value', element) as HTMLElement
 
-        self.on('click', '.dropdown-value', function () {
-            element.classList.add('active');
-            Connector.setActiveElement(V.$('li', element));
-        });
+    const isParentOf = (child: HTMLElement) => {
 
-        self.on('click', 'li', function () {
-            element.classList.remove('active');
-            dropdownValue.innerText = this.innerText;
-            input.value = this.dataset.value;
-            V.trigger(input, 'change');
-        });
-
-        V.on(document.body, 'click', function (e: Event) {
-            if (!(e.target as HTMLElement).closest('[data-vid="' + element.dataset.vid + '"]')) {
-                element.classList.remove('active');
+        while (child) {
+            if( child == element ){
+                return true
             }
-        });
-
-        V.on(window, 'keyup', function () {
-            var active = Connector.getActiveElement();
-            if (!active || !active.closest('[data-vid="' + element.dataset.vid + '"]')) {
-                element.classList.remove('active');
-            }
-        });
-
-        var current = V.$('li[data-value="' + input.value + '"]');
-        if (current) {
-            dropdownValue.innerText = current.innerText;
+            child = child.parentElement
         }
 
+        return false
     }
 
-});
+    on(element, 'click', '.dropdown-value', () => {
+        element.classList.add('active')
+        const firstLi = $('li', element) as HTMLElement
+        fire('setActiveElement', firstLi)
+    })
+
+    on(element, 'click', 'li', function(){
+        element.classList.remove('active')
+        dropdownValue.innerText = this.innerText
+        input.value = this.dataset.value
+        trigger(input, 'change')
+    })
+
+    on(document.body, 'click', (e: Event) => {
+        if (!isParentOf(e.target as HTMLElement)) {
+            element.classList.remove('active')
+        }
+    })
+
+    on(window, 'keyup', () => {
+        const result = { active: HTMLElement = null }
+        fire('getActiveElement', result)
+
+        if (!result.active || !isParentOf(result.active)) {
+            element.classList.remove('active')
+        }
+    })
+
+    const current = $('li[data-value="' + input.value + '"]', element) as HTMLElement
+    if (current) {
+        dropdownValue.innerText = current.innerText
+    }
+
+}
+
+register('[data-dropdown]', {
+    onMount
+})

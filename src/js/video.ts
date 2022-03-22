@@ -1,865 +1,772 @@
-V.route.add({
+import { $, Callback, fire, on, register, Route, Template, watch } from "../lib/vine"
+import { Hls } from "../lib/hls"
+import { Api } from "./api"
+
+let hls = null
+let area: HTMLElement = null
+let video: HTMLVideoElement = null
+let streams = []
+let playing = false
+let trackTimeout = null
+let lastPlayhead = 0
+
+/**
+ * Return template
+ * @param component
+ * @returns
+ */
+const template: Template = async ({ state }) => {
+    return await Api.getTemplate('video', state)
+}
+
+/**
+ * Format time
+ * @param time
+ * @returns
+ */
+const formatTime = (time: number) => {
+
+    if (!time) {
+        time = 0
+    }
+
+    const result = new Date(time * 1000).toISOString().substring(11, 19)
+    const minutes = result.substring(3, 5)
+    const seconds = result.substring(6, 8)
+
+    return {
+        m: minutes,
+        s: seconds
+    }
+}
+
+/**
+ * Show error message
+ * @param message
+ */
+const showError = (message: string) => {
+
+    const error = $('.video-error', area) as HTMLElement
+
+    area.classList.add('video-has-error')
+    error.innerHTML = message
+
+}
+
+/**
+ * Show video
+ */
+const showVideo = async () => {
+
+    const playButton = $('.video-play', area) as HTMLElement
+
+    area.classList.add('video-is-active')
+    fire('setActiveElement', playButton)
+
+}
+
+/**
+ * Hide video
+ */
+const hideVideo = () => {
+
+    area.classList.remove('video-is-active')
+
+    if (document.fullscreenElement) {
+        document.exitFullscreen()
+    }
+
+}
+
+/**
+ * Load video
+ */
+const loadVideo = async () => {
+
+    const serie = $('.video-serie', area) as HTMLElement
+    const title = $('.video-title', area) as HTMLElement
+    const episodeId = Route.getParam('episodeId')
+
+    const fields = [
+        'media.collection_id',
+        'media.episode_number',
+        'media.name',
+        'media.stream_data',
+        'media.media_id',
+        'media.playhead',
+        'media.duration',
+        'media.series_id',
+        'media.series_name'
+    ]
+
+    try {
+
+        const response = await Api.request('POST', '/info', {
+            media_id: episodeId,
+            fields: fields.join(',')
+        })
+
+        if (response.error
+            && response.code == 'bad_session') {
+            await Api.tryLogin()
+            return loadVideo()
+        }
+
+        const episodeNumber = response.data.episode_number
+        const episodeName = response.data.name
+        const serieId = response.data.series_id
+        const serieName = response.data.series_name
+        const collectionId = response.data.collection_id
+
+        serie.innerHTML = serieName + ' / Episode ' + episodeNumber
+        title.innerHTML = episodeName
+
+        let startTime = response.data.playhead || 0
+        let duration = response.data.duration || 0
+
+        if (startTime / duration > 0.90 || startTime < 30) {
+            startTime = 0
+        }
+
+        streams = response.data.stream_data.streams
+        video.currentTime = startTime
+
+        loadClosestEpisodes(serieId, collectionId, episodeNumber)
+
+    } catch (error) {
+        showError(error.message)
+    }
+
+}
+
+/**
+ * Load next and previous episodes
+ * @param serieId
+ * @param collectionId
+ * @param episodeNumber
+ */
+const loadClosestEpisodes = async (
+    serieId: number,
+    collectionId: number,
+    episodeNumber: number
+) => {
+
+    const fields = [
+        'media',
+        'media.name',
+        'media.description',
+        'media.episode_number',
+        'media.duration',
+        'media.playhead',
+        'media.screenshot_image',
+        'media.media_id',
+        'media.series_id',
+        'media.series_name',
+        'media.collection_id',
+        'media.url',
+        'media.free_available'
+    ]
+
+    const offset = Number(episodeNumber) + 1
+    const response = await Api.request('POST', '/list_media', {
+        collection_id: collectionId,
+        sort: 'asc',
+        fields: fields.join(','),
+        limit: 3,
+        offset: (offset >= 0) ? offset : 0
+    })
+
+    const episodes = response.data
+    const next = $('.video-next-episode', area) as HTMLElement
+    const previous = $('.video-previous-episode', area) as HTMLElement
+
+    previous.classList.add('hide')
+    next.classList.add('hide')
+
+    if (episodes.length) {
+
+        const first = episodes[0]
+        const last = (episodes.length == 3) ? episodes[2] : episodes[1]
+
+        if (Number(first.episode_number) < Number(episodeNumber)) {
+            previous.dataset.url = '/serie/' + serieId + '/episode/' + first.media_id + '/video'
+            previous.title = 'Previous Episode - E' + first.episode_number
+            previous.classList.remove('hide')
+        }
+
+        if (Number(last.episode_number) > Number(episodeNumber)) {
+            next.dataset.url = '/serie/' + serieId + '/episode/' + last.media_id + '/video'
+            next.title = 'Next Episode - E' + last.episode_number
+            next.classList.remove('hide')
+        }
+
+    }
+
+}
+
+/**
+ * Stream video
+ */
+const streamVideo = async () => {
+
+    const currentTime = video.currentTime || 0
+
+    if (!streams.length) {
+        throw Error('No streams to load.')
+    }
+
+    let stream = streams.find((item: any) => {
+        return item.quality == 'adaptive'
+    })
+
+    if (!stream) {
+        stream = [streams.length - 1]
+    }
+
+    const proxy = document.body.dataset.proxy
+    if (proxy) {
+        stream.url = proxy + encodeURI(stream.url)
+    }
+
+    area.classList.add('video-is-loading')
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+
+        area.classList.remove('video-is-loading')
+        area.classList.add('video-is-loaded')
+
+        video.src = stream.url
+        video.currentTime = currentTime
+
+        return
+    }
+
+    return await new Promise((resolve) => {
+
+        if (!Hls.isSupported()) {
+            throw Error('Video format not supported.')
+        }
+
+        hls = new Hls({
+            autoStartLoad: false,
+            startLevel: -1, // auto
+            maxBufferLength: 15, // 15s
+            backBufferLength: 15, // 15s
+            maxBufferSize: 30 * 1000 * 1000, // 30MB
+            maxFragLookUpTolerance: 0.2,
+            nudgeMaxRetry: 10
+        })
+
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+            hls.loadSource(stream.url)
+        })
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            hls.startLoad(currentTime)
+        })
+
+        hls.on(Hls.Events.LEVEL_LOADED, () => {
+            area.classList.remove('video-is-loading')
+            area.classList.add('video-is-loaded')
+        })
+
+        hls.on(Hls.Events.LEVEL_SWITCHED, () => {
+
+            let level = hls.currentLevel
+            let next = $('.video-quality div[data-level="' + level + '"]', area) as HTMLElement
+            let active = $('.video-quality div.active', area) as HTMLElement
+
+            if (!next) {
+                next = $('.video-quality div[data-level="-1"]', area) as HTMLElement
+            }
+
+            active.classList.remove('active')
+            next.classList.add('active')
+
+        })
+
+        hls.once(Hls.Events.FRAG_LOADED, () => {
+            resolve(null)
+        })
+
+        hls.on(Hls.Events.ERROR, (_event: Event, data: any) => {
+
+            if (!data.fatal) {
+                return
+            }
+
+            switch (data.type) {
+                case Hls.ErrorTypes.OTHER_ERROR:
+                    hls.startLoad()
+                break
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                    if (data.details == 'manifestLoadError') {
+                        showError('Episode cannot be played because of CORS error. You must use a proxy.')
+                    } else {
+                        hls.startLoad()
+                    }
+                break
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                    showError('Media error: trying recovery...')
+                    hls.recoverMediaError()
+                break
+                default:
+                    showError('Media cannot be recovered: ' + data.details)
+                    hls.destroy()
+                break
+            }
+
+        })
+
+        hls.attachMedia(video)
+
+    })
+}
+
+/**
+ * Play video
+ */
+const playVideo = async () => {
+
+    try {
+        await video.play()
+    } catch (err) {
+    }
+
+    area.classList.remove('video-is-paused')
+    area.classList.add('video-is-playing')
+
+    playing = true
+    trackProgress()
+
+}
+
+/**
+ * Pause video
+ */
+const pauseVideo = () => {
+
+    video.pause()
+    area.classList.remove('video-is-playing')
+    area.classList.add('video-is-paused')
+
+    playing = false
+    stopTrackProgress()
+
+}
+
+/**
+ * Stop video
+ */
+const stopVideo = () => {
+    pauseVideo()
+    skipAhead(0)
+}
+
+/**
+ * Toggle video
+ */
+const toggleVideo = () => {
+    if (playing) {
+        pauseVideo()
+    } else {
+        playVideo()
+    }
+}
+
+/**
+ * Forward video
+ * @param seconds
+ */
+const forwardVideo = (seconds: number) => {
+    skipAhead(video.currentTime + seconds)
+}
+
+/**
+ * Backward video
+ * @param seconds
+ */
+const backwardVideo = (seconds: number) => {
+    skipAhead(video.currentTime - seconds)
+}
+
+/**
+ * Skip ahead video
+ * @param skipTo
+ */
+const skipAhead = (skipTo: number) => {
+
+    if (!skipTo) {
+        return
+    }
+
+    const seek = $('input[type="range"]', area) as HTMLInputElement
+    const progress = $('progress', area) as HTMLProgressElement
+
+    video.currentTime = skipTo
+    seek.value = String(skipTo)
+    progress.value = skipTo
+
+}
+
+/**
+ * Toggle full screen mode
+ */
+const toggleFullScreen = () => {
+
+    if (document.fullscreenElement) {
+        document.exitFullscreen()
+    } else {
+        area.requestFullscreen().catch(() => { })
+    }
+
+}
+
+/**
+ * Update seek tooltip text and position
+ * @param event
+ */
+const updateSeekTooltip = (event: MouseEvent) => {
+
+    const tooltip = $('.tooltip', area) as HTMLElement
+    const seek = $('input[type="range"]', area) as HTMLInputElement
+    const target = event.target as HTMLElement
+    const bcr = target.getBoundingClientRect()
+
+    let offsetX = event.offsetX
+    let pageX = event.pageX
+    if (window.TouchEvent && event instanceof TouchEvent) {
+        offsetX = event.targetTouches[0].clientX - bcr.x
+        pageX = event.targetTouches[0].pageX
+    }
+
+    let max = Number(seek.max)
+    let skipTo = Math.round(
+        (offsetX / target.clientWidth)
+        * parseInt(target.getAttribute('max'), 10)
+    )
+
+    if (skipTo > max) {
+        skipTo = max
+    }
+
+    const format = formatTime(skipTo)
+
+    seek.dataset.seek = String(skipTo)
+    tooltip.textContent = format.m + ':' + format.s
+    tooltip.style.left = pageX + 'px'
+
+}
+
+/**
+ * Update video duration
+ */
+const updateDuration = () => {
+
+    const duration = $('.duration', area) as HTMLElement
+    const seek = $('input[type="range"]', area) as HTMLInputElement
+    const progress = $('progress', area) as HTMLProgressElement
+
+    const time = Math.round(video.duration)
+    const format = formatTime(time)
+
+    duration.innerText = format.m + ':' + format.s
+    duration.setAttribute('datetime', format.m + 'm ' + format.s + 's')
+
+    seek.setAttribute('max', String(time))
+    progress.setAttribute('max', String(time))
+
+}
+
+/**
+ * Update video time elapsed
+ */
+const updateTimeElapsed = () => {
+
+    const elapsed = $('.elapsed', area) as HTMLElement
+    const time = Math.round(video.currentTime)
+    const format = formatTime(time)
+
+    elapsed.innerText = format.m + ':' + format.s
+    elapsed.setAttribute('datetime', format.m + 'm ' + format.s + 's')
+
+}
+
+/**
+ * Update video progress
+ */
+const updateProgress = () => {
+
+    const seek = $('input[type="range"]', area) as HTMLInputElement
+    const progress = $('progress', area) as HTMLProgressElement
+
+    seek.value = String(Math.floor(video.currentTime))
+    progress.value = Math.floor(video.currentTime)
+
+}
+
+/**
+ * Start progress tracking
+ */
+const trackProgress = () => {
+
+    if (trackTimeout) {
+        stopTrackProgress()
+    }
+
+    trackTimeout = window.setTimeout(() => {
+        updatePlaybackStatus()
+    }, 15000) // 15s
+
+}
+
+/**
+ * Stop progress tracking
+ */
+const stopTrackProgress = () => {
+    if (trackTimeout) {
+        window.clearTimeout(trackTimeout)
+    }
+}
+
+/**
+ * Update playback status at Crunchyroll
+ */
+const updatePlaybackStatus = async () => {
+
+    const episodeId = Route.getParam('episodeId')
+    const elapsed = 15
+    const elapsedDelta = 15
+    const playhead = video.currentTime
+
+    if (playhead != lastPlayhead) {
+        await Api.request('POST', '/log', {
+            event: 'playback_status',
+            media_id: episodeId,
+            playhead: playhead,
+            elapsed: elapsed,
+            elapsedDelta: elapsedDelta
+        })
+    }
+
+    lastPlayhead = playhead
+    trackProgress()
+
+}
+
+/**
+ * Set video as watched at Crunchyroll
+ */
+const setWatched = async () => {
+
+    const episodeId = Route.getParam('episodeId')
+    const duration = Math.floor(video.duration)
+    const playhead = Math.floor(video.currentTime)
+    const elapsed = duration - playhead
+    const elapsedDelta = duration - playhead
+
+    await Api.request('POST', '/log', {
+        event: 'playback_status',
+        media_id: episodeId,
+        playhead: duration,
+        elapsed: elapsed,
+        elapsedDelta: elapsedDelta
+    })
+
+    stopTrackProgress()
+
+}
+
+/**
+ * On mount
+ * @param component
+ */
+const onMount: Callback = ({ element, render }) => {
+
+    const serieId = Route.getParam('serieId')
+    let controlsTimeout = null
+    area = element
+
+    // UI Events
+    on(element, 'click', '.video-close', (e: Event) => {
+        e.preventDefault()
+        pauseVideo()
+        hideVideo()
+        Route.redirect('/home')
+    })
+
+    on(element, 'click', '.video-watched', (e: Event) => {
+        e.preventDefault()
+        setWatched()
+    })
+
+    on(element, 'click', '.video-episodes', (e: Event) => {
+        e.preventDefault()
+        pauseVideo()
+        hideVideo()
+        Route.redirect('/serie/' + serieId)
+    })
+
+    on(element, 'click', '.video-previous-episode', function (e: Event) {
+        Route.redirect(this.dataset.url)
+        e.preventDefault()
+        pauseVideo()
+        render()
+    })
+
+    on(element, 'click', '.video-next-episode', function (e: Event) {
+        Route.redirect(this.dataset.url)
+        e.preventDefault()
+        pauseVideo()
+        render()
+    })
+
+    on(element, 'click', '.video-fullscreen', (e: Event) => {
+        e.preventDefault()
+        toggleFullScreen()
+    })
+
+    on(element, 'click', '.video-pause', (e: Event) => {
+        e.preventDefault()
+        pauseVideo()
+    })
+
+    on(element, 'click', '.video-play', (e: Event) => {
+        e.preventDefault()
+        playVideo()
+    })
+
+    on(element, 'click', '.video-reload', (e: Event) => {
+        e.preventDefault()
+        pauseVideo()
+        render()
+    })
+
+    on(element, 'click', '.video-forward', (e: Event) => {
+        e.preventDefault()
+        forwardVideo(5)
+    })
+
+    on(element, 'click', '.video-backward', (e: Event) => {
+        e.preventDefault()
+        backwardVideo(5)
+    })
+
+    on(element, 'click', '.video-skip-intro', (e: Event) => {
+        e.preventDefault()
+        forwardVideo(80)
+    })
+
+    // Quality
+    on(element, 'click', '.video-quality div', function (e: Event) {
+
+        e.preventDefault()
+        const level = Number(this.dataset.level)
+
+        if (hls) {
+            hls.currentLevel = level
+            hls.loadLevel = level
+        }
+
+    })
+
+    // Mouse Events
+    on(element, 'mouseenter mousemove', function () {
+
+        element.classList.add('show-controls')
+
+        if (controlsTimeout) {
+            window.clearTimeout(controlsTimeout)
+        }
+
+        controlsTimeout = window.setTimeout(() => {
+            element.classList.remove('show-controls')
+        }, 2000) // 2s
+
+    })
+
+    on(element, 'mouseleave', function () {
+        element.classList.remove('show-controls')
+    })
+
+    on(element, 'mousemove touchmove', 'input[type="range"]', (e: MouseEvent) => {
+        updateSeekTooltip(e)
+    })
+
+    on(element, 'click input', 'input[type="range"]', (e: Event) => {
+        skipAhead(Number((e.target as HTMLElement).dataset.seek))
+    })
+
+    // Public
+    watch('playVideo', playVideo)
+    watch('pauseVideo', pauseVideo)
+    watch('stopVideo', stopVideo)
+    watch('toggleVideo', toggleVideo)
+    watch('forwardVideo', forwardVideo)
+    watch('backwardVideo', backwardVideo)
+
+}
+
+/**
+ * On render
+ * @param component
+ */
+const onRender: Callback = async ({ element }) => {
+
+    element.classList.remove('video-has-error')
+    element.classList.remove('video-is-active')
+    element.classList.remove('video-is-loading')
+    element.classList.remove('video-is-loaded')
+    element.classList.remove('video-is-playing')
+    element.classList.remove('video-is-paused')
+
+    window.setTimeout(async () => {
+
+        video = $('video', element) as HTMLVideoElement
+        video.controls = false
+
+        video = video
+        playing = false
+
+        // Video Events
+        on(video, 'click', (e: Event) => {
+            e.preventDefault()
+            toggleVideo()
+        })
+
+        on(video, 'timeupdate', () => {
+            updateDuration()
+            updateTimeElapsed()
+            updateProgress()
+        })
+
+        fire('showLoading')
+
+        try {
+            await loadVideo()
+            await streamVideo()
+            await showVideo()
+            await playVideo()
+        } catch (error) {
+            showError(error.message)
+        }
+
+        fire('hideLoading')
+
+    }, 500)
+
+}
+
+register('[data-video]', {
+    template,
+    onMount,
+    onRender
+})
+
+Route.add({
     id: 'video',
     path: '/serie/:serieId/episode/:episodeId/video',
     title: 'Episode Video',
     component: '<div data-video></div>',
     authenticated: true
-});
-
-V.component('[data-video]', {
-
-    /**
-     * HLS instance
-     * @var {Hls}
-     */
-    hls: null,
-
-    /**
-     * Streams data
-     * @var {Array}
-     */
-    streams: [],
-
-    /**
-     * Return template data
-     * @returns
-     */
-    template: async function () {
-        return await Connector.getTemplate('video');
-    },
-
-    /**
-     * On mount
-     */
-    onMount: function () {
-
-        var self = this;
-        var element = this.element;
-        var serieId = V.route.active().param('serieId');
-        var controlsTimeout = null;
-
-        // UI Events
-        self.on('click', '.video-close', function (e: Event) {
-            e.preventDefault();
-            self.pauseVideo();
-            self.hideVideo();
-            V.route.redirect('/home');
-        });
-
-        self.on('click', '.video-watched', function (e: Event) {
-            e.preventDefault();
-            self.setWatched();
-        });
-
-        self.on('click', '.video-episodes', function (e: Event) {
-            e.preventDefault();
-            self.pauseVideo();
-            self.hideVideo();
-            V.route.redirect('/serie/' + serieId);
-        });
-
-        self.on('click', '.video-previous-episode', function (e: Event) {
-
-            e.preventDefault();
-            V.route.redirect(this.dataset.url);
-
-            self.pauseVideo();
-            self.render();
-
-        });
-
-        self.on('click', '.video-next-episode', function (e: Event) {
-
-            e.preventDefault();
-            V.route.redirect(this.dataset.url);
-
-            self.pauseVideo();
-            self.render();
-
-        });
-
-        self.on('click', '.video-fullscreen', function (e: Event) {
-            e.preventDefault();
-            self.toggleFullScreen();
-        });
-
-        self.on('click', '.video-pause', function (e: Event) {
-            e.preventDefault();
-            self.pauseVideo();
-        });
-
-        self.on('click', '.video-play', function (e: Event) {
-            e.preventDefault();
-            self.playVideo();
-        });
-
-        self.on('click', '.video-reload', function (e: Event) {
-            e.preventDefault();
-            self.pauseVideo();
-            self.render();
-        });
-
-        self.on('click', '.video-forward', function (e: Event) {
-            e.preventDefault();
-            self.forwardVideo(5);
-        });
-
-        self.on('click', '.video-backward', function (e: Event) {
-            e.preventDefault();
-            self.backwardVideo(5);
-        });
-
-        self.on('click', '.video-skip-intro', function (e: Event) {
-            e.preventDefault();
-            self.forwardVideo(80);
-        });
-
-        // Quality
-        self.on('click', '.video-quality div', function (e: Event) {
-
-            e.preventDefault();
-            var level = Number(this.dataset.level);
-
-            if (self.hls) {
-                self.hls.currentLevel = level;
-                self.hls.loadLevel = level;
-            }
-
-        });
-
-        // Mouse Events
-        V.on(element, 'mouseenter mousemove', function () {
-
-            element.classList.add('show-controls');
-
-            if (controlsTimeout) {
-                window.clearTimeout(controlsTimeout);
-            }
-
-            controlsTimeout = window.setTimeout(function () {
-                element.classList.remove('show-controls');
-            }, 2000); // 2s
-
-        });
-
-        V.on(element, 'mouseleave', function () {
-            element.classList.remove('show-controls');
-        });
-
-        V.on(element, 'mousemove touchmove', 'input[type="range"]', function (e: Event) {
-            self.updateSeekTooltip(e);
-        });
-
-        self.on('click input', 'input[type="range"]', function (e: Event) {
-            self.skipAhead((e.target as HTMLElement).dataset.seek);
-        });
-
-        // Public
-        Connector.playVideo = function () {
-            return self.playVideo();
-        };
-        Connector.pauseVideo = function () {
-            return self.pauseVideo();
-        };
-        Connector.stopVideo = function () {
-            return self.stopVideo();
-        };
-        Connector.toggleVideo = function () {
-            return self.toggleVideo();
-        }
-        Connector.forwardVideo = function (seconds: number) {
-            return self.forwardVideo(seconds);
-        }
-        Connector.backwardVideo = function (seconds: number) {
-            return self.backwardVideo(seconds);
-        }
-
-    },
-
-    /**
-     * After render
-     */
-    afterRender: async function () {
-
-        var self = this;
-        var element = self.element;
-
-        element.classList.remove('video-has-error');
-        element.classList.remove('video-is-active');
-        element.classList.remove('video-is-loading');
-        element.classList.remove('video-is-loaded');
-        element.classList.remove('video-is-playing');
-        element.classList.remove('video-is-paused');
-
-        window.setTimeout(async function () {
-
-            var video = V.$('video', self.element);
-            video.controls = false;
-
-            self.video = video;
-            self.playing = false;
-
-            // Video Events
-            V.on(video, 'click', function (e: Event) {
-                e.preventDefault();
-                self.toggleVideo();
-            });
-
-            V.on(video, 'timeupdate', function () {
-                self.updateDuration();
-                self.updateTimeElapsed();
-                self.updateProgress();
-            });
-
-            Connector.showLoading();
-
-            try {
-                await self.loadVideo();
-                await self.streamVideo();
-                await self.showVideo();
-                await self.playVideo();
-            } catch (error) {
-                self.showError(error.message);
-            }
-
-            Connector.hideLoading();
-
-        }, 500);
-
-    },
-
-    /**
-     * Format time
-     * @param time
-     * @returns
-     */
-    formatTime: function (time: number) {
-
-        if( !time ){
-            time = 0;
-        }
-
-        var result = new Date(time * 1000).toISOString().substring(11, 19);
-        var minutes = result.substring(3, 5);
-        var seconds = result.substring(6, 8);
-
-        return {
-            m: minutes,
-            s: seconds
-        }
-    },
-
-    /**
-     * Show error message
-     * @param message
-     */
-    showError: function (message: string) {
-
-        var self = this;
-        var element = self.element;
-        var error = V.$('.video-error', element);
-
-        element.classList.add('video-has-error');
-        error.innerHTML = message;
-
-    },
-
-    /**
-     * Show video
-     */
-    showVideo: function () {
-
-        var self = this;
-        var element = self.element;
-        var playButton = V.$('.video-play', element);
-
-        element.classList.add('video-is-active');
-        Connector.setActiveElement(playButton);
-
-    },
-
-    /**
-     * Hide video
-     */
-    hideVideo: function () {
-
-        var self = this;
-        var element = self.element;
-
-        element.classList.remove('video-is-active');
-
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        }
-
-    },
-
-    /**
-     * Load video
-     */
-    loadVideo: async function () {
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-        var serie = V.$('.video-serie', element);
-        var title = V.$('.video-title', element);
-        var episodeId = V.route.active().param('episodeId');
-
-        var fields = [
-            'media.collection_id',
-            'media.episode_number',
-            'media.name',
-            'media.stream_data',
-            'media.media_id',
-            'media.playhead',
-            'media.duration',
-            'media.series_id',
-            'media.series_name'
-        ];
-
-        try {
-
-            var response = await Api.request('POST', '/info', {
-                media_id: episodeId,
-                fields: fields.join(',')
-            });
-
-            if (response.error
-                && response.code == 'bad_session') {
-                return Api.tryLogin().then(function () {
-                    self.loadVideo();
-                });
-            }
-
-            var episodeNumber = response.data.episode_number;
-            var episodeName = response.data.name;
-            var serieId = response.data.series_id;
-            var serieName = response.data.series_name;
-            var collectionId = response.data.collection_id;
-
-            serie.innerHTML = serieName + ' / Episode ' + episodeNumber;
-            title.innerHTML = episodeName;
-
-            var streams = response.data.stream_data.streams;
-            var startTime = response.data.playhead || 0;
-            var duration = response.data.duration || 0;
-
-            if (startTime / duration > 0.90 || startTime < 30) {
-                startTime = 0;
-            }
-
-            self.streams = streams;
-            video.currentTime = startTime;
-
-            self.loadClosestEpisodes(serieId, collectionId, episodeNumber);
-
-        } catch (error) {
-            self.showError(error.message);
-        }
-
-    },
-
-    /**
-     * Load next and previous episodes
-     * @param serieId
-     * @param collectionId
-     * @param episodeNumber
-     */
-    loadClosestEpisodes: async function (serieId: number, collectionId: number, episodeNumber: number) {
-
-        var self = this;
-        var fields = [
-            'media',
-            'media.name',
-            'media.description',
-            'media.episode_number',
-            'media.duration',
-            'media.playhead',
-            'media.screenshot_image',
-            'media.media_id',
-            'media.series_id',
-            'media.series_name',
-            'media.collection_id',
-            'media.url',
-            'media.free_available'
-        ];
-
-        var offset = Number(episodeNumber) + 1
-        var response = await Api.request('POST', '/list_media', {
-            collection_id: collectionId,
-            sort: 'asc',
-            fields: fields.join(','),
-            limit: 3,
-            offset: (offset >= 0) ? offset : 0
-        });
-
-        var episodes = response.data;
-        var element = self.element;
-        var next = V.$('.video-next-episode', element);
-        var previous = V.$('.video-previous-episode', element);
-
-        previous.classList.add('hide');
-        next.classList.add('hide');
-
-        if (episodes.length) {
-
-            var first = episodes[0];
-            var last = (episodes.length == 3) ? episodes[2] : episodes[1];
-
-            if (Number(first.episode_number) < Number(episodeNumber)) {
-                previous.dataset.url = '/serie/' + serieId + '/episode/' + first.media_id + '/video';
-                previous.title = 'Previous Episode - E' + first.episode_number;
-                previous.classList.remove('hide');
-            }
-
-            if (Number(last.episode_number) > Number(episodeNumber)) {
-                next.dataset.url = '/serie/' + serieId + '/episode/' + last.media_id + '/video';
-                next.title = 'Next Episode - E' + last.episode_number;
-                next.classList.remove('hide');
-            }
-
-        }
-
-    },
-
-    /**
-     * Stream video
-     */
-    streamVideo: async function () {
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-        var currentTime = video.currentTime || 0;
-
-        var streams = self.streams;
-        if (!streams.length) {
-            throw Error('No streams to load.');
-        }
-
-        var stream = streams.find(function (item: any) {
-            return item.quality == 'adaptive';
-        });
-
-        if (!stream) {
-            stream = [streams.length - 1];
-        }
-
-        var proxy = document.body.dataset.proxy;
-        if (proxy) {
-            stream.url = proxy + encodeURI(stream.url);
-        }
-
-        element.classList.add('video-is-loading');
-
-        if (video.canPlayType('application/vnd.apple.mpegurl')) {
-
-            element.classList.remove('video-is-loading');
-            element.classList.add('video-is-loaded');
-
-            video.src = stream.url;
-            video.currentTime = currentTime;
-
-            return;
-        }
-
-        return await new Promise(function (resolve) {
-
-            if (!Hls.isSupported()) {
-                throw Error('Video format not supported.');
-            }
-
-            var hls = new Hls({
-                autoStartLoad: false,
-                startLevel: -1, // auto
-                maxBufferLength: 15, // 15s
-                backBufferLength: 15, // 15s
-                maxBufferSize: 30 * 1000 * 1000, // 30MB
-                maxFragLookUpTolerance: 0.2,
-                nudgeMaxRetry: 10
-            });
-
-            hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-                hls.loadSource(stream.url);
-            });
-
-            hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                hls.startLoad(currentTime);
-            });
-
-            hls.on(Hls.Events.LEVEL_LOADED, function () {
-                element.classList.remove('video-is-loading');
-                element.classList.add('video-is-loaded');
-            });
-
-            hls.on(Hls.Events.LEVEL_SWITCHED, function () {
-
-                var level = hls.currentLevel;
-                var next = V.$('.video-quality div[data-level="' + level + '"]');
-
-                if (!next) {
-                    next = V.$('.video-quality div[data-level="-1"]');
-                }
-
-                V.$('.video-quality div.active').classList.remove('active');
-                next.classList.add('active');
-
-            });
-
-            hls.once(Hls.Events.FRAG_LOADED, function () {
-                resolve({});
-            });
-
-            hls.on(Hls.Events.ERROR, function (_event, data) {
-
-                if (!data.fatal) {
-                    return;
-                }
-
-                switch (data.type) {
-                    case Hls.ErrorTypes.OTHER_ERROR:
-                        //hls.startLoad();
-                        break;
-                    case Hls.ErrorTypes.NETWORK_ERROR:
-
-                        if (data.details == 'manifestLoadError') {
-                            self.showError('Episode cannot be played because of CORS error. You must use a proxy.');
-                        } else {
-                            hls.startLoad();
-                        }
-
-                        break;
-                    case Hls.ErrorTypes.MEDIA_ERROR:
-
-                        self.showError('Media error: trying recovery...');
-                        hls.recoverMediaError();
-
-                        break;
-                    default:
-
-                        self.showError('Media cannot be recovered: ' + data.details);
-                        hls.destroy();
-
-                        break;
-                }
-
-            });
-
-            hls.attachMedia(video);
-            self.hls = hls;
-
-        });
-    },
-
-    /**
-     * Play video
-     */
-    playVideo: async function () {
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-
-        try {
-            await video.play();
-        } catch (err) {
-        }
-
-        element.classList.remove('video-is-paused');
-        element.classList.add('video-is-playing');
-
-        self.playing = true;
-        self.trackProgress();
-
-    },
-
-    /**
-     * Pause video
-     */
-    pauseVideo: function () {
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-
-        video.pause();
-        element.classList.remove('video-is-playing');
-        element.classList.add('video-is-paused');
-
-        self.playing = false;
-        self.stopTrackProgress();
-
-    },
-
-    /**
-     * Stop video
-     */
-    stopVideo: function () {
-
-        var self = this;
-
-        self.pauseVideo();
-        self.skipAhead(0);
-
-    },
-
-    /**
-     * Toggle video
-     */
-    toggleVideo: function () {
-
-        var self = this;
-
-        if (self.playing) {
-            self.pauseVideo();
-        } else {
-            self.playVideo();
-        }
-
-    },
-
-    /**
-     * Forward video
-     * @param seconds
-     */
-    forwardVideo: function (seconds: number) {
-
-        var self = this;
-        var video = self.video;
-
-        self.skipAhead(video.currentTime + seconds);
-
-    },
-
-    /**
-     * Backward video
-     * @param seconds
-     */
-    backwardVideo: function (seconds: number) {
-
-        var self = this;
-        var video = self.video;
-
-        self.skipAhead(video.currentTime - seconds);
-
-    },
-
-    /**
-     * Skip ahead video
-     * @param skipTo
-     */
-    skipAhead: function (skipTo: number) {
-
-        if (!skipTo) {
-            return;
-        }
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-        var seek = V.$('input[type="range"]', element);
-        var progress = V.$('progress', element);
-
-        video.currentTime = skipTo;
-        seek.value = skipTo;
-        progress.value = skipTo;
-
-    },
-
-    /**
-     * Toggle full screen mode
-     */
-    toggleFullScreen: function () {
-
-        var self = this;
-        var element = self.element;
-
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        } else {
-            element.requestFullscreen().catch(function () { });
-        }
-
-    },
-
-    /**
-     * Update seek tooltip text and position
-     * @param event
-     */
-    updateSeekTooltip: function (event: MouseEvent) {
-
-        var self = this;
-        var element = self.element;
-        var tooltip = V.$('.tooltip', element);
-        var seek = V.$('input[type="range"]', element);
-        var target = event.target as HTMLElement;
-        var bcr = target.getBoundingClientRect();
-        var offsetX = event.offsetX;
-        var pageX = event.pageX;
-
-        if (window.TouchEvent && event instanceof TouchEvent) {
-            offsetX = event.targetTouches[0].clientX - bcr.x;
-            pageX = event.targetTouches[0].pageX;
-        }
-
-        var max = Number(seek.max);
-        var skipTo = Math.round(
-            (offsetX / target.clientWidth)
-            * parseInt(target.getAttribute('max'), 10)
-        );
-
-        if (skipTo > max) {
-            skipTo = max;
-        }
-
-        var format = self.formatTime(skipTo);
-
-        seek.dataset.seek = skipTo;
-        tooltip.textContent = format.m + ':' + format.s;
-        tooltip.style.left = pageX + 'px';
-
-    },
-
-    /**
-     * Update video duration
-     */
-    updateDuration: function () {
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-        var duration = V.$('.duration', element);
-        var seek = V.$('input[type="range"]', element);
-        var progress = V.$('progress', element);
-
-        var time = Math.round(video.duration);
-        var format = self.formatTime(time);
-
-        duration.innerText = format.m + ':' + format.s;
-        duration.setAttribute('datetime', format.m + 'm ' + format.s + 's');
-
-        seek.setAttribute('max', time);
-        progress.setAttribute('max', time);
-
-    },
-
-    /**
-     * Update video time elapsed
-     */
-    updateTimeElapsed: function () {
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-        var elapsed = V.$('.elapsed', element);
-
-        var time = Math.round(video.currentTime);
-        var format = self.formatTime(time);
-
-        elapsed.innerText = format.m + ':' + format.s;
-        elapsed.setAttribute('datetime', format.m + 'm ' + format.s + 's');
-
-    },
-
-    /**
-     * Update video progress
-     */
-    updateProgress: function () {
-
-        var self = this;
-        var element = self.element;
-        var video = self.video;
-        var seek = V.$('input[type="range"]', element);
-        var progress = V.$('progress', element);
-
-        seek.value = Math.floor(video.currentTime);
-        progress.value = Math.floor(video.currentTime);
-
-    },
-
-    /**
-     * Start progress tracking
-     */
-    trackProgress: function () {
-
-        var self = this;
-
-        if (self.trackTimeout) {
-            self.stopTrackProgress();
-        }
-
-        self.trackTimeout = window.setTimeout(function () {
-            self.updatePlaybackStatus();
-        }, 15000); // 15s
-
-    },
-
-    /**
-     * Stop progress tracking
-     */
-    stopTrackProgress: function () {
-
-        var self = this;
-
-        if (self.trackTimeout) {
-            window.clearTimeout(self.trackTimeout);
-        }
-
-    },
-
-    /**
-     * Update playback status at Crunchyroll
-     */
-    updatePlaybackStatus: async function () {
-
-        var self = this;
-        var video = self.video;
-        var episodeId = V.route.active().param('episodeId');
-
-        var elapsed = 15;
-        var elapsedDelta = 15;
-        var playhead = video.currentTime;
-
-        if (playhead != self.lastPlayhead) {
-            await Api.request('POST', '/log', {
-                event: 'playback_status',
-                media_id: episodeId,
-                playhead: playhead,
-                elapsed: elapsed,
-                elapsedDelta: elapsedDelta
-            });
-        }
-
-        self.lastPlayhead = playhead;
-        self.trackProgress();
-
-    },
-
-    /**
-     * Set video as watched at Crunchyroll
-     */
-    setWatched: async function () {
-
-        var self = this;
-        var video = self.video;
-        var episodeId = V.route.active().param('episodeId');
-
-        var duration = Math.floor(video.duration);
-        var playhead = Math.floor(video.currentTime);
-        var elapsed = duration - playhead;
-        var elapsedDelta = duration - playhead;
-
-        await Api.request('POST', '/log', {
-            event: 'playback_status',
-            media_id: episodeId,
-            playhead: duration,
-            elapsed: elapsed,
-            elapsedDelta: elapsedDelta
-        });
-
-        self.stopTrackProgress();
-
-    }
-
-});
+})
