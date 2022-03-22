@@ -10,9 +10,6 @@
             "DOM"
         ]
     },
-    "files": [
-        "./types/index.d.ts"
-    ],
     "exclude": [
         "node_modules",
         "com.crunchyroll.webos"
