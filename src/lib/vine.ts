@@ -7,7 +7,7 @@ declare global {
 }
 
 export const __version = "2.0.1"
-declare type Selectable = HTMLElement | Element | Document
+declare type Selectable = HTMLElement | Document
 declare type Context = string | Selectable
 
 /**
@@ -15,10 +15,10 @@ declare type Context = string | Selectable
  * @param context
  * @returns
  */
-function getContext(context?: Context): Selectable {
+function getContext(context?: Context) {
     context = (typeof context === 'string') ? $(context) : context
     context = (context instanceof Node) ? context : document
-    return context
+    return context as Selectable
 }
 
 /**
@@ -27,8 +27,8 @@ function getContext(context?: Context): Selectable {
  * @param context
  * @returns
  */
-function $(selector: string, context?: Context): Selectable {
-    return getContext(context).querySelector(selector)
+function $(selector: string, context?: Context) {
+    return getContext(context).querySelector(selector) as Selectable
 }
 
 /**
@@ -67,7 +67,9 @@ declare interface Trigger {
     callback: Function
 }
 
-let _events: Array<Trigger> = []
+declare interface WithEvents extends EventTarget {
+    __events?: Array<Trigger>
+}
 
 /**
  * Attach event to element
@@ -81,7 +83,7 @@ function _event(
     action: "add" | "remove",
     element: any,
     event: string,
-    selector: string | Function,
+    selector?: string | Function,
     callback?: Function
 ) {
 
@@ -95,11 +97,16 @@ function _event(
         return
     }
 
-    const items = element instanceof Window ? [element] : $$(element)
     let handler: Function
 
     // Determine handler
-    if (callback === undefined) {
+    if (callback === undefined && selector === undefined) {
+
+        // None
+        handler = null
+        selector = null
+
+    } else if (callback === undefined) {
 
         // Bind
         handler = <Function>selector
@@ -120,46 +127,59 @@ function _event(
     const split = event.split('.')
     const theEvent = split.shift()
     const namespace = split.join('.')
+    const items: Array<WithEvents> = element instanceof Window ? [element] : $$(element)
 
-    if (action === 'add') {
+    if (action === 'add' && typeof handler === 'function') {
 
-        _events.push({
-            event: theEvent,
-            namespace: namespace,
-            callback: handler
-        })
+        for (const item of items) {
 
-        items.forEach((item: Node | Window) => {
+            if (!item.__events) {
+                item.__events = []
+            }
+
+            item.__events.push({
+                event: theEvent,
+                namespace: namespace,
+                callback: handler
+            })
+
             item.addEventListener(
                 theEvent,
                 handler.bind(item),
                 false
             )
-        })
 
-        return handler
-    }
-
-    _events = _events.filter((watcher) => {
-
-        const pass = Boolean(
-            theEvent !== watcher.event
-            && (namespace === '' || namespace !== watcher.namespace)
-            && (typeof handler !== 'function' || handler !== watcher.callback)
-        )
-
-        if (!pass) {
-            items.forEach((item: Node | Window) => {
-                item.removeEventListener(
-                    watcher.event,
-                    watcher.callback.bind(item),
-                    false
-                )
-            })
         }
 
-        return pass
-    })
+    } else if (action === 'remove') {
+
+        for (const item of items) {
+
+            if (!item.__events) {
+                return
+            }
+
+            item.__events = item.__events.filter((watcher) => {
+                const pass = Boolean(
+                    theEvent !== watcher.event
+                    && (namespace === '' || namespace !== watcher.namespace)
+                    && (typeof handler !== 'function' || handler !== watcher.callback)
+                )
+
+                if (!pass) {
+                    item.removeEventListener(
+                        watcher.event,
+                        watcher.callback.bind(item),
+                        false
+                    )
+                }
+
+                return pass
+            })
+
+        }
+
+    }
 
     return handler
 }
@@ -182,7 +202,7 @@ function on(element: any, event: string, selector: string | Function, callback?:
  * @param selector
  * @param callback
  */
-function off(element: any, event: string, selector: string | Function, callback?: Function) {
+function off(element: any, event: string, selector?: string | Function, callback?: Function) {
     return _event('remove', element, event, selector, callback)
 }
 
@@ -203,9 +223,9 @@ function trigger(element: any, event: string, selector?: string) {
         'cancelable': true
     })
 
-    items.forEach((item: Node | Window) => {
+    for (const item of items) {
         item.dispatchEvent(theEvent)
-    })
+    }
 
 }
 
@@ -287,7 +307,7 @@ declare type Definition = {
     onDestroy: Callback
 }
 
-declare interface WithComponents extends Element {
+declare interface WithComponents extends HTMLElement {
     __components?: Record<string, Component>
 }
 
@@ -423,7 +443,7 @@ async function render(component: Component, callback: Callback) {
  * Mount components on given target element
  * @param target
  */
-async function mount(target: Element) {
+async function mount(target: HTMLElement) {
 
     for (const definition of _definitions) {
 
@@ -487,7 +507,7 @@ async function mount(target: Element) {
  * Destroy components on given target element
  * @param target
  */
-async function destroy(target: Element) {
+async function destroy(target: HTMLElement) {
 
     for (const definition of _definitions) {
 
@@ -518,7 +538,7 @@ async function destroy(target: Element) {
 
 }
 
-export type { Component, Selector, Template, State, Callback }
+export type { Selector, Template, State, Component, Callback }
 export { register, unregister, render, mount, destroy }
 let _helpers: Record<string, Function> = {}
 
