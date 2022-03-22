@@ -1,4 +1,4 @@
-import { $, Callback, fire, on, register, trigger } from "../lib/vine"
+import { $, Callback, fire, off, on, register, trigger } from "../lib/vine"
 
 /**
  * On mount
@@ -34,13 +34,13 @@ const onMount: Callback = ({ element }) => {
         trigger(input, 'change')
     })
 
-    on(document.body, 'click', (e: Event) => {
+    on(document.body, 'click.dropdown', (e: Event) => {
         if (!isParentOf(e.target as HTMLElement)) {
             element.classList.remove('active')
         }
     })
 
-    on(window, 'keyup', () => {
+    on(window, 'keyup.dropdown', () => {
         const result = { active: HTMLElement = null }
         fire('getActiveElement', result)
 
@@ -56,6 +56,17 @@ const onMount: Callback = ({ element }) => {
 
 }
 
+/**
+ * On destroy
+ */
+const onDestroy = () => {
+
+    off(document.body, 'click.dropdown')
+    off(window, 'keyup.dropdown')
+
+}
+
 register('[data-dropdown]', {
-    onMount
+    onMount,
+    onDestroy
 })

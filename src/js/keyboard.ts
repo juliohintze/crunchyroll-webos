@@ -1,4 +1,4 @@
-import { $, $$, Callback, fire, on, register, trigger, unwatch, watch } from "../lib/vine"
+import { $, $$, Callback, fire, off, on, register, trigger, unwatch, watch } from "../lib/vine"
 
 interface CursorStateChangeEvent {
     detail: {
@@ -415,23 +415,23 @@ const onMount: Callback = () => {
 
     }
 
-    on(document, 'cursorStateChange', (e: CursorStateChangeEvent) => {
+    on(document, 'cursorStateChange.keyboard', (e: CursorStateChangeEvent) => {
         usingMouse = e.detail.visibility
         handleMouse()
     })
 
-    on(document, 'mouseenter mousemove', () => {
+    on(document, 'mouseenter.keyboard mousemove.keyboard', () => {
         usingMouse = true
         handleMouse()
     })
 
-    on(document, 'mouseleave', () => {
+    on(document, 'mouseleave.keyboard', () => {
         usingMouse = false
         handleMouse()
     })
 
     // Keyboard Events
-    on(window, 'keydown', (e: KeyboardEvent) => {
+    on(window, 'keydown.keyboard', (e: KeyboardEvent) => {
         const values = Object.values(keys)
         if (values.indexOf(Number(e.key)) !== -1
             && handleKeyPress(e)) {
@@ -451,8 +451,16 @@ const onMount: Callback = () => {
  * On destroy
  */
 const onDestroy = () => {
+
     unwatch('setActiveElement')
     unwatch('getActiveElement')
+
+    off(document, 'cursorStateChange.keyboard')
+    off(document, 'mouseenter.keyboard')
+    off(document, 'mousemove.keyboard')
+    off(document, 'mouseleave.keyboard')
+    off(window, 'keydown.keyboard')
+
 }
 
 register('[data-keyboard-navigation]', {
