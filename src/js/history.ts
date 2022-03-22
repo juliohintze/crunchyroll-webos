@@ -122,7 +122,7 @@ const listHistory: Callback = async (component) => {
  */
 const onMount: Callback = (component) => {
 
-    watch('historyViewReload', function () {
+    watch('historyViewReload', () => {
         listHistory(component)
     })
 

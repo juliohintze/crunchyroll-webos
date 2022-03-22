@@ -43,7 +43,9 @@ const makeLogin: Callback = async ({ element, render }) => {
  */
 const onMount: Callback = (component) => {
 
-    on(component.element, 'submit', 'form', (e: Event) => {
+    const element = component.element
+
+    on(element, 'submit', 'form', (e: Event) => {
         e.preventDefault()
         makeLogin(component)
     })

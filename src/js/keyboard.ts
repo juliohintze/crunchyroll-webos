@@ -67,7 +67,7 @@ const findClosest = (direction: string, element: HTMLElement, items: Array<any>)
     let matches = []
 
     // Find matches
-    items.forEach(function (itemElement) {
+    items.forEach((itemElement) => {
 
         if (itemElement === element) {
             return
@@ -111,7 +111,7 @@ const findClosest = (direction: string, element: HTMLElement, items: Array<any>)
     })
 
     // Sort elements
-    matches = matches.sort(function (a, b) {
+    matches = matches.sort((a, b) => {
         return (a.diff + a.xDiff + a.yDiff) - (b.diff + b.xDiff + b.yDiff)
     })
 

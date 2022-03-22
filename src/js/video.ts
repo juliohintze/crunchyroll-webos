@@ -671,7 +671,7 @@ const onMount: Callback = ({ element, render }) => {
     })
 
     // Mouse Events
-    on(element, 'mouseenter mousemove', function () {
+    on(element, 'mouseenter mousemove', () => {
 
         element.classList.add('show-controls')
 
@@ -685,7 +685,7 @@ const onMount: Callback = ({ element, render }) => {
 
     })
 
-    on(element, 'mouseleave', function () {
+    on(element, 'mouseleave', () => {
         element.classList.remove('show-controls')
     })
 

@@ -92,7 +92,7 @@ const retrieveFilters: Callback = async (component) => {
             })
 
             // categories.push({id: '-', name: '--- SEASONS'})
-            // response.data.season.map(function(item){
+            // response.data.season.map((item) => {
             //     categories.push({id: item.tag, name: item.label})
             // })
 

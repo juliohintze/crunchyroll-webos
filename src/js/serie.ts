@@ -152,7 +152,7 @@ const listSerieInfo: Callback = async (component) => {
  * List episodes
  * @param component
  */
-const listEpisodes: Callback = async function (component) {
+const listEpisodes: Callback = async (component) => {
 
     const serieId = Number(component.state.serieId)
     const pageNumber = Number(component.state.pageNumber)

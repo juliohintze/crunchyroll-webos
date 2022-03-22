@@ -25,7 +25,7 @@ const template: Template = async ({ state }) => {
  * List queue
  * @param component
  */
-const listQueue: Callback = async function (component) {
+const listQueue: Callback = async (component) => {
 
     const fields = [
         'image.full_url',
