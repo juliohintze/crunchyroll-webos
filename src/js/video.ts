@@ -1,6 +1,7 @@
-import { $, Callback, fire, on, register, Route, Template, unwatch, watch } from "../lib/vine"
-import { Hls } from "../lib/hls"
-import { Api } from "./api"
+import type { Callback, Template } from "lib/vine"
+import { $, fire, on, register, Route, unwatch, watch } from "lib/vine"
+import { Hls } from "lib/hls"
+import { Api } from "js/api"
 
 let hls = null
 let area: HTMLElement = null

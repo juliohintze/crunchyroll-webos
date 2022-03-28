@@ -1,4 +1,5 @@
-import { Callback, on, register, unwatch, watch } from "../lib/vine"
+import type { Callback } from "lib/vine"
+import { on, register, unwatch, watch } from "lib/vine"
 
 /**
  * On mount

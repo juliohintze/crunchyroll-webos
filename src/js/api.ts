@@ -1,4 +1,4 @@
-import { $, Engine, fire, HTTP } from "../lib/vine"
+import { $, Engine, fire, HTTP } from "lib/vine"
 
 interface Data {
     [key: string]: any

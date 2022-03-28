@@ -5,6 +5,7 @@
         "module": "ES6",
         "target": "ES3",
         "noEmit": true,
+        "baseUrl": "./src",
         "lib": [
             "ES2018",
             "DOM"
