@@ -1,5 +1,5 @@
 import type { Callback } from "../lib/vine.js"
-import { on, register, unwatch, watch } from "../lib/vine.js"
+import { on, off, register, unwatch, watch } from "../lib/vine.js"
 
 /**
  * On mount
@@ -33,10 +33,15 @@ const onMount: Callback = ({ element }) => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy = () => {
+const onDestroy: Callback = ({ element }) => {
+
     unwatch('showLoading')
     unwatch('hideLoading')
+    off(element, 'show')
+    off(element, 'hide')
+
 }
 
 register('[data-loading]', {

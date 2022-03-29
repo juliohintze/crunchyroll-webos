@@ -446,7 +446,7 @@ const onMount: Callback = () => {
 /**
  * On destroy
  */
-const onDestroy = () => {
+const onDestroy: Callback = () => {
 
     unwatch('setActiveElement')
     unwatch('getActiveElement')

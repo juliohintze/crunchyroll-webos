@@ -1,5 +1,5 @@
 import type { Callback, Template } from "../lib/vine.js"
-import { $, fire, on, register, Route, unwatch, watch } from "../lib/vine.js"
+import { $, fire, on, off, register, Route, unwatch, watch } from "../lib/vine.js"
 import { Api } from "./api.js"
 
 declare var Hls: any
@@ -761,14 +761,23 @@ const onRender: Callback = async ({ element }) => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy = () => {
+const onDestroy: Callback = ({ element }) => {
+
     unwatch('playVideo')
     unwatch('pauseVideo')
     unwatch('stopVideo')
     unwatch('toggleVideo')
     unwatch('forwardVideo')
     unwatch('backwardVideo')
+
+    off(element, 'click')
+    off(element, 'mouseenter')
+    off(element, 'mousemove')
+    off(element, 'mouseleave')
+    off(element, 'input')
+
 }
 
 register('[data-video]', {

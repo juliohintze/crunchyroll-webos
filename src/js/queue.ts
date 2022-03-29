@@ -145,7 +145,7 @@ const onMount: Callback = (component) => {
 /**
  * On destroy
  */
-const onDestroy = () => {
+const onDestroy: Callback = () => {
     unwatch('queueViewReload')
 }
 

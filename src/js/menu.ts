@@ -60,7 +60,7 @@ const onRender: Callback = (component) => {
 /**
  * On destroy
  */
-const onDestroy = () => {
+const onDestroy: Callback = () => {
     unwatch('authChanged')
 }
 

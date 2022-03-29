@@ -1,5 +1,5 @@
 import type { Callback, State, Template } from "../lib/vine.js"
-import { $, fire, on, register, Route, unwatch, watch } from "../lib/vine.js"
+import { $, fire, on, off, register, Route, unwatch, watch } from "../lib/vine.js"
 import { Api } from "./api.js"
 
 /**
@@ -256,9 +256,14 @@ const onMount: Callback = async (component) => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy = () => {
+const onDestroy: Callback = ({ element }) => {
+
     unwatch('serieViewReload')
+    off(element, 'change')
+    off(element, 'click')
+
 }
 
 register('[data-serie]', {

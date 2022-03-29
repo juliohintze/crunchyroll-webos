@@ -59,11 +59,13 @@ const onMount: Callback = ({ element }) => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy = () => {
+const onDestroy: Callback = ({ element }) => {
 
     off(document.body, 'click.dropdown')
     off(window, 'keyup.dropdown')
+    off(element, 'click')
 
 }
 

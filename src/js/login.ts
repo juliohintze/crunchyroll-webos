@@ -1,5 +1,5 @@
 import type { Callback, Template } from "../lib/vine.js"
-import { $, fire, on, register, Route } from "../lib/vine.js"
+import { $, fire, on, off, register, Route } from "../lib/vine.js"
 import { Api } from "./api.js"
 
 /**
@@ -53,9 +53,18 @@ const onMount: Callback = (component) => {
 
 }
 
+/**
+ * On destroy
+ * @param component
+ */
+const onDestroy: Callback = ({ element }) => {
+    off(element, 'submit')
+}
+
 register('[data-login]', {
     template,
-    onMount
+    onMount,
+    onDestroy
 })
 
 Route.add({
