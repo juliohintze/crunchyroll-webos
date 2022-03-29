@@ -1,6 +1,6 @@
-import type { Callback } from "lib/vine"
-import { fire, register, Route } from "lib/vine"
-import { Api } from "js/api"
+import type { Callback } from "../lib/vine.js"
+import { fire, register, Route } from "../lib/vine.js"
+import { Api } from "./api.js"
 
 /**
  * On mount

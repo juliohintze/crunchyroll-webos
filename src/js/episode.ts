@@ -1,5 +1,5 @@
-import type { Callback } from "lib/vine"
-import { $, register } from "lib/vine"
+import type { Callback } from "../lib/vine.js"
+import { $, register } from "../lib/vine.js"
 
 /**
  * On mount

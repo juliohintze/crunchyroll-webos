@@ -1,5 +1,5 @@
-import type { Callback } from "lib/vine"
-import { $, $$, fire, off, on, register, trigger, unwatch, watch } from "lib/vine"
+import type { Callback } from "../lib/vine.js"
+import { $, $$, fire, off, on, register, trigger, unwatch, watch } from "../lib/vine.js"
 
 interface CursorStateChangeEvent {
     detail: {

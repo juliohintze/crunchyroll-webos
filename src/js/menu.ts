@@ -1,6 +1,6 @@
-import type { Callback, Template } from "lib/vine"
-import { $, register, Route, unwatch, watch } from "lib/vine"
-import { Api } from "js/api"
+import type { Callback, Template } from "../lib/vine.js"
+import { $, register, Route, unwatch, watch } from "../lib/vine.js"
+import { Api } from "./api.js"
 
 /**
  * Return template

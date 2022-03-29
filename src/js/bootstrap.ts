@@ -1,4 +1,4 @@
-import { Engine, mount, on, Route } from "lib/vine"
+import { Engine, mount, on, Route } from "../lib/vine.js"
 
 on(window, 'load', () => {
 
