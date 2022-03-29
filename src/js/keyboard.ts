@@ -29,8 +29,6 @@ const keys = {
     DELETE: 46
 }
 
-let lastKey = null
-let lastKeyTime = null
 let activeElement = null
 let usingMouse = false
 
@@ -234,9 +232,6 @@ const handleKeyPress = (event: KeyboardEvent) => {
     } else {
         result = handleKeyNavigation(event)
     }
-
-    lastKey = event.key
-    lastKeyTime = new Date()
 
     return result
 }
