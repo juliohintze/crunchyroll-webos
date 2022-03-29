@@ -1,4 +1,4 @@
-/*! Vine JS (2.0.1) - https://github.com/mateussouzaweb/vine */
+/*! Vine JS (2.0.2) - https://github.com/mateussouzaweb/vine */
 
 declare global {
     interface Window {
@@ -6,7 +6,7 @@ declare global {
     }
 }
 
-export const __version = "2.0.1"
+export const __version = "2.0.2"
 declare type Selectable = HTMLElement | Document
 declare type Context = string | Selectable
 
@@ -72,7 +72,7 @@ declare interface WithEvents extends EventTarget {
 }
 
 /**
- * Attach event to element
+ * Attach or detach event on element
  * @param action
  * @param element
  * @param event
@@ -133,7 +133,7 @@ function _event(
 
         for (const item of items) {
 
-            if (!item.__events) {
+            if (item.__events === undefined) {
                 item.__events = []
             }
 
@@ -155,8 +155,8 @@ function _event(
 
         for (const item of items) {
 
-            if (!item.__events) {
-                return
+            if (item.__events === undefined) {
+                continue
             }
 
             item.__events = item.__events.filter((watcher) => {
@@ -414,22 +414,22 @@ async function render(component: Component, callback: Callback) {
 
     // Fetch live template
     const result = await solveResult(component.template, component)
+    const current = component.element.innerHTML
 
     // If has no valid result, no need to continue
     if (typeof result !== 'string') {
         return
     }
 
-    const current = component.element.innerHTML
-    if (result === current) {
-        return
+    if (result !== current) {
+
+        // Destroy existing child elements
+        await destroy(component.element)
+
+        // Mount new HTML result
+        component.element.innerHTML = result
+
     }
-
-    // Destroy existing child elements
-    await destroy(component.element)
-
-    // Mount new HTML result
-    component.element.innerHTML = result
 
     // Render callback
     await callback(component)
@@ -462,7 +462,7 @@ async function mount(target: HTMLElement) {
 
             // Already mounted
             if (element.__components[namespace] !== undefined) {
-                return
+                continue
             }
 
             // Solve the state result
@@ -521,10 +521,10 @@ async function destroy(target: HTMLElement) {
 
             // Component not mounted yet
             if (element.__components === undefined) {
-                return
+                continue
             }
-            if (element.__components[namespace] !== undefined) {
-                return
+            if (element.__components[namespace] === undefined) {
+                continue
             }
 
             // Destroy the component instance
