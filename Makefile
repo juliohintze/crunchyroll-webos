@@ -12,9 +12,7 @@ build:
 	compactor \
 		--source $(PROJECT_PATH)/src/ \
 		--destination $(PROJECT_PATH)/$(ID)/ \
-		--progressive false \
-		--exclude "lib/*.map,js/*.map" \
-		--bundle "css/styles.scss:css/_*.scss:css/styles.css"
+		--progressive false
 
 watch:
 	compactor \
@@ -22,9 +20,7 @@ watch:
 		--source $(PROJECT_PATH)/src/ \
 		--destination $(PROJECT_PATH)/$(ID)/ \
 		--progressive false \
-		--hashed false \
-		--exclude "lib/*.map,js/*.map" \
-		--bundle "css/styles.scss:css/_*.scss:css/styles.css"
+		--hashed false
 
 server:
 	statiq --port 5000 --root $(PROJECT_PATH)/$(ID)/
