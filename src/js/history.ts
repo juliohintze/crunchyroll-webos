@@ -99,7 +99,7 @@ const listHistory: Callback = async (component) => {
         }
 
         const items = response.data.map((item: object) => {
-            Api.toSerieEpisode(item, 'history')
+            return Api.toSerieEpisode(item, 'history')
         })
 
         await component.render({
