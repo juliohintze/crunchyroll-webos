@@ -244,7 +244,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
 const handleKeyNavigation = (event: KeyboardEvent) => {
 
     const current = activeElement
-    const key = Number(event.key)
+    const key = Number(event.keyCode)
 
     if (!current) {
         return
@@ -311,7 +311,7 @@ const handleKeyNavigation = (event: KeyboardEvent) => {
  */
 const handleKeyOnVideo = (event: KeyboardEvent) => {
 
-    const key = Number(event.key)
+    const key = Number(event.keyCode)
 
     // STOP
     if (key == keys.STOP) {
@@ -427,11 +427,11 @@ const onMount: Callback = () => {
     })
 
     // Keyboard Events
-    on(window, 'keydown.keyboard', (e: KeyboardEvent) => {
+    on(window, 'keydown.keyboard', (event: KeyboardEvent) => {
         const values = Object.values(keys)
-        if (values.indexOf(Number(e.key)) !== -1
-            && handleKeyPress(e)) {
-            e.preventDefault()
+        const key = Number(event.keyCode)
+        if (values.indexOf(key) !== -1 && handleKeyPress(event)) {
+            event.preventDefault()
         }
     })
 
