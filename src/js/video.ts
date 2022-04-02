@@ -520,7 +520,7 @@ const trackProgress = () => {
         stopTrackProgress()
     }
 
-    trackTimeout = window.setTimeout(() => {
+    trackTimeout = setTimeout(() => {
         updatePlaybackStatus()
     }, 15000) // 15s
 
@@ -531,7 +531,7 @@ const trackProgress = () => {
  */
 const stopTrackProgress = () => {
     if (trackTimeout) {
-        window.clearTimeout(trackTimeout)
+        clearTimeout(trackTimeout)
     }
 }
 
@@ -681,10 +681,10 @@ const onMount: Callback = ({ element, render }) => {
         }
 
         if (controlsTimeout) {
-            window.clearTimeout(controlsTimeout)
+            clearTimeout(controlsTimeout)
         }
 
-        controlsTimeout = window.setTimeout(() => {
+        controlsTimeout = setTimeout(() => {
             if (area) {
                 area.classList.remove('show-controls')
             }
@@ -725,7 +725,7 @@ const onMount: Callback = ({ element, render }) => {
  */
 const onRender: Callback = async ({ element }) => {
 
-    window.setTimeout(async () => {
+    setTimeout(async () => {
 
         area = $('#video', element)
         video = $('video', element) as HTMLVideoElement
@@ -759,7 +759,7 @@ const onRender: Callback = async ({ element }) => {
 
         fire('hideLoading')
 
-    }, 500)
+    }, 200)
 
 }
 
