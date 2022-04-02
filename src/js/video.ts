@@ -783,6 +783,7 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'mouseenter')
     off(element, 'mousemove')
     off(element, 'mouseleave')
+    off(element, 'touchmove')
     off(element, 'input')
 
 }
