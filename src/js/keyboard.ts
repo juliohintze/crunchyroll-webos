@@ -29,6 +29,12 @@ const keys = {
     DELETE: 46
 }
 
+const directions = {}
+directions[keys.RIGHT] = 'right'
+directions[keys.LEFT] = 'left'
+directions[keys.UP] = 'up'
+directions[keys.DOWN] = 'down'
+
 let activeElement = null
 let usingMouse = false
 
@@ -261,12 +267,6 @@ const handleKeyNavigation = (event: KeyboardEvent) => {
         return
     }
 
-    const directions = {}
-    directions[keys.RIGHT] = 'right'
-    directions[keys.LEFT] = 'left'
-    directions[keys.UP] = 'up'
-    directions[keys.DOWN] = 'down'
-
     // OK / INFO / SPACE
     if (key == keys.OK
         || key == keys.INFO
@@ -323,9 +323,16 @@ const handleKeyNavigation = (event: KeyboardEvent) => {
 const handleKeyOnVideo = (event: KeyboardEvent) => {
 
     const key = Number(event.keyCode)
+    const current = activeElement
+    const showControls = $('.show-controls')
+
+    // OK
+    if (key == keys.OK && current) {
+        trigger(current, 'click')
+        return true
 
     // STOP
-    if (key == keys.STOP) {
+    } else if (key == keys.STOP) {
         fire('stopVideo')
         return true
 
@@ -339,9 +346,8 @@ const handleKeyOnVideo = (event: KeyboardEvent) => {
         fire('playVideo')
         return true
 
-    // OK / SPACE
-    } else if (key == keys.OK
-        || key == keys.SPACE) {
+    // INFO / SPACE
+    } else if (key == keys.INFO || key == keys.SPACE) {
         fire('toggleVideo')
         return true
 
@@ -356,12 +362,14 @@ const handleKeyOnVideo = (event: KeyboardEvent) => {
         return true
 
     // RIGHT
-    } else if (key == keys.RIGHT) {
+    // Only when controls are hidden
+    } else if (!showControls && key == keys.RIGHT) {
         fire('forwardVideo', 10)
         return true
 
     // LEFT
-    } else if (key == keys.LEFT) {
+    // Only when controls are hidden
+    } else if (!showControls && key == keys.LEFT) {
         fire('backwardVideo', 10)
         return true
 
@@ -372,24 +380,21 @@ const handleKeyOnVideo = (event: KeyboardEvent) => {
         fire('pauseVideo')
         return true
 
-    // UP (behavior as left navigation)
-    // DOWN (behavior as right navigation)
-    } else if (key == keys.UP
-        || key == keys.DOWN) {
+    // RIGHT / LEFT / UP / DOWN
+    } else if (directions[key]) {
 
         const current = activeElement
-        const parent = current.parentElement;
-
         const closest = findClosestOnParents(
-            (key == keys.UP) ? 'left' : 'right',
+            directions[key],
             current,
-            parent
+            current.parentElement
         )
 
         if (closest != null) {
             setActiveElement(closest)
         }
 
+        trigger('[data-video]', 'mousemove')
         return true
     }
 
