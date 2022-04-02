@@ -172,12 +172,20 @@ body.page-video {
         margin-bottom: 0.5rem;
         padding: 0.25rem 1rem;
         text-align: center;
-    }
-    div.active {
-        background: #ffc095;
-        color: #000;
-    }
 
+        &.active,
+        &.hover,
+        &:focus,
+        &:active {
+            background: #ffc095;
+            color: #000;
+        }
+    }
+}
+
+.mouse #video .video-quality div:hover {
+    background: #ffc095;
+    color: #000;
 }
 
 .video-info {
