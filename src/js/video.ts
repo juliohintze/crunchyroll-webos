@@ -200,7 +200,7 @@ const loadClosestEpisodes = async (
             previous.dataset.url = itemUrl
             previous.title = 'Previous Episode - E' + itemNumber
             previous.classList.remove('hide')
-        }else if( itemNumber - 1 == episodeNumber ){
+        } else if (itemNumber - 1 == episodeNumber) {
             next.dataset.url = itemUrl
             next.title = 'Next Episode - E' + itemNumber
             next.classList.remove('hide')
@@ -591,7 +591,6 @@ const onMount: Callback = ({ element, render }) => {
 
     const serieId = Route.getParam('serieId')
     let controlsTimeout = null
-    area = element
 
     // UI Events
     on(element, 'click', '.video-close', (e: Event) => {
@@ -614,17 +613,15 @@ const onMount: Callback = ({ element, render }) => {
     })
 
     on(element, 'click', '.video-previous-episode', function (e: Event) {
-        Route.redirect(this.dataset.url)
         e.preventDefault()
         pauseVideo()
-        render()
+        Route.redirect(this.dataset.url)
     })
 
     on(element, 'click', '.video-next-episode', function (e: Event) {
-        Route.redirect(this.dataset.url)
         e.preventDefault()
         pauseVideo()
-        render()
+        Route.redirect(this.dataset.url)
     })
 
     on(element, 'click', '.video-fullscreen', (e: Event) => {
@@ -679,20 +676,26 @@ const onMount: Callback = ({ element, render }) => {
     // Mouse Events
     on(element, 'mouseenter mousemove', () => {
 
-        element.classList.add('show-controls')
+        if (area) {
+            area.classList.add('show-controls')
+        }
 
         if (controlsTimeout) {
             window.clearTimeout(controlsTimeout)
         }
 
         controlsTimeout = window.setTimeout(() => {
-            element.classList.remove('show-controls')
+            if (area) {
+                area.classList.remove('show-controls')
+            }
         }, 2000) // 2s
 
     })
 
     on(element, 'mouseleave', () => {
-        element.classList.remove('show-controls')
+        if (area) {
+            area.classList.remove('show-controls')
+        }
     })
 
     on(element, 'mousemove touchmove', 'input[type="range"]', (e: MouseEvent) => {
@@ -710,6 +713,9 @@ const onMount: Callback = ({ element, render }) => {
     watch('toggleVideo', toggleVideo)
     watch('forwardVideo', forwardVideo)
     watch('backwardVideo', backwardVideo)
+    watch('videoViewReload', () => {
+        render()
+    })
 
 }
 
@@ -719,15 +725,9 @@ const onMount: Callback = ({ element, render }) => {
  */
 const onRender: Callback = async ({ element }) => {
 
-    element.classList.remove('video-has-error')
-    element.classList.remove('video-is-active')
-    element.classList.remove('video-is-loading')
-    element.classList.remove('video-is-loaded')
-    element.classList.remove('video-is-playing')
-    element.classList.remove('video-is-paused')
-
     window.setTimeout(async () => {
 
+        area = $('#video', element)
         video = $('video', element) as HTMLVideoElement
         video.controls = false
 
@@ -775,6 +775,7 @@ const onDestroy: Callback = ({ element }) => {
     unwatch('toggleVideo')
     unwatch('forwardVideo')
     unwatch('backwardVideo')
+    unwatch('videoViewReload')
 
     off(element, 'click')
     off(element, 'mouseenter')

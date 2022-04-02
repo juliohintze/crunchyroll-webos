@@ -103,6 +103,10 @@ body.page-video {
     &.video-skip-intro span {
         background-image: url(../icons/skip.svg);
     }
+
+    &.video-pause {
+        display: none;
+    }
     &.hide {
         display: none;
     }
@@ -277,36 +281,33 @@ body.page-video {
 }
 
 /* States */
-.video-is-playing #video .video-backdrop,
-.video-is-playing #video .video-actions,
-.video-is-playing #video .video-quality,
-.video-is-playing #video .video-info,
-.video-is-playing #video .video-time,
-.video-is-playing #video .video-controls {
+#video.video-is-playing .video-backdrop,
+#video.video-is-playing .video-actions,
+#video.video-is-playing .video-quality,
+#video.video-is-playing .video-info,
+#video.video-is-playing .video-time,
+#video.video-is-playing .video-controls {
     opacity: 0;
 }
-.show-controls #video .video-backdrop,
-.show-controls #video .video-actions,
-.show-controls #video .video-quality,
-.show-controls #video .video-info,
-.show-controls #video .video-time,
-.show-controls #video .video-controls {
+#video.show-controls .video-backdrop,
+#video.show-controls .video-actions,
+#video.show-controls .video-quality,
+#video.show-controls .video-info,
+#video.show-controls .video-time,
+#video.show-controls .video-controls {
     opacity: 1 !important;
 }
 
-.video-has-error #video .video-backdrop,
-.video-has-error #video .video-info {
+#video.video-has-error .video-backdrop,
+#video.video-has-error .video-info {
     opacity: 1 !important;
 }
 
-.video-pause {
+#video.video-is-playing .video-play,
+#video.video-is-paused .video-pause {
     display: none;
 }
-.video-is-playing .video-play,
-.video-is-paused .video-pause {
-    display: none;
-}
-.video-is-playing .video-pause,
-.video-is-paused .video-play {
+#video.video-is-playing .video-pause,
+#video.video-is-paused .video-play {
     display: block;
 }
