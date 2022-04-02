@@ -1,8 +1,6 @@
 /* CONTENT */
 #content {
-    padding: 0.83rem 1.16rem;
-    padding-bottom: 2.5rem;
-    padding-left: 10.833rem;
+    padding: 0 1.16rem 2.5rem 10.833rem;
 
     .inside {
         align-items: stretch;
@@ -11,7 +9,12 @@
     }
     h1 {
         flex: 1 1 100%;
-        margin: 1.16rem 0 0.83rem;
+        margin: 0;
+        padding: 1.16rem 0 0.83rem;
+
+        &.hover {
+            color: #F37521;
+        }
     }
 }
 

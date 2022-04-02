@@ -197,7 +197,10 @@ const setActiveElement = (element: HTMLElement) => {
     }
 
     if (!element) {
-        element = $('#content .list-item')
+        element = $('#content h1')
+    }
+    if (!element) {
+        element = $('#content .list-item-inside')
     }
     if (!element) {
         element = $('#menu .links a')
