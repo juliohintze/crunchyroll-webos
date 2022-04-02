@@ -18,9 +18,9 @@ const template: Template = async ({ state }) => {
 const setActive: Callback = ({ element }) => {
 
     const path = Route.active()
-    const id = path.id ? path.id : ''
+    const id = path.menuId ? path.menuId : ''
 
-    const next = $('a[href="' + id + '"]', element)
+    const next = $('a.link-' + id + '', element)
     const current = $('a.active', element)
 
     if (current) {

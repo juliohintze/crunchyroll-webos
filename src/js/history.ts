@@ -147,6 +147,7 @@ register('[data-history]', {
 
 Route.add({
     id: 'history',
+    menuId: 'history',
     path: '/history',
     title: 'History',
     component: '<div data-history></div>',
@@ -154,6 +155,7 @@ Route.add({
 })
 Route.add({
     id: 'history',
+    menuId: 'history',
     path: '/history/:pageNumber',
     title: 'History',
     component: '<div data-history></div>',

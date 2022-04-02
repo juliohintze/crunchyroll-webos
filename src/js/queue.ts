@@ -158,6 +158,7 @@ register('[data-queue]', {
 
 Route.add({
     id: 'queue',
+    menuId: 'queue',
     path: '/queue',
     title: 'Queue',
     component: '<div data-queue></div>',
@@ -165,6 +166,7 @@ Route.add({
 })
 Route.add({
     id: 'queue',
+    menuId: 'queue',
     path: '/home',
     title: 'Queue',
     component: '<div data-queue></div>',
@@ -172,6 +174,7 @@ Route.add({
 })
 Route.add({
     id: 'queue',
+    menuId: 'queue',
     path: '/',
     title: 'Queue',
     component: '<div data-queue></div>',

@@ -246,6 +246,7 @@ register('[data-series]', {
 
 Route.add({
     id: 'series',
+    menuId: 'series',
     path: '/series',
     title: 'Series',
     component: '<div data-series></div>',
@@ -253,6 +254,7 @@ Route.add({
 })
 Route.add({
     id: 'series',
+    menuId: 'series',
     path: '/series/:filter',
     title: 'Series',
     component: '<div data-series></div>',
@@ -260,6 +262,7 @@ Route.add({
 })
 Route.add({
     id: 'series',
+    menuId: 'series',
     path: '/series/:filter/:pageNumber',
     title: 'Series',
     component: '<div data-series></div>',

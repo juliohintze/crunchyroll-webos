@@ -274,21 +274,24 @@ register('[data-serie]', {
 })
 
 Route.add({
-    id: 'series',
+    id: 'serie',
+    menuId: 'series',
     path: '/serie/:serieId',
     title: 'Serie',
     component: '<div data-serie></div>',
     authenticated: true
 })
 Route.add({
-    id: 'series',
+    id: 'serie',
+    menuId: 'series',
     path: '/serie/:serieId/:sort',
     title: 'Serie',
     component: '<div data-serie></div>',
     authenticated: true
 })
 Route.add({
-    id: 'series',
+    id: 'serie',
+    menuId: 'series',
     path: '/serie/:serieId/:sort/:pageNumber',
     title: 'Serie',
     component: '<div data-serie></div>',
