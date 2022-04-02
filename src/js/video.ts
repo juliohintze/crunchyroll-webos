@@ -170,31 +170,33 @@ const loadClosestEpisodes = async (
         'media.free_available'
     ]
 
-    // Offset is zero based, so reduce one from episode number
-    // We also reduce one more to include the previous episode
-    const offsetNumber = (episodeNumber - 1) - 1
-    const offset = (offsetNumber > 0) ? offsetNumber : 0
-
+    // TODO: collection_id filter does not show the next episode of the next season
+    // At the current stage, we cannot do much because it's a limitation of the API
+    // We also cannot use series_id as filter because results would be very large
+    // Offset filter does not work on multiple seasons too...
     const response = await Api.request('POST', '/list_media', {
         collection_id: collectionId,
         sort: 'asc',
         fields: fields.join(','),
-        limit: 3,
-        offset: offset
+        limit: 50
     })
 
-    const episodes = response.data
+    const episodes: Array<any> = response.data
     const next = $('.video-next-episode', area)
     const previous = $('.video-previous-episode', area)
 
     previous.classList.add('hide')
     next.classList.add('hide')
 
-    episodes.forEach((item: any) => {
+    for (const item of episodes) {
 
         const itemNumber = Number(item.episode_number)
         const itemMedia = item.media_id
         const itemUrl = '/serie/' + serieId + '/episode/' + itemMedia + '/video'
+
+        if (previous.dataset.url && next.dataset.url) {
+            break
+        }
 
         if (itemNumber + 1 == episodeNumber) {
             previous.dataset.url = itemUrl
@@ -206,7 +208,7 @@ const loadClosestEpisodes = async (
             next.classList.remove('hide')
         }
 
-    })
+    }
 
 }
 
