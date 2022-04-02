@@ -1,5 +1,5 @@
 import type { Callback } from "../lib/vine.js"
-import { destroy, fire, mount, register, Route, trigger } from "../lib/vine.js"
+import { destroy, fire, mount, register, Route } from "../lib/vine.js"
 
 /**
  * Attach route component changes
@@ -77,14 +77,6 @@ const onMount: Callback = ({ element }) => {
 
 }
 
-/**
- * Trigger initial popstate event
- */
-const onRender: Callback = () => {
-    trigger(window, 'popstate')
-}
-
 register('[data-view]', {
-    onMount,
-    onRender
+    onMount
 })

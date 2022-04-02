@@ -1,6 +1,6 @@
-import { Engine, mount, on, Route } from "../lib/vine.js"
+import { Engine, mount, on, Route, trigger } from "../lib/vine.js"
 
-on(window, 'load', () => {
+on(window, 'load', async () => {
 
     // Template helpers
     Engine.helper('store', (key: string, _default: any) => {
@@ -20,6 +20,9 @@ on(window, 'load', () => {
     })
 
     // Component mounts
-    mount(document.body)
+    await mount(document.body)
+
+    // Trigger initial popstate event
+    trigger(window, 'popstate')
 
 })
