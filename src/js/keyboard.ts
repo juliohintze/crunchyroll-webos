@@ -207,7 +207,12 @@ const setActiveElement = (element: HTMLElement) => {
     }
 
     if (element) {
-        element.scrollIntoView()
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+        })
+
         element.classList.add('hover')
 
         if (element.nodeName !== 'INPUT') {
