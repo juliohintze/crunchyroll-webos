@@ -197,13 +197,13 @@ const setActiveElement = (element: HTMLElement) => {
     }
 
     if (!element) {
-        element = $('#content h1')
-    }
-    if (!element) {
-        element = $('#content .list-item-inside')
-    }
-    if (!element) {
-        element = $('#menu .links a')
+        const priorities = [
+            '#content .list-item-inside',
+            '#content h1',
+            '#menu .links a.active',
+            '#menu .links a'
+        ]
+        element = $(priorities.join(','))
     }
 
     if (element) {
