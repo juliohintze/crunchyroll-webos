@@ -196,15 +196,18 @@ const setActiveElement = (element: HTMLElement) => {
         activeElement.blur()
     }
 
-    if (!element) {
-        const priorities = [
-            '#content .list-item-inside',
-            '#content h1',
-            '#menu .links a.active',
-            '#menu .links a'
-        ]
-        element = $(priorities.join(','))
-    }
+    const priorities = [
+        '#content .list-item-inside',
+        '#content h1',
+        '#menu .links a.active',
+        '#menu .links a'
+    ]
+
+    priorities.forEach((selector) => {
+        if (!element) {
+            element = $(selector)
+        }
+    })
 
     if (element) {
         element.scrollIntoView({
