@@ -444,7 +444,12 @@ const onMount: Callback = () => {
     })
 
     // Public
-    watch('setActiveElement', setActiveElement)
+    watch('setActiveElement', (element?: HTMLElement) => {
+        window.setTimeout(() => {
+            setActiveElement(element)
+        }, 200)
+    })
+
     watch('getActiveElement', (result: any) => {
         result.active = activeElement
     })
