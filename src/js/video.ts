@@ -114,11 +114,12 @@ const loadVideo = async () => {
             return loadVideo()
         }
 
-        const episodeNumber = response.data.episode_number
-        const episodeName = response.data.name
-        const serieId = response.data.series_id
         const serieName = response.data.series_name
-        const collectionId = response.data.collection_id
+        const episodeName = response.data.name
+
+        const serieId = Number(response.data.series_id)
+        const collectionId = Number(response.data.collection_id)
+        const episodeNumber = Number(response.data.episode_number)
 
         serie.innerHTML = serieName + ' / Episode ' + episodeNumber
         title.innerHTML = episodeName
@@ -169,13 +170,17 @@ const loadClosestEpisodes = async (
         'media.free_available'
     ]
 
-    const offset = Number(episodeNumber) + 1
+    // Offset is zero based, so reduce one from episode number
+    // We also reduce one more to include the previous episode
+    const offsetNumber = (episodeNumber - 1) - 1
+    const offset = (offsetNumber > 0) ? offsetNumber : 0
+
     const response = await Api.request('POST', '/list_media', {
         collection_id: collectionId,
         sort: 'asc',
         fields: fields.join(','),
         limit: 3,
-        offset: (offset >= 0) ? offset : 0
+        offset: offset
     })
 
     const episodes = response.data
@@ -185,24 +190,23 @@ const loadClosestEpisodes = async (
     previous.classList.add('hide')
     next.classList.add('hide')
 
-    if (episodes.length) {
+    episodes.forEach((item: any) => {
 
-        const first = episodes[0]
-        const last = (episodes.length == 3) ? episodes[2] : episodes[1]
+        const itemNumber = Number(item.episode_number)
+        const itemMedia = item.media_id
+        const itemUrl = '/serie/' + serieId + '/episode/' + itemMedia + '/video'
 
-        if (Number(first.episode_number) < Number(episodeNumber)) {
-            previous.dataset.url = '/serie/' + serieId + '/episode/' + first.media_id + '/video'
-            previous.title = 'Previous Episode - E' + first.episode_number
+        if (itemNumber + 1 == episodeNumber) {
+            previous.dataset.url = itemUrl
+            previous.title = 'Previous Episode - E' + itemNumber
             previous.classList.remove('hide')
-        }
-
-        if (Number(last.episode_number) > Number(episodeNumber)) {
-            next.dataset.url = '/serie/' + serieId + '/episode/' + last.media_id + '/video'
-            next.title = 'Next Episode - E' + last.episode_number
+        }else if( itemNumber - 1 == episodeNumber ){
+            next.dataset.url = itemUrl
+            next.title = 'Next Episode - E' + itemNumber
             next.classList.remove('hide')
         }
 
-    }
+    })
 
 }
 
