@@ -1,5 +1,5 @@
 import type { Callback, Template } from "../lib/vine.js"
-import { $, fire, on, off, register, Route, unwatch, watch } from "../lib/vine.js"
+import { $, fire, on, off, trigger, register, Route, unwatch, watch } from "../lib/vine.js"
 import { Api } from "./api.js"
 
 declare var Hls: any
@@ -53,18 +53,16 @@ const showError = (message: string) => {
     area.classList.add('video-has-error')
     error.innerHTML = message
 
+    const closeButton = $('.video-close', area)
+    fire('setActiveElement', closeButton)
+
 }
 
 /**
  * Show video
  */
 const showVideo = async () => {
-
-    const playButton = $('.video-play', area)
-
     area.classList.add('video-is-active')
-    fire('setActiveElement', playButton)
-
 }
 
 /**
@@ -632,13 +630,23 @@ const onMount: Callback = ({ element, render }) => {
     })
 
     on(element, 'click', '.video-pause', (e: Event) => {
+
         e.preventDefault()
         pauseVideo()
+
+        const playButton = $('.video-play', element)
+        fire('setActiveElement', playButton)
+
     })
 
     on(element, 'click', '.video-play', (e: Event) => {
+
         e.preventDefault()
         playVideo()
+
+        const pauseButton = $('.video-pause', element)
+        fire('setActiveElement', pauseButton)
+
     })
 
     on(element, 'click', '.video-reload', (e: Event) => {
@@ -751,10 +759,13 @@ const onRender: Callback = async ({ element }) => {
         fire('showLoading')
 
         try {
+
             await loadVideo()
             await streamVideo()
             await showVideo()
-            await playVideo()
+
+            trigger(element, 'click', '.video-play')
+
         } catch (error) {
             showError(error.message)
         }
