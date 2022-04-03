@@ -2,7 +2,7 @@
 export PROJECT_PATH=$(shell pwd)
 export BINARIES=${PROJECT_PATH}/node_modules/.bin
 
-export VERSION=1.6.0
+export VERSION=1.7.0
 export ID=com.crunchyroll.webos
 export HOMEPAGE="https://github.com/mateussouzaweb/crunchyroll-webos"
 export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-webos/master/src/img/80px.png"
