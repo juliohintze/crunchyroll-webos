@@ -51,6 +51,11 @@ const onMount: Callback = (component) => {
         makeLogin(component)
     })
 
+    on(element, 'click', 'button', (e: Event) => {
+        e.preventDefault()
+        makeLogin(component)
+    })
+
 }
 
 /**
@@ -68,6 +73,7 @@ const onRender: Callback = ({ element }) => {
  */
 const onDestroy: Callback = ({ element }) => {
     off(element, 'submit')
+    off(element, 'click')
 }
 
 register('[data-login]', {
