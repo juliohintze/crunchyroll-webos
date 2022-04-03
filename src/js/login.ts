@@ -54,6 +54,15 @@ const onMount: Callback = (component) => {
 }
 
 /**
+ * On render
+ * @param component
+ */
+const onRender: Callback = ({ element }) => {
+    const email = $('input#email', element)
+    fire('setActiveElement', email)
+}
+
+/**
  * On destroy
  * @param component
  */
@@ -64,6 +73,7 @@ const onDestroy: Callback = ({ element }) => {
 register('[data-login]', {
     template,
     onMount,
+    onRender,
     onDestroy
 })
 
