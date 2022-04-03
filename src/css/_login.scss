@@ -67,7 +67,8 @@ body.page-login {
     .dropdown:focus,
     .dropdown:active,
     .dropdown:focus-within {
-        border-color: #000000;
+        background-color: #ffc8a4;
+        border-color: #000;
     }
 
     button {
@@ -89,6 +90,7 @@ body.page-login {
 .mouse #login input:hover,
 .mouse #login .dropdown:hover {
     border-color: #000000;
+    background-color: #ffc8a4;
 }
 .mouse #login button:hover {
     background: #5d2500;
