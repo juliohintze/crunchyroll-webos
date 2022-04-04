@@ -31,6 +31,7 @@ npm install
 
 # Build from SRC
 npm run build
+npm run bundle
 npm run app-package
 
 # Install app for TV

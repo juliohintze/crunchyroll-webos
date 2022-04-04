@@ -22,6 +22,17 @@ watch:
 		--progressive false \
 		--hashed false
 
+bundle:
+	rollup \
+		--input $(PROJECT_PATH)/build/scripts/main.js \
+		--file $(PROJECT_PATH)/build/scripts/main.js \
+		--context window \
+		--format iife \
+		--inlineDynamicImports \
+		--sourcemap \
+		--compact \
+	&& sed -i 's/type="module"/defer="defer"/g' build/index.html
+
 server:
 	statiq --port 5000 --root $(PROJECT_PATH)/build/
 

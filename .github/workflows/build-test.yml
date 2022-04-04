@@ -28,10 +28,12 @@ jobs:
       - name: Install NPM packages
         run: |
           sudo npm install
+          sudo npm install --global rollup
 
       - name: Build TV package
         run: |
           npm run build
+          npm run bundle
           npm run app-package
           npm run app-manifest
 
