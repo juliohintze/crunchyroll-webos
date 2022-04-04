@@ -9,7 +9,7 @@
     },
     "exclude": [
         "node_modules",
-        "build",
-        "com.crunchyroll.webos"
+        "com.crunchyroll.webos",
+        "dist"
     ]
 }

@@ -8,5 +8,5 @@
 
 com.crunchyroll.webos/
 node_modules/
-build/
+dist/
 bin/

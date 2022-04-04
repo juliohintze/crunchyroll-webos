@@ -11,30 +11,30 @@ export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-w
 build:
 	compactor \
 		--source $(PROJECT_PATH)/src/ \
-		--destination $(PROJECT_PATH)/build/ \
+		--destination $(PROJECT_PATH)/dist/ \
 		--progressive false \
 		--hashed false
 
 watch:
 	compactor --watch \
 		--source $(PROJECT_PATH)/src/ \
-		--destination $(PROJECT_PATH)/build/ \
+		--destination $(PROJECT_PATH)/dist/ \
 		--progressive false \
 		--hashed false
 
 bundle:
 	rollup \
-		--input $(PROJECT_PATH)/build/scripts/main.js \
-		--file $(PROJECT_PATH)/build/scripts/main.js \
+		--input $(PROJECT_PATH)/dist/scripts/main.js \
+		--file $(PROJECT_PATH)/dist/scripts/main.js \
 		--context window \
 		--format iife \
 		--inlineDynamicImports \
 		--sourcemap \
 		--compact \
-	&& sed -i 's/type="module"/defer="defer"/g' build/index.html
+	&& sed -i 's/type="module"/defer="defer"/g' dist/index.html
 
 server:
-	statiq --port 5000 --root $(PROJECT_PATH)/build/
+	statiq --port 5000 --root $(PROJECT_PATH)/dist/
 
 develop:
 	make -j 2 watch server
@@ -51,7 +51,7 @@ check:
 
 # APP METHODS
 package:
-	cp -r $(PROJECT_PATH)/build/ $(PROJECT_PATH)/$(ID)/ \
+	cp -r $(PROJECT_PATH)/dist/ $(PROJECT_PATH)/$(ID)/ \
 	&& $(BINARIES)/ares-package \
 		$(PROJECT_PATH)/$(ID) \
 		--no-minify \
