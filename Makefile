@@ -5,7 +5,7 @@ export BINARIES=${PROJECT_PATH}/node_modules/.bin
 export VERSION=1.7.0
 export ID=com.crunchyroll.webos
 export HOMEPAGE="https://github.com/mateussouzaweb/crunchyroll-webos"
-export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-webos/master/src/img/80px.png"
+export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-webos/master/src/images/80px.png"
 
 # DEV METHODS
 build:
