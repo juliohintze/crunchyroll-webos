@@ -1,5 +1,5 @@
-import type { Callback } from "../lib/vine.js"
-import { on, off, register, unwatch, watch } from "../lib/vine.js"
+import type { Callback } from "./vine.js"
+import { on, off, register, unwatch, watch } from "./vine.js"
 
 /**
  * On mount

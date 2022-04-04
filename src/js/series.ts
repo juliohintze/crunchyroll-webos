@@ -1,5 +1,5 @@
-import type { Callback, State, Template } from "../lib/vine.js"
-import { fire, on, off, register, Route, unwatch, watch } from "../lib/vine.js"
+import type { Callback, State, Template } from "./vine.js"
+import { fire, on, off, register, Route, unwatch, watch } from "./vine.js"
 import { Api } from "./api.js"
 
 /**

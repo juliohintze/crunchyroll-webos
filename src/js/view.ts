@@ -1,5 +1,5 @@
-import type { Callback } from "../lib/vine.js"
-import { destroy, fire, mount, register, Route } from "../lib/vine.js"
+import type { Callback } from "./vine.js"
+import { destroy, fire, mount, register, Route } from "./vine.js"
 
 /**
  * Attach route component changes
