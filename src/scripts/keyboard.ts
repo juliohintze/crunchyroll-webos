@@ -213,6 +213,7 @@ const setActiveElement = (element: HTMLElement) => {
     priorities.forEach((selector) => {
         if (!element) {
             element = $(selector)
+            element = (element.offsetParent !== null) ? element : null
         }
     })
 
