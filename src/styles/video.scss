@@ -275,7 +275,9 @@ body.page-video {
         width: 4.16rem;
     }
 }
-.mouse #video .video-progress:hover .tooltip,
+.mouse #video .video-progress:hover .tooltip {
+    display: block;
+}
 .mouse #video .video-progress:focus-within .tooltip {
     display: block;
 }
