@@ -11,19 +11,19 @@ export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-w
 build:
 	compactor \
 		--source $(PROJECT_PATH)/src/ \
-		--destination $(PROJECT_PATH)/$(ID)/ \
-		--progressive false
+		--destination $(PROJECT_PATH)/build/ \
+		--progressive false \
+		--hashed false
 
 watch:
-	compactor \
-		--watch \
+	compactor --watch \
 		--source $(PROJECT_PATH)/src/ \
-		--destination $(PROJECT_PATH)/$(ID)/ \
+		--destination $(PROJECT_PATH)/build/ \
 		--progressive false \
 		--hashed false
 
 server:
-	statiq --port 5000 --root $(PROJECT_PATH)/$(ID)/
+	statiq --port 5000 --root $(PROJECT_PATH)/build/
 
 develop:
 	make -j 2 watch server
@@ -40,9 +40,12 @@ check:
 
 # APP METHODS
 package:
-	$(BINARIES)/ares-package $(PROJECT_PATH)/$(ID) \
+	cp -r $(PROJECT_PATH)/build/ $(PROJECT_PATH)/$(ID)/ \
+	&& $(BINARIES)/ares-package \
+		$(PROJECT_PATH)/$(ID) \
 		--no-minify \
-		--outdir $(PROJECT_PATH)/bin
+		--outdir $(PROJECT_PATH)/bin \
+	&& rm -r $(PROJECT_PATH)/$(ID)
 
 manifest:
 	$(BINARIES)/webosbrew-gen-manifest \
