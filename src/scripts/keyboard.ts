@@ -206,7 +206,8 @@ const setActiveElement = (element: HTMLElement) => {
         '#content .list-item-inside',
         '#content h1',
         '#menu .links a.active',
-        '#menu .links a'
+        '#menu .links a',
+        '#login input'
     ]
 
     priorities.forEach((selector) => {
