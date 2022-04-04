@@ -65,10 +65,24 @@ body.page-login {
     input:active,
     .dropdown.hover,
     .dropdown:focus,
-    .dropdown:active,
+    .dropdown:active {
+        background-color: #ffc8a4;
+        border-color: #000;
+    }
+
     .dropdown:focus-within {
         background-color: #ffc8a4;
         border-color: #000;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:active,
+    input:-webkit-autofill:focus {
+        -webkit-box-shadow: 0 0 0px 1000px #FFF inset;
+
+        &.hover {
+            -webkit-box-shadow: 0 0 0px 1000px #ffc8a4 inset;
+        }
     }
 
     button {
@@ -91,6 +105,9 @@ body.page-login {
 .mouse #login .dropdown:hover {
     border-color: #000000;
     background-color: #ffc8a4;
+}
+.mouse #login input:-webkit-autofill:hover {
+    -webkit-box-shadow: 0 0 0px 1000px #ffc8a4 inset;
 }
 .mouse #login button:hover {
     background: #5d2500;
