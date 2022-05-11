@@ -1,6 +1,6 @@
-import type { Callback, State, Template } from "./vine.js"
-import { $, fire, on, off, register, Route, unwatch, watch } from "./vine.js"
-import { Api } from "./api.js"
+import type { Callback, State, Template } from "./vine"
+import { $, fire, on, off, register, Route, unwatch, watch } from "./vine"
+import { Api } from "./api"
 
 /**
  * Initial state

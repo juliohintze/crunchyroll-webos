@@ -1,6 +1,6 @@
-import type { Callback, Template } from "./vine.js"
-import { $, fire, on, off, trigger, register, Route, unwatch, watch } from "./vine.js"
-import { Api } from "./api.js"
+import type { Callback, Template } from "./vine"
+import { $, fire, on, off, trigger, register, Route, unwatch, watch } from "./vine"
+import { Api } from "./api"
 
 declare var Hls: any
 

@@ -1,4 +1,4 @@
-import { $, Engine, fire, HTTP } from "./vine.js"
+import { $, Engine, fire, HTTP } from "./vine"
 
 interface Data {
     [key: string]: any
