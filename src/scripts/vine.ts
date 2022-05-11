@@ -1,4 +1,4 @@
-/*! Vine JS (2.0.2) - https://github.com/mateussouzaweb/vine */
+/*! Vine JS (2.0.6) - https://github.com/mateussouzaweb/vine */
 
 declare global {
     interface Window {
@@ -6,8 +6,15 @@ declare global {
     }
 }
 
-export const __version = "2.0.2"
+export const __version = '2.0.6'
+/**
+ * Represents an element that can be selectable
+ */
 declare type Selectable = HTMLElement | Document
+
+/**
+ * Represents a context that can select child elements
+ */
 declare type Context = string | Selectable
 
 /**
@@ -22,7 +29,7 @@ function getContext(context?: Context) {
 }
 
 /**
- * Select an single element
+ * Select a single element
  * @param selector
  * @param context
  * @returns
@@ -61,127 +68,27 @@ function $$(selector: any, context?: Context) {
 export type { Selectable, Context }
 export { $, $$ }
 
-declare interface Trigger {
-    event: string
-    namespace: string,
-    callback: Function
-}
+/**
+ * Event callback contains the event details and the additional target argument.
+ * Target resolves to the HTMLElement desired on delegated events.
+ * In non-delegated events, target is just an alias to the event.target
+ */
+declare type EventCallback = (event: Event, target: HTMLElement) => any
 
-declare interface WithEvents extends EventTarget {
-    __events?: Array<Trigger>
+/**
+ * Stores data about the event trigger defined by the user
+ * This data can be used later to remove event listeners
+ */
+declare interface EventTrigger {
+    event: string
+    callback: EventListener
 }
 
 /**
- * Attach or detach event on element
- * @param action
- * @param element
- * @param event
- * @param selector
- * @param callback
+ * Extends EventTarget to allow storing of event triggers
  */
-function _event(
-    action: "add" | "remove",
-    element: any,
-    event: string,
-    selector?: string | Function,
-    callback?: Function
-) {
-
-    const events = event.split(' ')
-
-    // Multi events
-    if (events.length > 1) {
-        for (const theEvent of events) {
-            _event(action, element, theEvent, selector, callback)
-        }
-        return
-    }
-
-    let handler: Function
-
-    // Determine handler
-    if (callback === undefined && selector === undefined) {
-
-        // None
-        handler = null
-        selector = null
-
-    } else if (callback === undefined) {
-
-        // Bind
-        handler = <Function>selector
-        selector = null
-
-    } else {
-
-        // Delegated
-        handler = (event: Event) => {
-            const target = (event.target as HTMLElement).closest(<string>selector)
-            if (target) {
-                callback.apply(target, [event])
-            }
-        }
-
-    }
-
-    const split = event.split('.')
-    const theEvent = split.shift()
-    const namespace = split.join('.')
-    const items: Array<WithEvents> = element instanceof Window ? [element] : $$(element)
-
-    if (action === 'add' && typeof handler === 'function') {
-
-        for (const item of items) {
-
-            if (item.__events === undefined) {
-                item.__events = []
-            }
-
-            item.__events.push({
-                event: theEvent,
-                namespace: namespace,
-                callback: handler
-            })
-
-            item.addEventListener(
-                theEvent,
-                handler.bind(item),
-                false
-            )
-
-        }
-
-    } else if (action === 'remove') {
-
-        for (const item of items) {
-
-            if (item.__events === undefined) {
-                continue
-            }
-
-            item.__events = item.__events.filter((watcher) => {
-                const pass = Boolean(
-                    theEvent !== watcher.event
-                    && (namespace === '' || namespace !== watcher.namespace)
-                    && (typeof handler !== 'function' || handler !== watcher.callback)
-                )
-
-                if (!pass) {
-                    item.removeEventListener(
-                        watcher.event,
-                        watcher.callback.bind(item),
-                        false
-                    )
-                }
-
-                return pass
-            })
-
-        }
-
-    }
-
-    return handler
+declare interface ElementWithEvents extends EventTarget {
+    __events?: Array<EventTrigger>
 }
 
 /**
@@ -191,8 +98,55 @@ function _event(
  * @param selector
  * @param callback
  */
-function on(element: any, event: string, selector: string | Function, callback?: Function) {
-    return _event('add', element, event, selector, callback)
+function on(element: any, event: string, selector: string | EventCallback, callback?: EventCallback) {
+
+    const items: Array<ElementWithEvents> = element instanceof Window ? [element] : $$(element)
+    const events = event.split(' ')
+
+    let handler: EventListener
+    if (typeof selector === 'function') {
+
+        // Bind
+        handler = (event: Event) => {
+            (selector as EventCallback).apply(event.target, [event, event.target])
+        }
+
+    } else {
+
+        // Delegated
+        handler = (event: Event) => {
+            const target = (event.target as HTMLElement).closest(selector as string)
+            if (target) {
+                callback.apply(target, [event, target])
+            }
+        }
+
+    }
+
+    for (const item of items) {
+
+        if (item.__events === undefined) {
+            item.__events = []
+        }
+
+        for (const _event of events) {
+
+            item.__events.push({
+                event: _event,
+                callback: handler
+            })
+
+            item.addEventListener(
+                _event,
+                handler,
+                false
+            )
+
+        }
+
+    }
+
+    return handler
 }
 
 /**
@@ -202,8 +156,37 @@ function on(element: any, event: string, selector: string | Function, callback?:
  * @param selector
  * @param callback
  */
-function off(element: any, event: string, selector?: string | Function, callback?: Function) {
-    return _event('remove', element, event, selector, callback)
+function off(element: any, event: string, selector?: string | EventCallback, callback?: EventCallback) {
+
+    const items: Array<ElementWithEvents> = element instanceof Window ? [element] : $$(element)
+    const events = event.split(' ')
+    const handler = (typeof selector === 'function') ? selector : callback
+
+    for (const item of items) {
+
+        if (item.__events === undefined) {
+            continue
+        }
+
+        item.__events = item.__events.filter((watcher) => {
+            const pass = Boolean(
+                !events.includes(watcher.event)
+                && (typeof handler !== 'function' || handler !== watcher.callback)
+            )
+
+            if (!pass) {
+                item.removeEventListener(
+                    watcher.event,
+                    watcher.callback,
+                    false
+                )
+            }
+
+            return pass
+        })
+
+    }
+
 }
 
 /**
@@ -229,43 +212,79 @@ function trigger(element: any, event: string, selector?: string) {
 
 }
 
-export type { Trigger }
+export type { EventTrigger, EventCallback }
 export { on, off, trigger }
+/**
+ * Watcher represents a watcher that waits for an observable event to run callback.
+ * It also has a context to identify itself
+ */
 declare interface Watcher {
-    event: string
+    context: any,
+    event: string,
     callback: Function
 }
 
-let _watches: Array<Watcher> = []
+/**
+ * Registered watchers
+ */
+let _watchers: Array<Watcher> = []
 
 /**
- * Add watch to a event
+ * Add or remove an event watcher
+ * @param action
+ * @param context
  * @param event
  * @param callback
  */
-function watch(event: string, callback: Function) {
-    _watches.push({ event: event, callback: callback })
+function _watcher(action: 'add' | 'remove', context: any, event?: string, callback?: Function) {
+
+    if (action === 'add') {
+
+        _watchers.push({
+            context: context,
+            event: event,
+            callback: callback
+        })
+
+    } else if (action === 'remove') {
+
+        _watchers = _watchers.filter((watcher) => {
+            return context !== watcher.context
+                && (event === undefined || event !== watcher.event)
+                && (callback === undefined || callback !== watcher.callback)
+        })
+
+    }
+
 }
 
 /**
- * Unwatch a event
+ * Watch an event with given context
+ * @param context
  * @param event
  * @param callback
  */
-function unwatch(event: string, callback?: Function) {
-    _watches = _watches.filter((watcher) => {
-        return event !== watcher.event
-            && (callback === undefined || callback !== watcher.callback)
-    })
+function watch(context: any, event: string, callback: Function) {
+    _watcher('add', context, event, callback)
 }
 
 /**
- * Fire event data
+ * Unwatch an event with given context
+ * @param context
+ * @param event
+ * @param callback
+ */
+function unwatch(context: any, event?: string, callback?: Function) {
+    _watcher('remove', context, event, callback)
+}
+
+/**
+ * Fires observable event with data
  * @param event
  * @param data
  */
 async function fire(event: string, data?: any) {
-    for (const watcher of _watches) {
+    for (const watcher of _watchers) {
         if (event === watcher.event) {
             try {
                 await watcher.callback.apply({}, [data])
@@ -279,24 +298,65 @@ async function fire(event: string, data?: any) {
 export type { Watcher }
 export { watch, unwatch, fire }
 
-declare type SelectorType = string | Array<string>
-declare type SelectorFunction = () => SelectorType | Promise<SelectorType>
+/**
+ * A representation of the selector to create components
+ */
 declare type Selector = SelectorType | SelectorFunction
+declare type SelectorFunction = () => SelectorType | Promise<SelectorType>
+declare type SelectorType = string | Array<string>
 
-declare type TemplateFunction = (component: Component) => string | Promise<string>
+/**
+ * A string representation of the DOM state that a component should have.
+ * You can use it as a function to return dynamic templates based on the component state
+ */
 declare type Template = string | TemplateFunction
+declare type TemplateFunction = (component: Component) => string | Promise<string>
 
+/**
+ * State is any data type that can be attached to one component.
+ * It's recommended to use it as a return object that carries values
+ */
 declare type State = any
 
-declare type Callback = (component: Component) => void | Promise<void>
-
+/**
+ * Component representation object
+ */
 declare type Component = {
+
+    /**
+     * Main HTML element of this component
+     */
     element: HTMLElement,
+
+    /**
+     * State data for the component
+     */
     state: State,
+
+    /**
+     * Template representation of the component.
+     * Fallbacks to element innerHTML if not declare
+     */
     template: Template,
-    render: (state?: State) => void | Promise<void>
+
+    /**
+     * Render the template on HTML element and
+     * also update state if value is present.
+     * In case of object state update, data is merged with previous value
+     * @param update
+     */
+    render: (update?: State) => void | Promise<void>
+
 }
 
+/**
+ * Function that watch on the component lifecycle
+ */
+declare type Callback = (component: Component) => void | Promise<void>
+
+/**
+ * Declares how a component should be created
+ */
 declare type Definition = {
     namespace: string,
     selector: Selector,
@@ -307,17 +367,20 @@ declare type Definition = {
     onDestroy: Callback
 }
 
-declare interface WithComponents extends HTMLElement {
+/**
+ * Extends HTMLElement to allow storing of components
+ */
+declare interface HTMLElementWithComponents extends HTMLElement {
     __components?: Record<string, Component>
 }
 
 /**
- * Store registered definitions
+ * Registered definitions
  */
 const _definitions: Array<Definition> = []
 
 /**
- * Solves a value, being a function promise or not and return the final value
+ * Solves a value, being a function promise or not, and return the final value
  * @param value
  * @param data
  * @returns
@@ -382,7 +445,7 @@ async function register(selector: Selector, definition: {
 /**
  * Remove the registered component definition.
  * This method will not destroy current instances of the matching selector.
- * You must destroy the current live components first if there is any.
+ * You must destroys the current live components first if there are any.
  * Tip: you can do it using the ${selector} as resolve function
  * @param selector
  */
@@ -404,7 +467,7 @@ async function unregister(selector: Selector) {
 
 /**
  * Render the component by updating its final HTML.
- * Also destroy and mount child elements if necessary.
+ * Also destroys and mounts child elements if necessary.
  * You must provide the final parsed template with the replaced state.
  * Tip: Use the component template as function when need to replace state
  * @param component
@@ -435,20 +498,30 @@ async function render(component: Component, callback: Callback) {
     await callback(component)
 
     // Mount child elements
-    await mount(component.element)
+    // No need to await, should get its own process
+    mount(component.element)
 
+}
+
+/**
+ * Check if data is an object, excluding arrays
+ * @param data
+ * @returns
+ */
+function isObject(data: any) {
+    return data !== null && typeof data === 'object' && Array.isArray(data) === false;
 }
 
 /**
  * Mount components on given target element
  * @param target
  */
-async function mount(target: HTMLElement) {
+async function mount(target: HTMLElement | Document) {
 
     for (const definition of _definitions) {
 
         const selector = await solveSelector(definition.selector)
-        const found = $$(selector.join(', '), target) as Array<WithComponents>
+        const found = $$(selector.join(', '), target) as Array<HTMLElementWithComponents>
 
         const namespace = definition.namespace
         const onMount = definition.onMount
@@ -481,9 +554,16 @@ async function mount(target: HTMLElement) {
                 element: element,
                 state: state,
                 template: template,
-                render: async (state?: State) => {
-                    if (state !== undefined) {
-                        component.state = state
+                render: async (update?: State) => {
+                    if (update !== undefined) {
+                        if (isObject(component.state) && isObject(update)) {
+                            component.state = {
+                                ...component.state,
+                                ...update
+                            }
+                        } else {
+                            component.state = update
+                        }
                     }
                     if (!isMounting) {
                         await render(component, onRender)
@@ -507,12 +587,12 @@ async function mount(target: HTMLElement) {
  * Destroy components on given target element
  * @param target
  */
-async function destroy(target: HTMLElement) {
+async function destroy(target: HTMLElement | Document) {
 
     for (const definition of _definitions) {
 
         const selector = await solveSelector(definition.selector)
-        const found = $$(selector.join(', '), target) as Array<WithComponents>
+        const found = $$(selector.join(', '), target) as Array<HTMLElementWithComponents>
 
         const namespace = definition.namespace
         const onDestroy = definition.onDestroy
@@ -540,6 +620,9 @@ async function destroy(target: HTMLElement) {
 
 export type { Selector, Template, State, Component, Callback }
 export { register, unregister, render, mount, destroy }
+/**
+ * Registered template helpers
+ */
 let _helpers: Record<string, Function> = {}
 
 /**
@@ -552,7 +635,7 @@ function helper(key: string, callback?: Function) {
 }
 
 /**
- * Clean line
+ * Cleans one line
  * @param line
  * @returns
  */
@@ -564,7 +647,7 @@ function clean(line: string) {
 }
 
 /**
- * Parse conditions in line
+ * Parse conditions in one line
  * @param line
  * @returns
  */
@@ -577,7 +660,7 @@ function parseConditions(line: string) {
 }
 
 /**
- * Parse loops in line
+ * Parse loops in one line
  * @param line
  * @returns
  */
@@ -589,7 +672,7 @@ function parseLoops(line: string) {
 }
 
 /**
- * Find variables in line
+ * Find variables in one line
  * @param line
  * @returns
  */
@@ -653,7 +736,10 @@ function parse(template: string, data?: Object) {
     let after = ''
     let match: RegExpExecArray | null
 
-    data = Object.assign({}, _helpers, data || {})
+    data = {
+        ..._helpers,
+        ...(data || {})
+    }
 
     const keys = Object.keys(data)
     for (const key of keys) {
@@ -697,6 +783,9 @@ export const Engine = {
     parse
 }
 
+/**
+ * Represents a HTTP request
+ */
 declare interface HTTPRequest extends RequestInit {
     method: string
     url: string
@@ -704,12 +793,18 @@ declare interface HTTPRequest extends RequestInit {
     headers: HeadersInit
 }
 
+/**
+ * Represents the result of a HTTP request
+ */
 declare interface HTTPResult {
     request: HTTPRequest
     response: Response
-    body: string
+    body: any
 }
 
+/**
+ * Callback to be executed when HTTP events are intercepted
+ */
 declare type HTTPCallback = (details: HTTPRequest | HTTPResult) => void | Promise<void>
 
 /**
@@ -717,7 +812,7 @@ declare type HTTPCallback = (details: HTTPRequest | HTTPResult) => void | Promis
  * @param callback
  */
 function interceptBefore(callback: HTTPCallback) {
-    watch('HTTPInterceptBefore', callback)
+    watch('HTTP', 'HTTPInterceptBefore', callback)
 }
 
 /**
@@ -725,11 +820,11 @@ function interceptBefore(callback: HTTPCallback) {
  * @param callback
  */
 function interceptAfter(callback: HTTPCallback) {
-    watch('HTTPInterceptAfter', callback)
+    watch('HTTP', 'HTTPInterceptAfter', callback)
 }
 
 /**
- * Make HTTP requests
+ * Make a HTTP request with given method
  * @param method
  * @param url
  * @param data
@@ -746,7 +841,9 @@ async function request(method: string, url: string, data?: BodyInit, headers?: H
     }
 
     await fire('HTTPInterceptBefore', request)
-    const options = Object.assign({}, request)
+    const options = {
+        ...request
+    }
 
     delete options.url
     delete options.data
@@ -807,7 +904,7 @@ async function request(method: string, url: string, data?: BodyInit, headers?: H
 }
 
 /**
- * Make OPTIONS HTTP requests
+ * Make a HTTP OPTIONS request
  * @param url
  * @param data
  * @param headers
@@ -818,7 +915,7 @@ async function options(url: string, data?: BodyInit, headers?: HeadersInit) {
 }
 
 /**
- * Make HEAD HTTP requests
+ * Make a HTTP HEAD request
  * @param url
  * @param data
  * @param headers
@@ -829,7 +926,7 @@ async function head(url: string, data?: BodyInit, headers?: HeadersInit) {
 }
 
 /**
- * Make GET HTTP requests
+ * Make a HTTP GET request
  * @param url
  * @param data
  * @param headers
@@ -840,7 +937,7 @@ async function get(url: string, data?: BodyInit, headers?: HeadersInit) {
 }
 
 /**
- * Make POST HTTP requests
+ * Make a HTTP POST request
  * @param url
  * @param data
  * @param headers
@@ -851,7 +948,7 @@ async function post(url: string, data?: BodyInit, headers?: HeadersInit) {
 }
 
 /**
- * Make PUT HTTP requests
+ * Make a HTTP PUT request
  * @param url
  * @param data
  * @param headers
@@ -862,7 +959,7 @@ async function put(url: string, data?: BodyInit, headers?: HeadersInit) {
 }
 
 /**
- * Make PATCH HTTP requests
+ * Make a HTTP PATCH request
  * @param url
  * @param data
  * @param headers
@@ -873,7 +970,7 @@ async function patch(url: string, data?: BodyInit, headers?: HeadersInit) {
 }
 
 /**
- * Make DELETE HTTP requests
+ * Make a HTTP DELETE request
  * @param url
  * @param data
  * @param headers
@@ -898,6 +995,9 @@ export const HTTP = {
     _delete
 }
 
+/**
+ * Represents a route path with their definitions
+ */
 declare interface RoutePath {
     path: string
     regex?: RegExp
@@ -905,6 +1005,9 @@ declare interface RoutePath {
     [key: string]: any
 }
 
+/**
+ * Declares how a route change should occur
+ */
 declare interface RouteChange {
     previous: RoutePath,
     next: RoutePath,
@@ -912,20 +1015,33 @@ declare interface RouteChange {
     replace: boolean
 }
 
+/**
+ * Callback to be executed when a route change is requested
+ */
 declare type RouteCallback = (change: RouteChange) => void | Promise<void>
 
+/**
+ * Registered routes
+ */
 let _routes: Array<RoutePath> = []
+
+/**
+ * Current active route path
+ */
 let _active: RoutePath
 
+/**
+ * The route options
+ */
 const _options = {
 
     /**
-     * Route mode definition
+     * Mode definition
      */
     mode: window.history.pushState ? 'history' : 'hash',
 
     /**
-     * Route base URL
+     * Base URL
      */
     base: '',
 
@@ -941,7 +1057,7 @@ const _options = {
  * @param callback
  */
 function beforeChange(callback: RouteCallback) {
-    watch('RouteChangeBefore', callback)
+    watch('Route', 'RouteChangeBefore', callback)
 }
 
 /**
@@ -949,11 +1065,11 @@ function beforeChange(callback: RouteCallback) {
  * @param callback
  */
 function afterChange(callback: RouteCallback) {
-    watch('RouteChangeAfter', callback)
+    watch('Route', 'RouteChangeAfter', callback)
 }
 
 /**
- * Normalize string path
+ * Normalizes string path
  * @param path
  * @param removeQuery
  * @returns
@@ -1075,7 +1191,7 @@ function getQuery(name?: string, route?: RoutePath) {
 }
 
 /**
- * Create and retrieve parsed route path location
+ * Creates and retrieve parsed route path location
  * @param route
  * @param params
  * @returns
@@ -1099,15 +1215,15 @@ function getLocation(route?: RoutePath, params?: Record<string, string>) {
 }
 
 /**
- * Add route to routes
+ * Add route to index
  * @param definition
  */
 function add(definition: RoutePath) {
 
-    const route: RoutePath = Object.assign({
+    const route: RoutePath = {
         path: '',
-        regex: ''
-    }, definition)
+        ...definition
+    }
 
     route.path = normalizePath(route.path, true)
 
@@ -1147,7 +1263,7 @@ function match(path: string): null | RoutePath {
 }
 
 /**
- * Return the current active route
+ * Returns the current active route
  * @returns
  */
 function active(): RoutePath {
@@ -1160,7 +1276,7 @@ function active(): RoutePath {
 }
 
 /**
- * Process route change
+ * Process one route change
  * @param toLocation
  * @param replace
  */
@@ -1199,7 +1315,7 @@ async function change(toLocation: string, replace?: boolean) {
 }
 
 /**
- * Redirect route to given location path
+ * Redirects route to given location path
  * @param toLocation
  */
 function redirect(toLocation: string) {
@@ -1250,7 +1366,7 @@ function onPopState() {
  * Execute route change on link click event
  * @param event
  */
-function onLinkClick(event: MouseEvent) {
+function onLinkClick(event: Event) {
 
     const link = (event.target as HTMLAnchorElement).closest('a')
     const location = window.location
@@ -1261,10 +1377,10 @@ function onLinkClick(event: MouseEvent) {
 
     // Middle click, cmd click, and ctrl click should open
     // links in a new tab as normal.
-    if (event.metaKey
-        || event.ctrlKey
-        || event.shiftKey
-        || event.altKey) {
+    if ((event as MouseEvent).metaKey
+        || (event as MouseEvent).ctrlKey
+        || (event as MouseEvent).shiftKey
+        || (event as MouseEvent).altKey) {
         return
     }
 
@@ -1300,7 +1416,7 @@ function onLinkClick(event: MouseEvent) {
 }
 
 /**
- * Attach events route automation
+ * Attach events route to automation
  */
 function attachEvents() {
     on(window, 'popstate', onPopState)

@@ -38,12 +38,9 @@ const parseParams: Callback = (component) => {
     const filter = String(Route.getParam('filter') || 'popular')
     const search = String(Route.getQuery('search') || '')
 
-    component.state = {
-        ...component.state,
-        pageNumber: pageNumber,
-        filter: filter,
-        search: search
-    }
+    component.state.pageNumber = pageNumber
+    component.state.filter = filter
+    component.state.search = search
 
 }
 
@@ -106,15 +103,12 @@ const retrieveFilters: Callback = async (component) => {
     }
 
     if (categories && categories.length) {
-        categories.map(function (item) {
+        categories.map((item) => {
             filters.push({ id: 'tag:' + item.id, name: item.name })
         })
     }
 
-    component.state = {
-        ...component.state,
-        filters: filters
-    }
+    component.state.filters = filters
 
 }
 
@@ -183,7 +177,6 @@ const listSeries: Callback = async (component) => {
         const previousPage = (pageNumber > 1) ? base + (pageNumber - 1) : ''
 
         await component.render({
-            ...component.state,
             loaded: true,
             items: items,
             nextPage: nextPage,
@@ -207,15 +200,15 @@ const onMount: Callback = async (component) => {
 
     const element = component.element
 
-    on(element, 'change', 'input#filter', function () {
-        Route.redirect('/series/' + this.value)
+    on(element, 'change', 'input#filter', (_event, target: HTMLInputElement) => {
+        Route.redirect('/series/' + target.value)
     })
 
-    on(element, 'change', 'input#search', function () {
-        Route.redirect('/series?search=' + encodeURI(this.value))
+    on(element, 'change', 'input#search', (_event, target: HTMLInputElement) => {
+        Route.redirect('/series?search=' + encodeURI(target.value))
     })
 
-    watch('seriesViewReload', async () => {
+    watch(element, 'viewReload', async () => {
         await parseParams(component)
         await listSeries(component)
     })
@@ -232,8 +225,10 @@ const onMount: Callback = async (component) => {
  */
 const onDestroy: Callback = ({ element }) => {
 
-    unwatch('seriesViewReload')
-    off(element, 'change')
+    off(element, 'change', 'input#filter')
+    off(element, 'change', 'input#search')
+
+    unwatch(element, 'viewReload')
 
 }
 

@@ -593,45 +593,45 @@ const onMount: Callback = ({ element, render }) => {
     let controlsTimeout = null
 
     // UI Events
-    on(element, 'click', '.video-close', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-close', (event) => {
+        event.preventDefault()
         pauseVideo()
         hideVideo()
         Route.redirect('/home')
     })
 
-    on(element, 'click', '.video-watched', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-watched', (event) => {
+        event.preventDefault()
         setWatched()
     })
 
-    on(element, 'click', '.video-episodes', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-episodes', (event) => {
+        event.preventDefault()
         pauseVideo()
         hideVideo()
         Route.redirect('/serie/' + serieId)
     })
 
-    on(element, 'click', '.video-previous-episode', function (e: Event) {
-        e.preventDefault()
+    on(element, 'click', '.video-previous-episode', (event, target) => {
+        event.preventDefault()
         pauseVideo()
-        Route.redirect(this.dataset.url)
+        Route.redirect(target.dataset.url)
     })
 
-    on(element, 'click', '.video-next-episode', function (e: Event) {
-        e.preventDefault()
+    on(element, 'click', '.video-next-episode', (event, target) => {
+        event.preventDefault()
         pauseVideo()
-        Route.redirect(this.dataset.url)
+        Route.redirect(target.dataset.url)
     })
 
-    on(element, 'click', '.video-fullscreen', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-fullscreen', (event) => {
+        event.preventDefault()
         toggleFullScreen()
     })
 
-    on(element, 'click', '.video-pause', (e: Event) => {
+    on(element, 'click', '.video-pause', (event) => {
 
-        e.preventDefault()
+        event.preventDefault()
         pauseVideo()
 
         const playButton = $('.video-play', element)
@@ -639,9 +639,9 @@ const onMount: Callback = ({ element, render }) => {
 
     })
 
-    on(element, 'click', '.video-play', (e: Event) => {
+    on(element, 'click', '.video-play', (event) => {
 
-        e.preventDefault()
+        event.preventDefault()
         playVideo()
 
         const pauseButton = $('.video-pause', element)
@@ -649,32 +649,32 @@ const onMount: Callback = ({ element, render }) => {
 
     })
 
-    on(element, 'click', '.video-reload', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-reload', (event) => {
+        event.preventDefault()
         pauseVideo()
         render()
     })
 
-    on(element, 'click', '.video-forward', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-forward', (event) => {
+        event.preventDefault()
         forwardVideo(5)
     })
 
-    on(element, 'click', '.video-backward', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-backward', (event) => {
+        event.preventDefault()
         backwardVideo(5)
     })
 
-    on(element, 'click', '.video-skip-intro', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.video-skip-intro', (event) => {
+        event.preventDefault()
         forwardVideo(80)
     })
 
     // Quality
-    on(element, 'click', '.video-quality div', function (e: Event) {
+    on(element, 'click', '.video-quality div', (event, target) => {
 
-        e.preventDefault()
-        const level = Number(this.dataset.level)
+        event.preventDefault()
+        const level = Number(target.dataset.level)
 
         if (hls) {
             hls.currentLevel = level
@@ -712,18 +712,18 @@ const onMount: Callback = ({ element, render }) => {
         updateSeekTooltip(e)
     })
 
-    on(element, 'click input', 'input[type="range"]', (e: Event) => {
-        skipAhead(Number((e.target as HTMLElement).dataset.seek))
+    on(element, 'click input', 'input[type="range"]', (_event, target) => {
+        skipAhead(Number(target.dataset.seek))
     })
 
     // Public
-    watch('playVideo', playVideo)
-    watch('pauseVideo', pauseVideo)
-    watch('stopVideo', stopVideo)
-    watch('toggleVideo', toggleVideo)
-    watch('forwardVideo', forwardVideo)
-    watch('backwardVideo', backwardVideo)
-    watch('videoViewReload', () => {
+    watch(element, 'playVideo', playVideo)
+    watch(element, 'pauseVideo', pauseVideo)
+    watch(element, 'stopVideo', stopVideo)
+    watch(element, 'toggleVideo', toggleVideo)
+    watch(element, 'forwardVideo', forwardVideo)
+    watch(element, 'backwardVideo', backwardVideo)
+    watch(element, 'viewReload', () => {
         render()
     })
 
@@ -745,8 +745,8 @@ const onRender: Callback = async ({ element }) => {
         playing = false
 
         // Video Events
-        on(video, 'click', (e: Event) => {
-            e.preventDefault()
+        on(video, 'click', (event) => {
+            event.preventDefault()
             toggleVideo()
         })
 
@@ -782,20 +782,31 @@ const onRender: Callback = async ({ element }) => {
  */
 const onDestroy: Callback = ({ element }) => {
 
-    unwatch('playVideo')
-    unwatch('pauseVideo')
-    unwatch('stopVideo')
-    unwatch('toggleVideo')
-    unwatch('forwardVideo')
-    unwatch('backwardVideo')
-    unwatch('videoViewReload')
-
-    off(element, 'click')
-    off(element, 'mouseenter')
-    off(element, 'mousemove')
+    off(element, 'click', '.video-close')
+    off(element, 'click', '.video-watched')
+    off(element, 'click', '.video-episodes')
+    off(element, 'click', '.video-previous-episode')
+    off(element, 'click', '.video-next-episode')
+    off(element, 'click', '.video-fullscreen')
+    off(element, 'click', '.video-pause')
+    off(element, 'click', '.video-play')
+    off(element, 'click', '.video-reload')
+    off(element, 'click', '.video-forward')
+    off(element, 'click', '.video-backward')
+    off(element, 'click', '.video-skip-intro')
+    off(element, 'click', '.video-quality div')
+    off(element, 'mouseenter mousemove')
     off(element, 'mouseleave')
-    off(element, 'touchmove')
-    off(element, 'input')
+    off(element, 'mousemove touchmove', 'input[type="range"]')
+    off(element, 'click input', 'input[type="range"]')
+
+    unwatch(element, 'playVideo')
+    unwatch(element, 'pauseVideo')
+    unwatch(element, 'stopVideo')
+    unwatch(element, 'toggleVideo')
+    unwatch(element, 'forwardVideo')
+    unwatch(element, 'backwardVideo')
+    unwatch(element, 'viewReload')
 
 }
 

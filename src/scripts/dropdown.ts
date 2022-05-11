@@ -1,5 +1,5 @@
 import type { Callback } from "./vine"
-import { $, fire, off, on, register, trigger } from "./vine"
+import { $, fire, off, on, register, trigger, unwatch, watch } from "./vine"
 
 /**
  * On mount
@@ -13,7 +13,7 @@ const onMount: Callback = ({ element }) => {
     const isParentOf = (child: HTMLElement) => {
 
         while (child) {
-            if( child == element ){
+            if (child == element) {
                 return true
             }
             child = child.parentElement
@@ -28,24 +28,25 @@ const onMount: Callback = ({ element }) => {
         fire('setActiveElement', firstLI)
     })
 
-    on(element, 'click', 'li', function(){
-        element.classList.remove('active')
-        dropdownValue.innerText = this.innerText
-        input.value = this.dataset.value
+    on(element, 'click', 'li', (_event, target) => {
+
+        dropdownValue.innerText = target.innerText
+        input.value = target.dataset.value
         trigger(input, 'change')
+
+        element.classList.remove('active')
+        fire('setActiveElement', element)
+
     })
 
-    on(document.body, 'click.dropdown', (e: Event) => {
-        if (!isParentOf(e.target as HTMLElement)) {
+    on(element, 'blur', (_event, target) => {
+        if (!target.contains(element)) {
             element.classList.remove('active')
         }
     })
 
-    on(window, 'keyup.dropdown', () => {
-        const result = { active: HTMLElement = null }
-        fire('getActiveElement', result)
-
-        if (!result.active || !isParentOf(result.active)) {
+    watch(element, 'updatedActiveElement', (activeElement: HTMLElement) => {
+        if (!activeElement || !isParentOf(activeElement)) {
             element.classList.remove('active')
         }
     })
@@ -63,9 +64,11 @@ const onMount: Callback = ({ element }) => {
  */
 const onDestroy: Callback = ({ element }) => {
 
-    off(document.body, 'click.dropdown')
-    off(window, 'keyup.dropdown')
-    off(element, 'click')
+    off(element, 'click', '.dropdown-value')
+    off(element, 'click', 'li')
+    off(element, 'blur')
+
+    unwatch(element, 'updatedActiveElement')
 
 }
 

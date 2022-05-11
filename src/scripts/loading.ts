@@ -15,19 +15,19 @@ const onMount: Callback = ({ element }) => {
     }
 
     // Private
-    on(element, 'show', (e: Event) => {
-        e.preventDefault()
+    on(element, 'show', (event) => {
+        event.preventDefault()
         showLoading()
     })
 
-    on(element, 'hide', (e: Event) => {
-        e.preventDefault()
+    on(element, 'hide', (event) => {
+        event.preventDefault()
         hideLoading()
     })
 
     // Public
-    watch('showLoading', showLoading)
-    watch('hideLoading', hideLoading)
+    watch(element, 'showLoading', showLoading)
+    watch(element, 'hideLoading', hideLoading)
 
 }
 
@@ -37,10 +37,11 @@ const onMount: Callback = ({ element }) => {
  */
 const onDestroy: Callback = ({ element }) => {
 
-    unwatch('showLoading')
-    unwatch('hideLoading')
     off(element, 'show')
     off(element, 'hide')
+
+    unwatch(element, 'showLoading')
+    unwatch(element, 'hideLoading')
 
 }
 

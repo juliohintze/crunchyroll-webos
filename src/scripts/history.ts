@@ -103,7 +103,6 @@ const listHistory: Callback = async (component) => {
         })
 
         await component.render({
-            ...component.state,
             loaded: true,
             items: items
         })
@@ -123,7 +122,7 @@ const listHistory: Callback = async (component) => {
  */
 const onMount: Callback = (component) => {
 
-    watch('historyViewReload', () => {
+    watch(component.element, 'viewReload', () => {
         listHistory(component)
     })
 
@@ -133,9 +132,10 @@ const onMount: Callback = (component) => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy: Callback = () => {
-    unwatch('historyViewReload')
+const onDestroy: Callback = ({ element }) => {
+    unwatch(element, 'viewReload')
 }
 
 register('[data-history]', {

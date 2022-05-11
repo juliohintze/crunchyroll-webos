@@ -135,11 +135,8 @@ const listSerieInfo: Callback = async (component) => {
         const serieName = response.data.name
         const inQueue = response.data.in_queue
 
-        component.state = {
-            ...component.state,
-            serieName: serieName,
-            inQueue: inQueue
-        }
+        component.state.serieName = serieName
+        component.state.inQueue = inQueue
 
     } catch (error) {
         console.log(error)
@@ -204,7 +201,6 @@ const listEpisodes: Callback = async (component) => {
         const previousPage = (pageNumber > 1) ? base + (pageNumber - 1) : ''
 
         await component.render({
-            ...component.state,
             loaded: true,
             items: items,
             nextPage: nextPage,
@@ -228,21 +224,21 @@ const onMount: Callback = async (component) => {
 
     const element = component.element
 
-    on(element, 'change', 'input#sort', function () {
-        Route.redirect('/serie/' + component.state.serieId + '/' + this.value)
+    on(element, 'change', 'input#sort', (_event, target: HTMLInputElement) => {
+        Route.redirect('/serie/' + component.state.serieId + '/' + target.value)
     })
 
-    on(element, 'click', '.add-to-queue', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.add-to-queue', (event) => {
+        event.preventDefault()
         addToQueue(component)
     })
 
-    on(element, 'click', '.remove-from-queue', (e: Event) => {
-        e.preventDefault()
+    on(element, 'click', '.remove-from-queue', (event) => {
+        event.preventDefault()
         removeFromQueue(component)
     })
 
-    watch('serieViewReload', async () => {
+    watch(element, 'viewReload', async () => {
         await parseParams(component)
         await listSerieInfo(component)
         await listEpisodes(component)
@@ -260,9 +256,11 @@ const onMount: Callback = async (component) => {
  */
 const onDestroy: Callback = ({ element }) => {
 
-    unwatch('serieViewReload')
-    off(element, 'change')
-    off(element, 'click')
+    off(element, 'change', 'input#sort')
+    off(element, 'click', '.add-to-queue')
+    off(element, 'click', '.remove-to-queue')
+
+    unwatch(element, 'viewReload')
 
 }
 

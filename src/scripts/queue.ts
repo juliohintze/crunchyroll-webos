@@ -114,7 +114,6 @@ const listQueue: Callback = async (component) => {
         }).filter(Boolean)
 
         await component.render({
-            ...component.state,
             loaded: true,
             items: items
         })
@@ -134,7 +133,7 @@ const listQueue: Callback = async (component) => {
  */
 const onMount: Callback = (component) => {
 
-    watch('queueViewReload', () => {
+    watch(component.element, 'viewReload', () => {
         listQueue(component)
     })
 
@@ -144,9 +143,10 @@ const onMount: Callback = (component) => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy: Callback = () => {
-    unwatch('queueViewReload')
+const onDestroy: Callback = ({element}) => {
+    unwatch(element, 'viewReload')
 }
 
 register('[data-queue]', {

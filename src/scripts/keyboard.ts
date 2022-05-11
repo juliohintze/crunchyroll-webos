@@ -213,7 +213,7 @@ const setActiveElement = (element: HTMLElement) => {
     priorities.forEach((selector) => {
         if (!element) {
             element = $(selector)
-            element = (element.offsetParent !== null) ? element : null
+            element = (element && element.offsetParent !== null) ? element : null
         }
     })
 
@@ -232,6 +232,8 @@ const setActiveElement = (element: HTMLElement) => {
 
         activeElement = element
     }
+
+    fire('updatedActiveElement', activeElement)
 
 }
 
@@ -405,8 +407,9 @@ const handleKeyOnVideo = (event: KeyboardEvent) => {
 
 /**
  * On mount
+ * @param element
  */
-const onMount: Callback = () => {
+const onMount: Callback = ({ element }) => {
 
     // Mouse events
     const handleMouse = () => {
@@ -429,23 +432,23 @@ const onMount: Callback = () => {
 
     }
 
-    on(document, 'cursorStateChange.keyboard', (e: CursorStateChangeEvent) => {
-        usingMouse = e.detail.visibility
+    on(element, 'cursorStateChange', (event) => {
+        usingMouse = (event as unknown as CursorStateChangeEvent).detail.visibility
         handleMouse()
     })
 
-    on(document, 'mouseenter.keyboard mousemove.keyboard', () => {
+    on(element, 'mouseenter mousemove', () => {
         usingMouse = true
         handleMouse()
     })
 
-    on(document, 'mouseleave.keyboard', () => {
+    on(element, 'mouseleave', () => {
         usingMouse = false
         handleMouse()
     })
 
     // Keyboard Events
-    on(window, 'keydown.keyboard', (event: KeyboardEvent) => {
+    on(window, 'keydown', (event: KeyboardEvent) => {
         const values = Object.values(keys)
         const key = Number(event.keyCode)
         if (values.indexOf(key) !== -1 && handleKeyPress(event)) {
@@ -454,13 +457,13 @@ const onMount: Callback = () => {
     })
 
     // Public
-    watch('setActiveElement', (element?: HTMLElement) => {
+    watch(element, 'setActiveElement', (element?: HTMLElement) => {
         setTimeout(() => {
             setActiveElement(element)
         }, 200)
     })
 
-    watch('getActiveElement', (result: any) => {
+    watch(element, 'getActiveElement', (result: any) => {
         result.active = activeElement
     })
 
@@ -468,17 +471,17 @@ const onMount: Callback = () => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy: Callback = () => {
+const onDestroy: Callback = ({ element }) => {
 
-    unwatch('setActiveElement')
-    unwatch('getActiveElement')
+    off(element, 'cursorStateChange')
+    off(element, 'mouseenter mousemove')
+    off(element, 'mouseleave')
+    off(window, 'keydown')
 
-    off(document, 'cursorStateChange.keyboard')
-    off(document, 'mouseenter.keyboard')
-    off(document, 'mousemove.keyboard')
-    off(document, 'mouseleave.keyboard')
-    off(window, 'keydown.keyboard')
+    unwatch(element, 'setActiveElement')
+    unwatch(element, 'getActiveElement')
 
 }
 

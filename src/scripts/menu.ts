@@ -42,7 +42,7 @@ const onMount: Callback = (component) => {
         setActive(component)
     })
 
-    watch('authChanged', async () => {
+    watch(component.element, 'authChanged', async () => {
         await component.render()
         await setActive(component)
     })
@@ -59,9 +59,10 @@ const onRender: Callback = (component) => {
 
 /**
  * On destroy
+ * @param component
  */
-const onDestroy: Callback = () => {
-    unwatch('authChanged')
+const onDestroy: Callback = ({ element }) => {
+    unwatch(element, 'authChanged')
 }
 
 register('[data-menu]', {
