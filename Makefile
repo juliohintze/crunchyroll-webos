@@ -15,7 +15,7 @@ build:
 		--progressive false \
 		--hashed false \
 	&& rollup --config $(PROOT)/rollup.config.js \
-	&& sed -i 's/type="module"/defer="defer"/g' dist/index.html
+	&& sed -i 's/type="module"/defer="defer"/g' $(PROOT)/dist/index.html
 
 develop:
 	compactor \
