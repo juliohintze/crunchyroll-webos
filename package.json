@@ -5,11 +5,8 @@
   "license": "GPL3",
   "source": "src/index.html",
   "scripts": {
-    "build": "make build",
-    "watch": "make watch",
-    "bundle": "make bundle",
-    "server": "make server",
     "develop": "make develop",
+    "build": "make build",
     "devices": "make devices",
     "device-setup": "make setup",
     "device-check": "make check",

@@ -1,6 +1,6 @@
 # VARIABLES
-export PROJECT_PATH=$(shell pwd)
-export BINARIES=${PROJECT_PATH}/node_modules/.bin
+export PROOT=$(shell pwd)
+export BINARIES=${PROOT}/node_modules/.bin
 
 export VERSION=1.8.0
 export ID=com.crunchyroll.webos
@@ -10,34 +10,18 @@ export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-w
 # DEV METHODS
 build:
 	compactor \
-		--source $(PROJECT_PATH)/src/ \
-		--destination $(PROJECT_PATH)/dist/ \
+		--source $(PROOT)/src/ \
+		--destination $(PROOT)/dist/ \
 		--progressive false \
-		--hashed false
-
-watch:
-	compactor --watch \
-		--source $(PROJECT_PATH)/src/ \
-		--destination $(PROJECT_PATH)/dist/ \
-		--progressive false \
-		--hashed false
-
-bundle:
-	rollup \
-		--input $(PROJECT_PATH)/dist/scripts/main.js \
-		--file $(PROJECT_PATH)/dist/scripts/main.js \
-		--context window \
-		--format iife \
-		--inlineDynamicImports \
-		--sourcemap \
-		--compact \
+		--hashed false \
+	&& rollup --config $(PROOT)/rollup.config.js \
 	&& sed -i 's/type="module"/defer="defer"/g' dist/index.html
 
-server:
-	statiq --port 5000 --root $(PROJECT_PATH)/dist/
-
 develop:
-	make -j 2 watch server
+	compactor \
+		--develop true \
+		--source $(PROOT)/src/ \
+		--destination $(PROOT)/dist/
 
 # TV METHODS
 devices:
@@ -51,22 +35,22 @@ check:
 
 # APP METHODS
 package:
-	cp -r $(PROJECT_PATH)/dist/ $(PROJECT_PATH)/$(ID)/ \
+	cp -r $(PROOT)/dist/ $(PROOT)/$(ID)/ \
 	&& $(BINARIES)/ares-package \
-		$(PROJECT_PATH)/$(ID) \
+		$(PROOT)/$(ID) \
 		--no-minify \
-		--outdir $(PROJECT_PATH)/bin \
-	&& rm -r $(PROJECT_PATH)/$(ID)
+		--outdir $(PROOT)/bin \
+	&& rm -r $(PROOT)/$(ID)
 
 manifest:
 	$(BINARIES)/webosbrew-gen-manifest \
-		-a $(PROJECT_PATH)/src/appinfo.json \
-		-p $(PROJECT_PATH)/bin/$(ID)_$(VERSION)_all.ipk \
-		-o $(PROJECT_PATH)/bin/webosbrew.manifest.json \
+		-a $(PROOT)/src/appinfo.json \
+		-p $(PROOT)/bin/$(ID)_$(VERSION)_all.ipk \
+		-o $(PROOT)/bin/webosbrew.manifest.json \
 		-i $(THUMBNAIL) -l $(HOMEPAGE)
 
 install:
-	$(BINARIES)/ares-install $(PROJECT_PATH)/bin/$(ID)_$(VERSION)_all.ipk
+	$(BINARIES)/ares-install $(PROOT)/bin/$(ID)_$(VERSION)_all.ipk
 
 launch:
 	$(BINARIES)/ares-launch $(ID)

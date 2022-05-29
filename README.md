@@ -21,7 +21,7 @@ You can download and install this app in your WebOS TV following one of the guid
 
 This method will install Crunchyroll as TV app, but is recommended only for developers:
 
-- Install [Compactor](<https://github.com/mateussouzaweb/compactor/>) and [Statiq](<https://github.com/mateussouzaweb/statiq/>).
+- Install [Compactor](<https://github.com/mateussouzaweb/compactor/>).
 - Enable TV for [testing with developer mode](<https://webostv.developer.lge.com/develop/app-test/>).
 - Clone this repository, then run the following code to install the app:
 
@@ -31,7 +31,6 @@ npm install
 
 # Build from SRC
 npm run build
-npm run bundle
 npm run app-package
 
 # Install app for TV

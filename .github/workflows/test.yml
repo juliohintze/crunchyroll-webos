@@ -2,7 +2,6 @@ name: Build Test
 
 on:
   push:
-    # Don't run for tags
     tags-ignore:
       - 'v*.*.*'
     branches:
@@ -20,24 +19,20 @@ jobs:
         with:
           node-version: 14
 
-      - name: Install Compactor
+      - name: Install dependencies
         run: |
-          sudo wget https://github.com/mateussouzaweb/compactor/releases/download/latest/compactor -O /usr/local/bin/compactor
-          sudo chmod +x /usr/local/bin/compactor
+          curl https://mateussouzaweb.github.io/compactor/install.sh | bash
+          npm install
+          npm install --global rollup
 
-      - name: Install NPM packages
-        run: |
-          sudo npm install
-          sudo npm install --global rollup
-
-      - name: Build TV package
+      - name: Build package
         run: |
           npm run build
-          npm run bundle
           npm run app-package
           npm run app-manifest
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
         with:
           name: webos-snapshot
           path: |

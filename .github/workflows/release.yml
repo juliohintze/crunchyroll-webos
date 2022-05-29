@@ -1,4 +1,4 @@
-name: Release
+name: Build Release
 
 on:
   push:
@@ -19,24 +19,19 @@ jobs:
         with:
           node-version: 14
 
-      - name: Install Compactor
+      - name: Install dependencies
         run: |
-          sudo wget https://github.com/mateussouzaweb/compactor/releases/download/latest/compactor -O /usr/local/bin/compactor
-          sudo chmod +x /usr/local/bin/compactor
-
-      - name: Install NPM packages
-        run: |
-          sudo npm install
-          sudo npm install --global rollup
+          curl https://mateussouzaweb.github.io/compactor/install.sh | bash
+          npm install
+          npm install --global rollup
 
       - name: Build package
         run: |
           npm run build
-          npm run bundle
           npm run app-package
           npm run app-manifest
 
-      - name: Create Release
+      - name: Create release
         id: create_release_webos
         uses: ncipollo/release-action@v1
         with:
