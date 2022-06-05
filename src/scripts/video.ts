@@ -99,48 +99,42 @@ const loadVideo = async () => {
         'media.series_name'
     ]
 
-    try {
+    const response = await Api.request('POST', '/info', {
+        media_id: episodeId,
+        fields: fields.join(',')
+    })
 
-        const response = await Api.request('POST', '/info', {
-            media_id: episodeId,
-            fields: fields.join(',')
-        })
-
-        if (response.error
-            && response.code == 'bad_session') {
-            await Api.tryLogin()
-            return loadVideo()
-        }
-
-        if (response.error && response.message) {
-            throw new Error(response.message)
-        }
-
-        const serieName = response.data.series_name
-        const episodeName = response.data.name
-
-        const serieId = Number(response.data.series_id)
-        const collectionId = Number(response.data.collection_id)
-        const episodeNumber = Number(response.data.episode_number)
-
-        serie.innerHTML = serieName + ' / Episode ' + episodeNumber
-        title.innerHTML = episodeName
-
-        let startTime = response.data.playhead || 0
-        let duration = response.data.duration || 0
-
-        if (startTime / duration > 0.90 || startTime < 30) {
-            startTime = 0
-        }
-
-        streams = response.data.stream_data.streams
-        video.currentTime = startTime
-
-        loadClosestEpisodes(serieId, collectionId, episodeNumber)
-
-    } catch (error) {
-        showError(error.message)
+    if (response.error
+        && response.code == 'bad_session') {
+        await Api.tryLogin()
+        return loadVideo()
     }
+
+    if (response.error && response.message) {
+        throw new Error(response.message)
+    }
+
+    const serieName = response.data.series_name
+    const episodeName = response.data.name
+
+    const serieId = Number(response.data.series_id)
+    const collectionId = Number(response.data.collection_id)
+    const episodeNumber = Number(response.data.episode_number)
+
+    serie.innerHTML = serieName + ' / Episode ' + episodeNumber
+    title.innerHTML = episodeName
+
+    let startTime = response.data.playhead || 0
+    let duration = response.data.duration || 0
+
+    if (startTime / duration > 0.90 || startTime < 30) {
+        startTime = 0
+    }
+
+    streams = response.data.stream_data.streams
+    video.currentTime = startTime
+
+    loadClosestEpisodes(serieId, collectionId, episodeNumber)
 
 }
 
