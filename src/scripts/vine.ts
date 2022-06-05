@@ -1,4 +1,4 @@
-/*! Vine JS (2.0.6) - https://github.com/mateussouzaweb/vine */
+/*! Vine JS (2.0.7) - https://github.com/mateussouzaweb/vine */
 
 declare global {
     interface Window {
@@ -6,7 +6,7 @@ declare global {
     }
 }
 
-export const __version = '2.0.6'
+export const __version = '2.0.7'
 /**
  * Represents an element that can be selectable
  */
@@ -484,15 +484,17 @@ async function render(component: Component, callback: Callback) {
         return
     }
 
-    if (result !== current) {
-
-        // Destroy existing child elements
-        await destroy(component.element)
-
-        // Mount new HTML result
-        component.element.innerHTML = result
-
+    // If has no real change, then just run render callback
+    if (result === current) {
+        await callback(component)
+        return
     }
+
+    // Destroy existing child elements
+    await destroy(component.element)
+
+    // Mount new HTML result
+    component.element.innerHTML = result
 
     // Render callback
     await callback(component)
@@ -537,6 +539,9 @@ async function mount(target: HTMLElement | Document) {
             if (element.__components[namespace] !== undefined) {
                 continue
             }
+
+            // Attach placeholder while mounting
+            element.__components[namespace] = null
 
             // Solve the state result
             // State as function avoid pointer reference on objects
