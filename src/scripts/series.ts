@@ -86,6 +86,10 @@ const retrieveFilters: Callback = async (component) => {
                 return retrieveFilters(component)
             }
 
+            if (response.error && response.message) {
+                throw new Error(response.message)
+            }
+
             categories.push({ id: '-', name: '--- GENRES' })
             response.data.genre.map((item: { tag: any, label: any }) => {
                 categories.push({ id: item.tag, name: item.label })

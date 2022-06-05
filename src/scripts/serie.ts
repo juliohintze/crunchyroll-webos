@@ -134,6 +134,10 @@ const listSerieInfo: Callback = async (component) => {
             return listSerieInfo(component)
         }
 
+        if (response.error && response.message) {
+            throw new Error(response.message)
+        }
+
         const serieName = response.data.name
         const inQueue = response.data.in_queue
 

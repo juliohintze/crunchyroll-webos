@@ -112,6 +112,10 @@ const loadVideo = async () => {
             return loadVideo()
         }
 
+        if (response.error && response.message) {
+            throw new Error(response.message)
+        }
+
         const serieName = response.data.series_name
         const episodeName = response.data.name
 
