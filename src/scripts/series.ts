@@ -168,7 +168,8 @@ const listSeries: Callback = async (component) => {
             return listSeries(component)
         }
 
-        const items = response.data.map((item: object) => {
+        const data = response.data || []
+        const items = data.map((item: object) => {
             return Api.toSerie(item)
         })
 

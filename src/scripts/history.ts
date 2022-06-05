@@ -98,7 +98,8 @@ const listHistory: Callback = async (component) => {
             return listHistory(component)
         }
 
-        const items = response.data.map((item: object) => {
+        const data = response.data || []
+        const items = data.map((item: object) => {
             return Api.toSerieEpisode(item, 'history')
         })
 
