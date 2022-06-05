@@ -12,6 +12,8 @@ const state: State = () => {
         filter: 'popular',
         search: '',
         loaded: false,
+        error: false,
+        message: '',
         filters: [],
         items: [],
         nextPage: '',
@@ -181,7 +183,9 @@ const listSeries: Callback = async (component) => {
             loaded: true,
             items: items,
             nextPage: nextPage,
-            previousPage: previousPage
+            previousPage: previousPage,
+            error: response.error,
+            message: response.message || ''
         })
 
     } catch (error) {

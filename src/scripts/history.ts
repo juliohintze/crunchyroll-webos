@@ -10,6 +10,8 @@ const state: State = () => {
     return {
         pageNumber: Route.getParam('pageNumber') || 1,
         loaded: false,
+        error: false,
+        message: '',
         items: []
     }
 }
@@ -105,7 +107,9 @@ const listHistory: Callback = async (component) => {
 
         await component.render({
             loaded: true,
-            items: items
+            items: items,
+            error: response.error,
+            message: response.message || ''
         })
 
     } catch (error) {

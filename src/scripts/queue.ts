@@ -9,6 +9,8 @@ import { Api } from "./api"
 const state: State = () => {
     return {
         loaded: false,
+        error: false,
+        message: '',
         items: []
     }
 }
@@ -116,7 +118,9 @@ const listQueue: Callback = async (component) => {
 
         await component.render({
             loaded: true,
-            items: items
+            items: items,
+            error: response.error,
+            message: response.message || ''
         })
 
     } catch (error) {

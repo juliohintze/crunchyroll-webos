@@ -27,6 +27,10 @@
     <p>Loading...</p>
 {{ end }}
 
+{{ if error && message }}
+    <p>{{ message }}</p>
+{{ end }}
+
 {{ if items && items.length }}
     <div class="list-items">
         {{ each item in items }}

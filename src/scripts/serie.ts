@@ -14,6 +14,8 @@ const state: State = () => {
         pageNumber: 1,
         sort: 'desc',
         loaded: false,
+        error: false,
+        message: '',
         items: [],
         nextPage: '',
         previousPage: ''
@@ -205,7 +207,9 @@ const listEpisodes: Callback = async (component) => {
             loaded: true,
             items: items,
             nextPage: nextPage,
-            previousPage: previousPage
+            previousPage: previousPage,
+            error: response.error,
+            message: response.message || ''
         })
 
     } catch (error) {
