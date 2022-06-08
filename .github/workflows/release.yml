@@ -31,12 +31,12 @@ jobs:
           npm run app-package
           npm run app-manifest
 
-      - name: Create release
-        id: create_release_webos
-        uses: ncipollo/release-action@v1
+      - name: Create tag release
+        uses: 'marvinpinto/action-automatic-releases@latest'
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ steps.tagName.outputs.tag }}
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-          allowUpdates: true
-          artifacts: bin/*.ipk,bin/webosbrew.manifest.json
+          files: |
+            LICENSE.md
+            bin/*.ipk
+            bin/webosbrew.manifest.json
