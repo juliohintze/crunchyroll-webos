@@ -233,7 +233,7 @@ const setActiveElement = (element: HTMLElement) => {
         activeElement = element
     }
 
-    fire('updatedActiveElement', activeElement)
+    fire('active::element::updated', activeElement)
 
 }
 
@@ -337,51 +337,51 @@ const handleKeyOnVideo = (event: KeyboardEvent) => {
 
     // STOP
     } else if (key == keys.STOP) {
-        fire('stopVideo')
+        fire('video::stop')
         return true
 
     // PAUSE
     } else if (key == keys.PAUSE) {
-        fire('pauseVideo')
+        fire('video::pause')
         return true
 
     // PLAY
     } else if (key == keys.PLAY) {
-        fire('playVideo')
+        fire('video::play')
         return true
 
     // INFO / SPACE
     } else if (key == keys.INFO || key == keys.SPACE) {
-        fire('toggleVideo')
+        fire('video::toggle')
         return true
 
     // FORWARD
     } else if (key == keys.FORWARD) {
-        fire('forwardVideo', 1)
+        fire('video::forward', 1)
         return true
 
     // BACKWARD
     } else if (key == keys.BACKWARD) {
-        fire('backwardVideo', 1)
+        fire('video::backward', 1)
         return true
 
     // RIGHT
     // Only when controls are hidden
     } else if (!showControls && key == keys.RIGHT) {
-        fire('forwardVideo', 10)
+        fire('video::forward', 10)
         return true
 
     // LEFT
     // Only when controls are hidden
     } else if (!showControls && key == keys.LEFT) {
-        fire('backwardVideo', 10)
+        fire('video::backward', 10)
         return true
 
     // BACK
     } else if (key == keys.BACK
         || key == keys.BACKSPACE
         || key == keys.DELETE) {
-        fire('pauseVideo')
+        fire('video::pause')
         return true
 
     // RIGHT / LEFT / UP / DOWN
@@ -457,13 +457,13 @@ const onMount: Callback = ({ element }) => {
     })
 
     // Public
-    watch(element, 'setActiveElement', (element?: HTMLElement) => {
+    watch(element, 'active::element::set', (element?: HTMLElement) => {
         setTimeout(() => {
             setActiveElement(element)
         }, 200)
     })
 
-    watch(element, 'getActiveElement', (result: any) => {
+    watch(element, 'active::element::get', (result: any) => {
         result.active = activeElement
     })
 
@@ -480,8 +480,8 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'mouseleave')
     off(window, 'keydown')
 
-    unwatch(element, 'setActiveElement')
-    unwatch(element, 'getActiveElement')
+    unwatch(element, 'active::element::set')
+    unwatch(element, 'active::element::get')
 
 }
 

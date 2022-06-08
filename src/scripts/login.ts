@@ -25,7 +25,7 @@ const makeLogin: Callback = async ({ element, render }) => {
     localStorage.setItem('password', password.value)
     localStorage.setItem('locale', locale.value)
 
-    fire('showLoading')
+    fire('loading::show')
 
     try {
         await Api.tryLogin()
@@ -34,7 +34,7 @@ const makeLogin: Callback = async ({ element, render }) => {
         await render({ message: error.message })
     }
 
-    fire('hideLoading')
+    fire('loading::hide')
 
 }
 
@@ -64,7 +64,7 @@ const onMount: Callback = (component) => {
  */
 const onRender: Callback = ({ element }) => {
     const email = $('input#email', element)
-    fire('setActiveElement', email)
+    fire('active::element::set', email)
 }
 
 /**

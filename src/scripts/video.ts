@@ -54,7 +54,7 @@ const showError = (message: string) => {
     error.innerHTML = message
 
     const closeButton = $('.video-close', area)
-    fire('setActiveElement', closeButton)
+    fire('active::element::set', closeButton)
 
 }
 
@@ -633,7 +633,7 @@ const onMount: Callback = ({ element, render }) => {
         pauseVideo()
 
         const playButton = $('.video-play', element)
-        fire('setActiveElement', playButton)
+        fire('active::element::set', playButton)
 
     })
 
@@ -643,7 +643,7 @@ const onMount: Callback = ({ element, render }) => {
         playVideo()
 
         const pauseButton = $('.video-pause', element)
-        fire('setActiveElement', pauseButton)
+        fire('active::element::set', pauseButton)
 
     })
 
@@ -715,13 +715,13 @@ const onMount: Callback = ({ element, render }) => {
     })
 
     // Public
-    watch(element, 'playVideo', playVideo)
-    watch(element, 'pauseVideo', pauseVideo)
-    watch(element, 'stopVideo', stopVideo)
-    watch(element, 'toggleVideo', toggleVideo)
-    watch(element, 'forwardVideo', forwardVideo)
-    watch(element, 'backwardVideo', backwardVideo)
-    watch(element, 'viewReload', () => {
+    watch(element, 'video::play', playVideo)
+    watch(element, 'video::pause', pauseVideo)
+    watch(element, 'video::stop', stopVideo)
+    watch(element, 'video::toggle', toggleVideo)
+    watch(element, 'video::forward', forwardVideo)
+    watch(element, 'video::backward', backwardVideo)
+    watch(element, 'view::reload', () => {
         render()
     })
 
@@ -754,7 +754,7 @@ const onRender: Callback = async ({ element }) => {
             updateProgress()
         })
 
-        fire('showLoading')
+        fire('loading::show')
 
         try {
 
@@ -768,7 +768,7 @@ const onRender: Callback = async ({ element }) => {
             showError(error.message)
         }
 
-        fire('hideLoading')
+        fire('loading::hide')
 
     }, 200)
 
@@ -798,13 +798,13 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'mousemove touchmove', 'input[type="range"]')
     off(element, 'click input', 'input[type="range"]')
 
-    unwatch(element, 'playVideo')
-    unwatch(element, 'pauseVideo')
-    unwatch(element, 'stopVideo')
-    unwatch(element, 'toggleVideo')
-    unwatch(element, 'forwardVideo')
-    unwatch(element, 'backwardVideo')
-    unwatch(element, 'viewReload')
+    unwatch(element, 'video::play')
+    unwatch(element, 'video::pause')
+    unwatch(element, 'video::stop')
+    unwatch(element, 'video::toggle')
+    unwatch(element, 'video::forward')
+    unwatch(element, 'video::backward')
+    unwatch(element, 'view::reload')
 
 }
 

@@ -26,8 +26,8 @@ const onMount: Callback = ({ element }) => {
     })
 
     // Public
-    watch(element, 'showLoading', showLoading)
-    watch(element, 'hideLoading', hideLoading)
+    watch(element, 'loading::show', showLoading)
+    watch(element, 'loading::hide', hideLoading)
 
 }
 
@@ -40,8 +40,8 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'show')
     off(element, 'hide')
 
-    unwatch(element, 'showLoading')
-    unwatch(element, 'hideLoading')
+    unwatch(element, 'loading::show')
+    unwatch(element, 'loading::hide')
 
 }
 

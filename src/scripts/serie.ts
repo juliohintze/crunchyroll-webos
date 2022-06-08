@@ -119,7 +119,7 @@ const listSerieInfo: Callback = async (component) => {
         'series.year'
     ]
 
-    fire('showLoading')
+    fire('loading::show')
 
     try {
 
@@ -148,7 +148,7 @@ const listSerieInfo: Callback = async (component) => {
         console.log(error)
     }
 
-    fire('hideLoading')
+    fire('loading::hide')
 
 }
 
@@ -180,7 +180,7 @@ const listEpisodes: Callback = async (component) => {
         'media.free_available'
     ]
 
-    fire('showLoading')
+    fire('loading::show')
 
     try {
 
@@ -220,8 +220,8 @@ const listEpisodes: Callback = async (component) => {
         console.log(error)
     }
 
-    fire('hideLoading')
-    fire('setActiveElement')
+    fire('loading::hide')
+    fire('active::element::set')
 
 }
 
@@ -247,7 +247,7 @@ const onMount: Callback = async (component) => {
         removeFromQueue(component)
     })
 
-    watch(element, 'viewReload', async () => {
+    watch(element, 'view::reload', async () => {
         await parseParams(component)
         await listSerieInfo(component)
         await listEpisodes(component)
@@ -269,7 +269,7 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'click', '.add-to-queue')
     off(element, 'click', '.remove-to-queue')
 
-    unwatch(element, 'viewReload')
+    unwatch(element, 'view::reload')
 
 }
 

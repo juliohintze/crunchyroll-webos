@@ -35,7 +35,7 @@ const onMount: Callback = ({ element }) => {
         // Prevent in case of change to the same URL
         if (previous && next) {
             if (previous.path === next.path) {
-                fire('viewReload')
+                fire('view::reload')
                 return
             }
         }

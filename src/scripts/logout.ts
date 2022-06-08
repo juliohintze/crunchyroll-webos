@@ -7,7 +7,7 @@ import { Api } from "./api"
  */
 const onMount: Callback = async () => {
 
-    fire('showLoading')
+    fire('loading::show')
 
     const sessionId = localStorage.getItem('sessionId')
     const locale = localStorage.getItem('locale')
@@ -35,10 +35,10 @@ const onMount: Callback = async () => {
     localStorage.removeItem('auth')
     localStorage.removeItem('expires')
 
-    await fire('authChanged')
+    await fire('auth::changed')
 
     setTimeout(() => {
-        fire('hideLoading')
+        fire('loading::hide')
         Route.redirect('/login')
     }, 1000)
 

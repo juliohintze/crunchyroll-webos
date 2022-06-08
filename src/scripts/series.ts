@@ -156,7 +156,7 @@ const listSeries: Callback = async (component) => {
         'image.full_url'
     ]
 
-    fire('showLoading')
+    fire('loading::show')
 
     try {
 
@@ -196,8 +196,8 @@ const listSeries: Callback = async (component) => {
         console.log(error)
     }
 
-    fire('hideLoading')
-    fire('setActiveElement')
+    fire('loading::hide')
+    fire('active::element::set')
 
 }
 
@@ -217,7 +217,7 @@ const onMount: Callback = async (component) => {
         Route.redirect('/series?search=' + encodeURI(target.value))
     })
 
-    watch(element, 'viewReload', async () => {
+    watch(element, 'view::reload', async () => {
         await parseParams(component)
         await listSeries(component)
     })
@@ -237,7 +237,7 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'change', 'input#filter')
     off(element, 'change', 'input#search')
 
-    unwatch(element, 'viewReload')
+    unwatch(element, 'view::reload')
 
 }
 

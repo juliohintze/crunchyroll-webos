@@ -25,7 +25,7 @@ const onMount: Callback = ({ element }) => {
     on(element, 'click', '.dropdown-value', () => {
         element.classList.add('active')
         const firstLI = $('li', element)
-        fire('setActiveElement', firstLI)
+        fire('active::element::set', firstLI)
     })
 
     on(element, 'click', 'li', (_event, target) => {
@@ -35,7 +35,7 @@ const onMount: Callback = ({ element }) => {
         trigger(input, 'change')
 
         element.classList.remove('active')
-        fire('setActiveElement', element)
+        fire('active::element::set', element)
 
     })
 
@@ -45,7 +45,7 @@ const onMount: Callback = ({ element }) => {
         }
     })
 
-    watch(element, 'updatedActiveElement', (activeElement: HTMLElement) => {
+    watch(element, 'active::element::updated', (activeElement: HTMLElement) => {
         if (!activeElement || !isParentOf(activeElement)) {
             element.classList.remove('active')
         }
@@ -68,7 +68,7 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'click', 'li')
     off(element, 'blur')
 
-    unwatch(element, 'updatedActiveElement')
+    unwatch(element, 'active::element::updated')
 
 }
 

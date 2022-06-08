@@ -42,7 +42,7 @@ const onMount: Callback = (component) => {
         setActive(component)
     })
 
-    watch(component.element, 'authChanged', async () => {
+    watch(component.element, 'auth::changed', async () => {
         await component.render()
         await setActive(component)
     })
@@ -64,7 +64,7 @@ const onRender: Callback = (component) => {
 const onDestroy: Callback = ({ element }) => {
 
     unwatch(element, 'route::after::change')
-    unwatch(element, 'authChanged')
+    unwatch(element, 'auth::changed')
 
 }
 

@@ -96,7 +96,7 @@ const listQueue: Callback = async (component) => {
         'series.year'
     ]
 
-    fire('showLoading')
+    fire('loading::show')
 
     try {
 
@@ -127,8 +127,8 @@ const listQueue: Callback = async (component) => {
         console.log(error)
     }
 
-    fire('hideLoading')
-    fire('setActiveElement')
+    fire('loading::hide')
+    fire('active::element::set')
 
 }
 
@@ -138,7 +138,7 @@ const listQueue: Callback = async (component) => {
  */
 const onMount: Callback = (component) => {
 
-    watch(component.element, 'viewReload', () => {
+    watch(component.element, 'view::reload', () => {
         listQueue(component)
     })
 
@@ -151,7 +151,7 @@ const onMount: Callback = (component) => {
  * @param component
  */
 const onDestroy: Callback = ({element}) => {
-    unwatch(element, 'viewReload')
+    unwatch(element, 'view::reload')
 }
 
 register('[data-queue]', {
