@@ -454,6 +454,14 @@ const onMount: Callback = ({ element }) => {
         if (values.indexOf(key) !== -1 && handleKeyPress(event)) {
             event.preventDefault()
         }
+
+    })
+
+    // Input Events
+    on(element, 'focusin', 'input', (_event, target) => {
+        if( activeElement != target ){
+            setActiveElement(target)
+        }
     })
 
     // Public
