@@ -1,5 +1,5 @@
-import { destroy, fire, mount, register, Route, trigger, unwatch, watch } from "./vine"
 import type { Callback, RouteChange } from "./vine"
+import { destroy, fire, mount, register, Route, trigger, unwatch, watch } from "./vine"
 
 /**
  * Attach route component changes
