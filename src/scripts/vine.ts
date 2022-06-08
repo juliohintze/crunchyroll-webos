@@ -1,4 +1,4 @@
-/*! Vine JS (2.0.7) - https://github.com/mateussouzaweb/vine */
+/*! Vine JS (2.0.8) - https://github.com/mateussouzaweb/vine */
 
 declare global {
     interface Window {
@@ -6,7 +6,7 @@ declare global {
     }
 }
 
-export const __version = '2.0.7'
+export const __version = '2.0.8'
 /**
  * Represents an element that can be selectable
  */
@@ -813,22 +813,6 @@ declare interface HTTPResult {
 declare type HTTPCallback = (details: HTTPRequest | HTTPResult) => void | Promise<void>
 
 /**
- * Add interceptor callback before each HTTP request
- * @param callback
- */
-function interceptBefore(callback: HTTPCallback) {
-    watch('HTTP', 'HTTPInterceptBefore', callback)
-}
-
-/**
- * Add interceptor callback after each HTTP request
- * @param callback
- */
-function interceptAfter(callback: HTTPCallback) {
-    watch('HTTP', 'HTTPInterceptAfter', callback)
-}
-
-/**
  * Make a HTTP request with given method
  * @param method
  * @param url
@@ -845,7 +829,7 @@ async function request(method: string, url: string, data?: BodyInit, headers?: H
         headers: headers
     }
 
-    await fire('HTTPInterceptBefore', request)
+    await fire('http::request::before', request)
     const options = {
         ...request
     }
@@ -899,7 +883,7 @@ async function request(method: string, url: string, data?: BodyInit, headers?: H
         body: body
     }
 
-    await fire('HTTPInterceptAfter', details)
+    await fire('http::request::after', details)
 
     if (!response.ok) {
         throw details
@@ -988,8 +972,6 @@ async function _delete(url: string, data?: BodyInit, headers?: HeadersInit) {
 export type { HTTPRequest, HTTPResult, HTTPCallback }
 
 export const HTTP = {
-    interceptBefore,
-    interceptAfter,
     request,
     options,
     head,
@@ -1055,22 +1037,6 @@ const _options = {
      */
     prevent: false
 
-}
-
-/**
- * Add callback before each route transition
- * @param callback
- */
-function beforeChange(callback: RouteCallback) {
-    watch('Route', 'RouteChangeBefore', callback)
-}
-
-/**
- * Add callback after each route transition
- * @param callback
- */
-function afterChange(callback: RouteCallback) {
-    watch('Route', 'RouteChangeAfter', callback)
 }
 
 /**
@@ -1299,7 +1265,7 @@ async function change(toLocation: string, replace?: boolean) {
         replace: replace
     }
 
-    await fire('RouteChangeBefore', change)
+    await fire('route::before::change', change)
 
     if (change.replace) {
         _options.prevent = true
@@ -1315,7 +1281,7 @@ async function change(toLocation: string, replace?: boolean) {
 
     _active = (change.next) ? change.next : null
 
-    await fire('RouteChangeAfter', change)
+    await fire('route::after::change', change)
 
 }
 
@@ -1443,8 +1409,6 @@ function init(options: Record<string, string>) {
 
 export type { RoutePath, RouteChange, RouteCallback }
 export const Route = {
-    beforeChange,
-    afterChange,
     normalizePath,
     paramsFor,
     queryFor,

@@ -1,5 +1,5 @@
-import type { Callback } from "./vine"
-import { destroy, fire, mount, register, Route } from "./vine"
+import { destroy, fire, mount, register, Route, trigger, unwatch, watch } from "./vine"
+import type { Callback, RouteChange } from "./vine"
 
 /**
  * Attach route component changes
@@ -12,7 +12,7 @@ const onMount: Callback = ({ element }) => {
         return expires && new Date() < new Date(expires)
     }
 
-    Route.beforeChange( (change) => {
+    watch(element, 'route::before::change', (change: RouteChange) => {
 
         // Kind of 404
         if (!change.next) {
@@ -26,7 +26,7 @@ const onMount: Callback = ({ element }) => {
 
     })
 
-    Route.afterChange(async (change) => {
+    watch(element, 'route::after::change', async (change: RouteChange) => {
 
         const previous = change.previous
         const next = change.next
@@ -77,6 +77,26 @@ const onMount: Callback = ({ element }) => {
 
 }
 
+/**
+ * Trigger initial popstate event
+ */
+const onRender: Callback = () => {
+    trigger(window, 'popstate')
+}
+
+/**
+ * Detach route component changes
+ * @param component
+ */
+const onDestroy: Callback = ({ element }) => {
+
+    unwatch(element, 'route::before::change')
+    unwatch(element, 'route::after::change')
+
+}
+
 register('[data-view]', {
-    onMount
+    onMount,
+    onRender,
+    onDestroy
 })

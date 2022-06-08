@@ -38,7 +38,7 @@ const setActive: Callback = ({ element }) => {
  */
 const onMount: Callback = (component) => {
 
-    Route.afterChange(() => {
+    watch(component.element, 'route::after::change', () => {
         setActive(component)
     })
 
@@ -62,7 +62,10 @@ const onRender: Callback = (component) => {
  * @param component
  */
 const onDestroy: Callback = ({ element }) => {
+
+    unwatch(element, 'route::after::change')
     unwatch(element, 'authChanged')
+
 }
 
 register('[data-menu]', {

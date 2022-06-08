@@ -1,4 +1,4 @@
-import { Engine, mount, on, Route, trigger } from "./vine"
+import { Engine, mount, on, Route } from "./vine"
 
 on(window, 'load', async () => {
 
@@ -21,8 +21,5 @@ on(window, 'load', async () => {
 
     // Component mounts
     await mount(document.body)
-
-    // Trigger initial popstate event
-    trigger(window, 'popstate')
 
 })
