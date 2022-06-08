@@ -157,9 +157,9 @@ body.page-video {
 .video-quality {
     display: flex;
     flex-flow: column;
-    height: 12.4rem;
+    height: 10.4rem;
     justify-content: center;
-    margin-top: -6.2rem;
+    margin-top: -5.2rem;
     opacity: 1;
     position: absolute;
     right: 1rem;
@@ -176,6 +176,10 @@ body.page-video {
         margin-bottom: 0.5rem;
         padding: 0.25rem 1rem;
         text-align: center;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
 
         &.active,
         &.hover,
