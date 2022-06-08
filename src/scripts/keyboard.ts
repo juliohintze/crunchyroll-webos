@@ -246,9 +246,13 @@ const handleKeyPress = (event: KeyboardEvent) => {
 
     const body = document.body
     const videoActive = body.classList.contains('page-video')
+    const inputActive = activeElement && activeElement.nodeName === 'INPUT'
+
     let result: boolean
 
-    if (videoActive) {
+    if ( inputActive ){
+        result = handleKeyOnInput(event)
+    } else if (videoActive) {
         result = handleKeyOnVideo(event)
     } else {
         result = handleKeyNavigation(event)
@@ -278,8 +282,6 @@ const handleKeyNavigation = (event: KeyboardEvent) => {
 
         if (current && current.classList.contains('dropdown')) {
             trigger(current, 'click', '.dropdown-value')
-        } else if (current && current.nodeName == 'INPUT') {
-            current.focus()
         } else if (current) {
             trigger(current, 'click')
         }
@@ -302,6 +304,60 @@ const handleKeyNavigation = (event: KeyboardEvent) => {
 
     // RIGHT / LEFT / UP / DOWN
     } else if (directions[key]) {
+
+        const closest = findClosestOnParents(
+            directions[key],
+            current,
+            current.parentElement
+        )
+
+        if (closest != null) {
+            setActiveElement(closest)
+        }
+
+        return true
+    }
+
+    return false
+}
+
+/**
+ * Handle key press specific to input
+ * @param event
+ * @returns
+ */
+const handleKeyOnInput = (event: KeyboardEvent) => {
+
+    const key = Number(event.keyCode)
+    const current = activeElement
+
+    // TAB
+    if (key == keys.TAB) {
+
+        const next = findTabStopElement(
+            (event.shiftKey) ? 'prev' : 'next',
+            current
+        )
+
+        if (next != null) {
+            setActiveElement(next)
+        }
+
+        return true
+
+    // OK / INFO
+    } else if (key == keys.OK
+        || key == keys.INFO ) {
+        current.focus()
+        return true
+
+    // BACK
+    } else if (key == keys.BACK) {
+        current.blur()
+        return true
+
+    // UP / DOWN
+    } else if (key == keys.UP || key == keys.DOWN) {
 
         const closest = findClosestOnParents(
             directions[key],
@@ -449,8 +505,10 @@ const onMount: Callback = ({ element }) => {
 
     // Keyboard Events
     on(window, 'keydown', (event: KeyboardEvent) => {
+
         const values = Object.values(keys)
         const key = Number(event.keyCode)
+
         if (values.indexOf(key) !== -1 && handleKeyPress(event)) {
             event.preventDefault()
         }
