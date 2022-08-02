@@ -8,6 +8,7 @@ let hls = null
 let area: HTMLElement = null
 let video: HTMLVideoElement = null
 let streams = []
+let startTime = 0
 let playing = false
 let trackTimeout = null
 let lastPlayhead = 0
@@ -124,15 +125,15 @@ const loadVideo = async () => {
     serie.innerHTML = serieName + ' / Episode ' + episodeNumber
     title.innerHTML = episodeName
 
-    let startTime = response.data.playhead || 0
+    let playhead = response.data.playhead || 0
     let duration = response.data.duration || 0
 
-    if (startTime / duration > 0.90 || startTime < 30) {
-        startTime = 0
+    if (playhead / duration > 0.90 || playhead < 30) {
+        playhead = 0
     }
 
     streams = response.data.stream_data.streams
-    video.currentTime = startTime
+    startTime = playhead
 
     loadClosestEpisodes(serieId, collectionId, episodeNumber)
 
@@ -213,8 +214,6 @@ const loadClosestEpisodes = async (
  */
 const streamVideo = async () => {
 
-    const currentTime = video.currentTime || 0
-
     if (!streams.length) {
         throw Error('No streams to load.')
     }
@@ -266,7 +265,7 @@ const streamVideo = async () => {
         })
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            hls.startLoad(currentTime)
+            hls.startLoad(startTime)
         })
 
         hls.on(Hls.Events.LEVEL_LOADED, () => {
