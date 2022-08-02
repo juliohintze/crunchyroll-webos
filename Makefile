@@ -12,6 +12,7 @@ build:
 	compactor \
 		--source $(PROOT)/src/ \
 		--destination $(PROOT)/dist/ \
+		--compress false \
 		--progressive false \
 		--hashed false \
 	&& rollup --config $(PROOT)/rollup.config.js \
