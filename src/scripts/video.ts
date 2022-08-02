@@ -233,17 +233,6 @@ const streamVideo = async () => {
 
     area.classList.add('video-is-loading')
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-
-        area.classList.remove('video-is-loading')
-        area.classList.add('video-is-loaded')
-
-        video.src = stream.url
-        video.currentTime = currentTime
-
-        return
-    }
-
     return await new Promise((resolve) => {
 
         if (!Hls.isSupported()) {
