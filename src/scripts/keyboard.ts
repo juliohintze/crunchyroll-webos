@@ -506,7 +506,7 @@ const onMount: Callback = ({ element }) => {
     // Keyboard Events
     on(window, 'keydown', (event: KeyboardEvent) => {
 
-        const values = Object.values(keys)
+        const values = Object.keys(keys).map((item) => keys[item])
         const key = Number(event.keyCode)
 
         if (values.indexOf(key) !== -1 && handleKeyPress(event)) {

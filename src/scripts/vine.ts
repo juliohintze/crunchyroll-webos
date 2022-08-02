@@ -761,7 +761,7 @@ function parse(template: string, data?: Object) {
 
         before = template.slice(cursor, match.index)
         cursor = match.index + match[0].length
-        parser.push('r.push(`' + before.replace(/"/g, '\\"') + '`);')
+        parser.push('r.push("' + before.replace(/"/g, '\\"') + '");')
 
         findVariables(line).filter((value) => {
             if (data[value] === undefined) {
@@ -774,7 +774,7 @@ function parse(template: string, data?: Object) {
     }
 
     after = template.substring(cursor, cursor + (template.length - cursor))
-    parser.push('r.push(`' + after.replace(/"/g, '\\"') + '`);')
+    parser.push('r.push("' + after.replace(/"/g, '\\"') + '");')
     parser.push('return r.join("");')
 
     const code = parser.join("\n")
@@ -1047,8 +1047,8 @@ const _options = {
  */
 function normalizePath(path: string, removeQuery?: boolean) {
 
-    path = path.replace(window.location.origin, '')
     path = path.replace(_options.base, '')
+    path = path.replace(window.location.origin, '')
     path = path.replace('/?', '?')
     path = path.replace(new RegExp('[/]*$'), '')
     path = path.replace(new RegExp('^[/]*'), '')
