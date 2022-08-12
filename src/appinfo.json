@@ -1,6 +1,6 @@
 {
     "id": "com.crunchyroll.webos",
-    "version": "1.9.2",
+    "version": "1.9.3",
     "vendor": "Mateus Souza",
     "type": "web",
     "main": "index.html",
