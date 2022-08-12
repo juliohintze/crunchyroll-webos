@@ -56,6 +56,7 @@ const showError = (message: string) => {
 
     const closeButton = $('.video-close', area)
     fire('active::element::set', closeButton)
+    fire('loading::hide')
 
 }
 
