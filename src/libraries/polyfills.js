@@ -41,6 +41,13 @@ if (!Array.prototype.find) {
     };
 }
 
+// Array.includes
+if( !Array.prototype.includes ) {
+    Array.prototype.includes = function(search){
+        return !!~this.indexOf(search);
+    };
+}
+
 // Fetch
 window.fetch || (window.fetch = function (e, n) {
     return n = n || {}, new Promise(function (t, s) {
