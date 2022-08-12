@@ -10,9 +10,6 @@ on(window, 'load', async () => {
 
     // Route definitions
     let base = window.location.pathname.replace('index.html', '')
-    if (window.location.protocol == 'file:') {
-        base = 'file://' + base
-    }
 
     Route.init({
         mode: 'hash',

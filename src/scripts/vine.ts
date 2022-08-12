@@ -1,4 +1,4 @@
-/*! Vine JS (2.0.8) - https://github.com/mateussouzaweb/vine */
+/*! Vine JS (2.0.9) - https://github.com/mateussouzaweb/vine */
 
 declare global {
     interface Window {
@@ -6,7 +6,7 @@ declare global {
     }
 }
 
-export const __version = '2.0.8'
+export const __version = '2.0.9'
 /**
  * Represents an element that can be selectable
  */
@@ -1047,8 +1047,9 @@ const _options = {
  */
 function normalizePath(path: string, removeQuery?: boolean) {
 
+    path = path.replace(window.location.protocol + '//', '')
+    path = path.replace(window.location.host, '')
     path = path.replace(_options.base, '')
-    path = path.replace(window.location.origin, '')
     path = path.replace('/?', '?')
     path = path.replace(new RegExp('[/]*$'), '')
     path = path.replace(new RegExp('^[/]*'), '')
