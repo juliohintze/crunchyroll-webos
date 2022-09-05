@@ -224,7 +224,7 @@ const streamVideo = async () => {
     })
 
     if (!stream) {
-        stream = [streams.length - 1]
+        stream = streams[streams.length - 1]
     }
 
     const proxy = document.body.dataset.proxy
