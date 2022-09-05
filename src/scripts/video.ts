@@ -265,16 +265,16 @@ const streamVideo = async () => {
 
         hls.on(Hls.Events.LEVEL_SWITCHED, () => {
 
-            let level = hls.currentLevel
-            let next = $('.video-quality div[data-level="' + level + '"]', area)
-            let active = $('.video-quality div.active', area)
+            let quality = $('.video-quality', area)
+            let level = hls.levels[hls.currentLevel]
+            let next = hls.currentLevel - 1
 
-            if (!next) {
-                next = $('.video-quality div[data-level="-1"]', area)
+            if (next < -1) {
+                next = hls.levels[hls.levels.length - 1]
             }
 
-            active.classList.remove('active')
-            next.classList.add('active')
+            quality.dataset.next = next
+            $('span', quality).innerText = level.height + 'p'
 
         })
 
@@ -291,22 +291,22 @@ const streamVideo = async () => {
             switch (data.type) {
                 case Hls.ErrorTypes.OTHER_ERROR:
                     hls.startLoad()
-                break
+                    break
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     if (data.details == 'manifestLoadError') {
                         showError('Episode cannot be played because of CORS error. You must use a proxy.')
                     } else {
                         hls.startLoad()
                     }
-                break
+                    break
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     showError('Media error: trying recovery...')
                     hls.recoverMediaError()
-                break
+                    break
                 default:
                     showError('Media cannot be recovered: ' + data.details)
                     hls.destroy()
-                break
+                    break
             }
 
         })
@@ -571,6 +571,15 @@ const setWatched = async () => {
 }
 
 /**
+ * Set video quality
+ * @param level
+ */
+const setQuality = (level: number) => {
+    hls.currentLevel = level
+    hls.loadLevel = level
+}
+
+/**
  * On mount
  * @param component
  */
@@ -590,6 +599,11 @@ const onMount: Callback = ({ element, render }) => {
     on(element, 'click', '.video-watched', (event) => {
         event.preventDefault()
         setWatched()
+    })
+
+    on(element, 'click', '.video-quality', (event, target) => {
+        event.preventDefault()
+        setQuality(Number(target.dataset.next))
     })
 
     on(element, 'click', '.video-episodes', (event) => {
@@ -655,19 +669,6 @@ const onMount: Callback = ({ element, render }) => {
     on(element, 'click', '.video-skip-intro', (event) => {
         event.preventDefault()
         forwardVideo(80)
-    })
-
-    // Quality
-    on(element, 'click', '.video-quality div', (event, target) => {
-
-        event.preventDefault()
-        const level = Number(target.dataset.level)
-
-        if (hls) {
-            hls.currentLevel = level
-            hls.loadLevel = level
-        }
-
     })
 
     // Mouse Events
@@ -770,6 +771,7 @@ const onRender: Callback = async ({ element }) => {
 const onDestroy: Callback = ({ element }) => {
 
     off(element, 'click', '.video-close')
+    off(element, 'click', '.video-quality')
     off(element, 'click', '.video-watched')
     off(element, 'click', '.video-episodes')
     off(element, 'click', '.video-previous-episode')
@@ -781,7 +783,6 @@ const onDestroy: Callback = ({ element }) => {
     off(element, 'click', '.video-forward')
     off(element, 'click', '.video-backward')
     off(element, 'click', '.video-skip-intro')
-    off(element, 'click', '.video-quality div')
     off(element, 'mouseenter mousemove')
     off(element, 'mouseleave')
     off(element, 'mousemove touchmove', 'input[type="range"]')
