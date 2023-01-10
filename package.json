@@ -4,6 +4,7 @@
   "homepage": "https://github.com/mateussouzaweb/crunchyroll-webos",
   "license": "GPL3",
   "source": "src/index.html",
+  "type": "module",
   "scripts": {
     "develop": "make develop",
     "build": "make build",
