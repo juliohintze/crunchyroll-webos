@@ -15,14 +15,14 @@ You can download and install this app in your WebOS TV following one of the guid
 
 - Using [HomeBrew](https://www.webosbrew.org) TV app (recommended).
 - Using [dev-manager-desktop](https://github.com/webosbrew/dev-manager-desktop) from computer.
-- Downloading IPK from [latest release](https://github.com/mateussouzaweb/crunchyroll-webos/releases/latest) page and install using [WebOS SDK](<https://webostv.developer.lge.com/sdk/installation/>).
+- Downloading IPK from [latest release](https://github.com/mateussouzaweb/crunchyroll-webos/releases/latest) page and install using [WebOS SDK](https://webostv.developer.lge.com/develop/tools/cli-introduction).
 
 ## For Developers
 
 This method will install Crunchyroll as TV app, but is recommended only for developers:
 
-- Install [Compactor](<https://github.com/mateussouzaweb/compactor/>).
-- Enable TV for [testing with developer mode](<https://webostv.developer.lge.com/develop/app-test/>).
+- Install [Compactor](https://github.com/mateussouzaweb/compactor).
+- Enable TV for [testing with developer mode](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app).
 - Clone this repository, then run the following code to install the app:
 
 ```bash
