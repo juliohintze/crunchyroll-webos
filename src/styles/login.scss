@@ -1,7 +1,5 @@
 /* LOGIN */
 body.page-login {
-    background-color: #F37521;
-
     #menu {
         display: none;
     }
@@ -16,21 +14,6 @@ body.page-login {
     justify-content: center;
     min-height: 100vh;
     position: relative;
-    transition: background 0.25s;
-
-    &::before {
-        background: url(../images/512px.png) no-repeat center center;
-        bottom: 0;
-        content: '';
-        display: block;
-        height: 100%;
-        left: 0;
-        opacity: 0.25;
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: 100%;
-    }
 
     form {
         flex: 1;
@@ -45,7 +28,7 @@ body.page-login {
     }
 
     label {
-        background: #000;
+        background: #f37521;
         border-radius: 0.25rem 0.25rem 0 0.25rem;
         bottom: 80%;
         left: 0;
@@ -56,37 +39,13 @@ body.page-login {
 
     input,
     .dropdown {
-        border-color: #000;
         margin-bottom: 2rem;
     }
 
-    input.hover,
-    input:focus,
-    input:active,
-    .dropdown.hover,
-    .dropdown:focus,
-    .dropdown:active {
-        background-color: #ffc8a4;
-        border-color: #000;
-    }
-
-    .dropdown:focus-within {
-        background-color: #ffc8a4;
-        border-color: #000;
-    }
-
-    input:-webkit-autofill,
-    input:-webkit-autofill:active,
-    input:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0px 1000px #FFF inset;
-
-        &.hover {
-            -webkit-box-shadow: 0 0 0px 1000px #ffc8a4 inset;
-        }
-    }
-
     button {
-        border-color: #000;
+        background: #f37521;
+        border-color: #f37521;
+        font-weight: bold;
         margin-bottom: 2rem;
     }
     button.hover,
@@ -96,19 +55,13 @@ body.page-login {
     }
 
     #message {
+        background: #a50404;
+        border-radius: 0.25rem;
         margin-top: 0.83rem;
+        padding: 10px;
     }
-
 }
 
-.mouse #login input:hover,
-.mouse #login .dropdown:hover {
-    border-color: #000000;
-    background-color: #ffc8a4;
-}
-.mouse #login input:-webkit-autofill:hover {
-    -webkit-box-shadow: 0 0 0px 1000px #ffc8a4 inset;
-}
 .mouse #login button:hover {
     background: #5d2500;
 }

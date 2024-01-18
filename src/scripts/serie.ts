@@ -1,6 +1,6 @@
 import type { Callback, State, Template } from "./vine"
 import { $, fire, on, off, register, Route, unwatch, watch } from "./vine"
-import { Api } from "./api"
+import { App } from "./app"
 
 /**
  * Initial state
@@ -10,7 +10,11 @@ const state: State = () => {
     return {
         serieId: null,
         serieName: '',
-        inQueue: false,
+        totalSeasons: 0,
+        totalEpisodes: 0,
+        seasons: [],
+        seasonId: null,
+        inWatchlist: false,
         pageNumber: 1,
         sort: 'desc',
         loaded: false,
@@ -28,124 +32,109 @@ const state: State = () => {
  * @returns
  */
 const template: Template = async ({ state }) => {
-    return await Api.getTemplate('serie', state)
+    return await App.getTemplate('serie', state)
 }
 
 /**
  * Parse route params to the component
  * @param component
  */
-const parseParams: Callback = (component) => {
+const parseParams: Callback = ({ state }) => {
 
-    const serieId = Route.getParam('serieId')
-    const sort = Route.getParam('sort') || 'desc'
-    const pageNumber = Route.getParam('pageNumber') || 1
+    const serieId = String(Route.getParam('serieId') || '')
+    const seasonId = String(Route.getParam('seasonId') || '')
+    const sort = String(Route.getParam('sort') || 'desc')
+    const pageNumber = Number(Route.getParam('pageNumber') || 1)
 
-    component.state = {
-        serieId: serieId,
-        sort: sort,
-        pageNumber: pageNumber
-    }
+    state.serieId = serieId
+    state.seasonId = seasonId
+    state.sort = sort
+    state.pageNumber = pageNumber
 
 }
 
 /**
- * Add serie to queue
+ * Add serie to watchlist
  * @param component
  * @returns
  */
-const addToQueue: Callback = (component) => {
+const addToWatchlist: Callback = async ({ element, state }) => {
 
-    const serieId = component.state.serieId
-    const element = component.element
+    const serieId = state.serieId
+    const addToWatchlist = $('.add-to-watchlist', element)
+    const removeFromWatchlist = $('.remove-from-watchlist', element)
 
-    const addToQueue = $('.add-to-queue', element)
-    const removeFromQueue = $('.remove-from-queue', element)
+    addToWatchlist.classList.add('hidden')
+    removeFromWatchlist.classList.remove('hidden')
 
-    addToQueue.classList.add('hidden')
-    removeFromQueue.classList.remove('hidden')
+    await App.addToWatchlist(serieId, {})
 
-    return Api.request('POST', '/add_to_queue', {
-        series_id: serieId,
-        group_id: serieId
-    })
 }
 
 /**
- * Remove serie from queue
+ * Remove serie from watchlist
  * @param component
  * @returns
  */
-const removeFromQueue: Callback = (component) => {
+const removeFromWatchlist: Callback = async ({ element, state }) => {
 
-    const serieId = component.state.serieId
-    const element = component.element
+    const serieId = state.serieId
+    const addToWatchlist = $('.add-to-watchlist', element)
+    const removeFromWatchlist = $('.remove-from-watchlist', element)
 
-    const addToQueue = $('.add-to-queue', element)
-    const removeFromQueue = $('.remove-from-queue', element)
+    addToWatchlist.classList.remove('hidden')
+    removeFromWatchlist.classList.add('hidden')
 
-    addToQueue.classList.remove('hidden')
-    removeFromQueue.classList.add('hidden')
+    await App.removeFromWatchlist(serieId, {})
 
-    return Api.request('POST', '/remove_from_queue', {
-        series_id: serieId,
-        group_id: serieId
-    })
 }
 
 /**
  * List serie info
  * @param component
  */
-const listSerieInfo: Callback = async (component) => {
-
-    const serieId = component.state.serieId
-    const fields = [
-        'series',
-        'series.class',
-        'series.collection_count',
-        'series.description',
-        'series.genres',
-        'series.in_queue',
-        'series.landscape_image',
-        'series.media_count',
-        'series.media_type',
-        'series.name',
-        'series.portrait_image',
-        'series.publisher_name',
-        'series.rating',
-        'series.series_id',
-        'series.url',
-        'series.year'
-    ]
+const listSerieInfo: Callback = async ({ state }) => {
 
     fire('loading::show')
 
     try {
 
-        const response = await Api.request('POST', '/info', {
-            series_id: serieId,
-            fields: fields.join(',')
+        const serieId = state.serieId
+        const serieResponse = await App.serie(serieId, {})
+        const serieInfo = serieResponse.data[0]
+
+        const serieName = serieInfo.title
+        const totalSeasons = serieInfo.season_count
+        const totalEpisodes = serieInfo.episode_count
+
+        state.serieName = serieName
+        state.totalSeasons = totalSeasons
+        state.totalEpisodes = totalEpisodes
+
+        const watchlistResponse = await App.inWatchlist({
+            'content_ids': serieId
         })
 
-        if (response.error
-            && response.code == 'bad_session') {
-            await Api.tryLogin()
-            return listSerieInfo(component)
+        const inWatchlist = watchlistResponse.data.length > 0
+        state.inWatchlist = inWatchlist
+
+        const seasonsResponse = await App.seasons(serieId, {})
+        const seasons = seasonsResponse.items.map((item) => {
+            return {
+                id: item.id,
+                name: 'S' + item.season_number + ': ' + item.title
+            }
+        })
+
+        state.seasons = seasons
+
+        if( !state.seasonId && seasons.length ){
+            state.seasonId = seasons[0].id
         }
-
-        if (response.error && response.message) {
-            throw new Error(response.message)
-        }
-
-        const serieName = response.data.name
-        const inQueue = response.data.in_queue
-
-        component.state.serieName = serieName
-        component.state.inQueue = inQueue
 
     } catch (error) {
-        console.log(error)
+        state.error = true
+        state.message = error.message
     }
 
     fire('loading::hide')
@@ -156,58 +145,49 @@ const listSerieInfo: Callback = async (component) => {
  * List episodes
  * @param component
  */
-const listEpisodes: Callback = async (component) => {
+const listEpisodes: Callback = async ({ state, render }) => {
 
-    const serieId = Number(component.state.serieId)
-    const pageNumber = Number(component.state.pageNumber)
-    const sort = String(component.state.sort)
+    const serieId = String(state.serieId)
+    const seasonId = String(state.seasonId)
+    const pageNumber = Number(state.pageNumber)
+    const sort = String(state.sort)
     const limit = 20
 
-    const fields = [
-        'most_likely_media',
-        'media',
-        'media.name',
-        'media.description',
-        'media.episode_number',
-        'media.duration',
-        'media.playhead',
-        'media.screenshot_image',
-        'media.media_id',
-        'media.series_id',
-        'media.series_name',
-        'media.collection_id',
-        'media.url',
-        'media.free_available'
-    ]
+    if( !serieId || !seasonId ){
+        return
+    }
 
     fire('loading::show')
 
     try {
 
-        const response = await Api.request('POST', '/list_media', {
-            series_id: serieId,
-            sort: sort,
-            fields: fields.join(','),
-            limit: limit,
-            offset: (pageNumber - 1) * limit
+        const response = await App.episodes(seasonId, {
+            'order': sort,
+            'n': limit.toString()
         })
 
-        if (response.error
-            && response.code == 'bad_session') {
-            await Api.tryLogin()
-            return listEpisodes(component)
-        }
-
-        const data = response.data || []
-        const items = data.map((item: object) => {
-            return Api.toSerieEpisode(item, 'serie')
+        const items = response.items.map((item) => {
+            return {
+                id: item.id,
+                image: item.images.thumbnail[0][0].source,
+                number: item.episode_number,
+                name: item.title,
+                description: item.description,
+                duration: item.duration_ms / 1000,
+                playhead: item.playhead,
+                premium: item.is_premium_only,
+                season_id: item.season_id,
+                season_name: item.season_title,
+                serie_id: item.series_id,
+                serie_name: item.series_title,
+            }
         })
 
-        const base = 'serie/' + serieId + '/' + sort + "/"
+        const base = 'serie/' + serieId + '/season/' + seasonId + '/' + sort + '/'
         const nextPage = (items.length) ? base + (pageNumber + 1) : ''
         const previousPage = (pageNumber > 1) ? base + (pageNumber - 1) : ''
 
-        await component.render({
+        await render({
             loaded: true,
             items: items,
             nextPage: nextPage,
@@ -217,7 +197,13 @@ const listEpisodes: Callback = async (component) => {
         })
 
     } catch (error) {
-        console.log(error)
+        
+        await render({
+            loaded: true,
+            error: true,
+            message: error.message
+        })
+
     }
 
     fire('loading::hide')
@@ -233,18 +219,25 @@ const onMount: Callback = async (component) => {
 
     const element = component.element
 
+    on(element, 'change', 'input#season', (_event, target: HTMLInputElement) => {
+        const serieId = component.state.serieId
+        Route.redirect('/serie/' + serieId + '/season/' + target.value)
+    })
+    
     on(element, 'change', 'input#sort', (_event, target: HTMLInputElement) => {
-        Route.redirect('/serie/' + component.state.serieId + '/' + target.value)
+        const serieId = component.state.serieId
+        const seasonId = component.state.seasonId
+        Route.redirect('/serie/' + serieId + '/season/' + seasonId + '/' + target.value)
     })
 
-    on(element, 'click', '.add-to-queue', (event) => {
+    on(element, 'click', '.add-to-watchlist', (event) => {
         event.preventDefault()
-        addToQueue(component)
+        addToWatchlist(component)
     })
 
-    on(element, 'click', '.remove-from-queue', (event) => {
+    on(element, 'click', '.remove-from-watchlist', (event) => {
         event.preventDefault()
-        removeFromQueue(component)
+        removeFromWatchlist(component)
     })
 
     watch(element, 'view::reload', async () => {
@@ -265,9 +258,10 @@ const onMount: Callback = async (component) => {
  */
 const onDestroy: Callback = ({ element }) => {
 
+    off(element, 'change', 'input#season')
     off(element, 'change', 'input#sort')
-    off(element, 'click', '.add-to-queue')
-    off(element, 'click', '.remove-to-queue')
+    off(element, 'click', '.add-to-watchlist')
+    off(element, 'click', '.remove-to-watchlist')
 
     unwatch(element, 'view::reload')
 
@@ -282,7 +276,7 @@ register('[data-serie]', {
 
 Route.add({
     id: 'serie',
-    menuId: 'series',
+    menuId: 'explore',
     path: '/serie/:serieId',
     title: 'Serie',
     component: '<div data-serie></div>',
@@ -290,16 +284,24 @@ Route.add({
 })
 Route.add({
     id: 'serie',
-    menuId: 'series',
-    path: '/serie/:serieId/:sort',
+    menuId: 'explore',
+    path: '/serie/:serieId/season/:seasonId',
     title: 'Serie',
     component: '<div data-serie></div>',
     authenticated: true
 })
 Route.add({
     id: 'serie',
-    menuId: 'series',
-    path: '/serie/:serieId/:sort/:pageNumber',
+    menuId: 'explore',
+    path: '/serie/:serieId/season/:seasonId/:sort',
+    title: 'Serie',
+    component: '<div data-serie></div>',
+    authenticated: true
+})
+Route.add({
+    id: 'serie',
+    menuId: 'explore',
+    path: '/serie/:serieId/season/:seasonId/:sort/:pageNumber',
     title: 'Serie',
     component: '<div data-serie></div>',
     authenticated: true

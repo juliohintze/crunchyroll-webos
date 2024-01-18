@@ -1,11 +1,13 @@
 <h1 tabindex="0">History</h1>
 
-{{ if !loaded }}
-    <p>Loading...</p>
+{{ if error && message }}
+    <div class="error-message">
+        <p>{{ message }}</p>
+    </div>
 {{ end }}
 
-{{ if error && message }}
-    <p>{{ message }}</p>
+{{ if !loaded }}
+    <p>Loading...</p>
 {{ end }}
 
 {{ if items && items.length }}
@@ -20,9 +22,11 @@
             data-episode-duration="{{ item.duration }}"
             data-episode-playhead="{{ item.playhead }}"
             data-episode-premium="{{ item.premium }}">
-            <a href="serie/{{ item.serie_id }}/episode/{{ item.id }}/video" class="list-item-inside" tabindex="0">
+            <a href="serie/{{ item.serie_id }}/season/{{ item.season_id }}/episode/{{ item.id }}/video" class="list-item-inside" tabindex="0">
                 <div class="list-item-image">
-                    <img src="{{ item.image }}" title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}" />
+                    <img src="{{ item.image }}" 
+                        title="{{ item.serie_name }} - E{{ item.number }} - {{ item.name }}" 
+                        loading="lazy"/>
                     <div class="list-item-progress hidden">&nbsp;</div>
                     <div class="list-item-premium hidden">&nbsp;</div>
                 </div>
@@ -33,13 +37,9 @@
             </a>
         </div>
         {{ end }}
-        <div class="fill"></div>
-        <div class="fill"></div>
-        <div class="fill"></div>
-        <div class="fill"></div>
     </div>
 
-{{ elseif loaded }}
+{{ elseif loaded && !error && !items.length }}
 
     <p>Looks like you don't have any watch history yet... try watching something first.</p>
 

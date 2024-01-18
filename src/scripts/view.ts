@@ -1,5 +1,6 @@
 import type { Callback, RouteChange } from "./vine"
 import { destroy, fire, mount, register, Route, trigger, unwatch, watch } from "./vine"
+import { App } from "./app"
 
 /**
  * Attach route component changes
@@ -7,20 +8,15 @@ import { destroy, fire, mount, register, Route, trigger, unwatch, watch } from "
  */
 const onMount: Callback = ({ element }) => {
 
-    const isLoggedIn = () => {
-        const expires = localStorage.getItem('expires')
-        return expires && new Date() < new Date(expires)
-    }
-
     watch(element, 'route::before::change', (change: RouteChange) => {
 
-        // Kind of 404
+        // Kind of global 404
         if (!change.next) {
-            change.next = Route.match('/queue')
+            change.next = Route.match('/home')
         }
 
         // Check login
-        if (!isLoggedIn()) {
+        if (!App.isLoggedIn(true)) {
             change.next = Route.match('/login')
         }
 
@@ -51,14 +47,14 @@ const onMount: Callback = ({ element }) => {
 
         // Route unauthenticated only
         if (next && next.unauthenticated) {
-            if (isLoggedIn()) {
-                return Route.redirect('/queue')
+            if (App.isLoggedIn(true)) {
+                return Route.redirect('/home')
             }
         }
 
         // Route authenticated only
         if (next && next.authenticated) {
-            if (!isLoggedIn()) {
+            if (!App.isLoggedIn(true)) {
                 return Route.redirect('/login')
             }
         }

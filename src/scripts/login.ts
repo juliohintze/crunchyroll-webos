@@ -1,6 +1,6 @@
 import type { Callback, Template } from "./vine"
 import { $, fire, on, off, register, Route } from "./vine"
-import { Api } from "./api"
+import { App } from "./app"
 
 /**
  * Return template
@@ -8,7 +8,7 @@ import { Api } from "./api"
  * @returns
  */
 const template: Template = async ({ state }) => {
-    return await Api.getTemplate('login', state)
+    return await App.getTemplate('login', state)
 }
 
 /**
@@ -17,21 +17,18 @@ const template: Template = async ({ state }) => {
  */
 const makeLogin: Callback = async ({ element, render }) => {
 
-    const email = $('input#email', element) as HTMLInputElement
+    const username = $('input#username', element) as HTMLInputElement
     const password = $('input#password', element) as HTMLInputElement
-    const locale = $('input#locale', element) as HTMLInputElement
-
-    localStorage.setItem('email', email.value)
-    localStorage.setItem('password', password.value)
-    localStorage.setItem('locale', locale.value)
 
     fire('loading::show')
 
     try {
-        await Api.tryLogin()
+        await App.login(username.value, password.value)
         Route.redirect('/home')
     } catch (error) {
-        await render({ message: error.message })
+        await render({ 
+            message: error.message 
+        })
     }
 
     fire('loading::hide')
@@ -63,8 +60,8 @@ const onMount: Callback = (component) => {
  * @param component
  */
 const onRender: Callback = ({ element }) => {
-    const email = $('input#email', element)
-    fire('active::element::set', email)
+    const username = $('input#username', element)
+    fire('active::element::set', username)
 }
 
 /**

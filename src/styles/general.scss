@@ -52,12 +52,14 @@ input {
     &.hover,
     &:focus,
     &:active {
+        background: #ffc8a4;
         border-color: #F37521;
         outline: none;
     }
 
 }
 .mouse input:hover {
+    background-color: #ffc8a4;
     border-color: #F37521;
     outline: none;
 }

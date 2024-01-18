@@ -1,12 +1,23 @@
-<h1 tabindex="0">Series</h1>
+<h1 tabindex="0">Explore</h1>
 
 <div class="list-filters">
     <div class="dropdown" tabindex="0" data-dropdown>
         <input type="hidden" id="filter" name="filter" value="{{ filter }}">
-        <div class="dropdown-value"></div>
+        <div class="dropdown-value">Filter</div>
         <div class="dropdown-list">
             <ul>
                 {{ each option in filters }}
+                    <li tabindex="0" data-value="{{ option.id }}">{{ option.name }}</li>
+                {{ end }}
+            </ul>
+        </div>
+    </div>
+    <div class="dropdown" tabindex="0" data-dropdown>
+        <input type="hidden" id="category" name="category" value="{{ category }}">
+        <div class="dropdown-value">Category</div>
+        <div class="dropdown-list">
+            <ul>
+                {{ each option in categories }}
                     <li tabindex="0" data-value="{{ option.id }}">{{ option.name }}</li>
                 {{ end }}
             </ul>
@@ -21,21 +32,27 @@
         tabindex="0">
 </div>
 
-{{ if !loaded }}
-    <p>Loading...</p>
+{{ if error && message }}
+    <div class="error-message">
+        <p>{{ message }}</p>
+    </div>
 {{ end }}
 
-{{ if error && message }}
-    <p>{{ message }}</p>
+{{ if !loaded }}
+    <p>Loading...</p>
 {{ end }}
 
 {{ if items && items.length }}
     <div class="list-items">
         {{ each item in items }}
-        <div class="list-item series-item">
+        <div class="list-item explore-item">
             <a href="serie/{{ item.id }}" class="list-item-inside" tabindex="0">
                 <div class="list-item-image">
-                    <img src="{{ item.image }}" title="{{ item.name }}" width="640" height="960" />
+                    <img src="{{ item.image }}" 
+                        title="{{ item.name }}" 
+                        width="640" 
+                        height="960" 
+                        loading="lazy" />
                 </div>
                 <div class="list-item-info">
                     <h2>{{ item.name }}</h2>
@@ -44,13 +61,9 @@
             </a>
         </div>
         {{ end }}
-        <div class="fill"></div>
-        <div class="fill"></div>
-        <div class="fill"></div>
-        <div class="fill"></div>
     </div>
-{{ elseif loaded }}
-    <p>No series found.</p>
+{{ elseif loaded && !error && !items.length }}
+    <p>No results found.</p>
 {{ end }}
 
 {{ if previousPage || nextPage }}

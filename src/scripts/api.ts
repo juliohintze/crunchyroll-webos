@@ -1,182 +1,687 @@
-import { $, Engine, fire, HTTP } from "./vine"
-
+/**
+ * Generic data for API
+ */
 interface Data {
     [key: string]: any
+}
+
+/**
+ * Generic result for API
+ */
+interface Result {
+    [key: string]: any
+}
+
+// Base constants
+const authToken = 'b2VkYXJteHN0bGgxanZhd2ltbnE6OWxFaHZIWkpEMzJqdVY1ZFc5Vk9TNTdkb3BkSnBnbzE='
+const apiUrl = 'https://beta-api.crunchyroll.com'
+const staticUrl = 'https://static.crunchyroll.com'
+
+/**
+ * Encode data for API
+ * @param data
+ * @returns
+ */
+const encode = (data: Data) => {
+    const encoded = Object.keys(data).map((k) => {
+        const _k = encodeURIComponent(k)
+        const _v = encodeURIComponent(data[k])
+        return _k + "=" + _v
+    }).join('&')
+
+    return encoded
 }
 
 /**
  * Make request on Crunchyroll API
  * @param method
  * @param endpoint
- * @param data
+ * @param body
+ * @param headers
  * @returns
  */
-const request = (method: string, endpoint: string, data: Data) => {
+const request = async (method: string, endpoint: string, body: any, headers: Headers) => {
 
-    let url = 'https://api.crunchyroll.com'
-    url += endpoint + '.0.json'
+    const proxyUrl = document.body.dataset.proxyUrl
+    const proxyEncode = document.body.dataset.proxyEncode
 
-    // const proxy = document.body.dataset.proxy
-    // if( proxy ){
-    //     url = proxy + encodeURI(url)
-    // }
-
-    data.version = '0'
-    data.connectivity_type = 'ethernet'
-
-    const sessionId = localStorage.getItem('sessionId')
-    const locale = localStorage.getItem('locale')
-
-    if (sessionId && !data.session_id) {
-        data.session_id = sessionId
+    let url = apiUrl + endpoint
+    if (endpoint.includes('https://')){
+        url = endpoint
     }
-    if (locale && !data.locale) {
-        data.locale = locale
+    if (proxyUrl) {
+        url = proxyUrl + (proxyEncode === "true" ? encodeURIComponent(url) : url)
     }
 
-    if (method == 'POST') {
-
-        const formData = new FormData()
-        for (const key in data) {
-            formData.append(key, data[key])
-        }
-
-        return HTTP.request(method, url, formData, {})
+    const requestOptions = {
+        method: method,
+        headers: headers,
+        body: body,
+        referrerPolicy: 'no-referrer' as ReferrerPolicy
     }
 
-    return HTTP.request(method, url, data as BodyInit, {})
+    const result = await fetch(url, requestOptions)
+    
+    if( result.status === 204 ){
+        return {} as Result
+    }
+
+    const response = await result.json()
+    return response as Result
 }
 
 /**
- * Create UUID V4
+ * Login on Crunchyroll with given credentials
+ * @param username
+ * @param password
  * @returns
  */
-const createUuid = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
-        replace(/[xy]/g, (c) => {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8)
-            return v.toString(16)
-        })
-}
+const makeLogin = async (username: string, password: string) => {
 
-/**
- * Try login within the set session data on API
- * @returns
- */
-const tryLogin = async () => {
-
-    const email = localStorage.getItem('email')
-    const password = localStorage.getItem('password')
-    const locale = localStorage.getItem('locale')
-
-    const accessToken = 'LNDJgOit5yaRIWN'
-    const deviceType = 'com.crunchyroll.windows.desktop'
-    const deviceId = createUuid()
-    let sessionId = null
-
-    const response = await Api.request('GET', '/start_session', {
-        access_token: accessToken,
-        device_type: deviceType,
-        device_id: deviceId,
-        locale: locale
-    })
-
-    if (response.error) {
-        throw new Error('Session cannot be started.')
-    }
-
-    sessionId = response.data.session_id
-    const loginResponse = await Api.request('POST', '/login', {
-        session_id: sessionId,
-        account: email,
+    const data = encode({
+        username: username,
         password: password,
-        locale: locale
+        grant_type: 'password',
+        scope: 'offline_access',
     })
 
-    if (loginResponse.error) {
-        throw new Error('Invalid login.')
-    }
+    
+    const headers = new Headers()
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    headers.append('Authorization', 'Basic ' + authToken);
 
-    localStorage.setItem('accessToken', accessToken)
-    localStorage.setItem('deviceType', deviceType)
-    localStorage.setItem('deviceId', deviceId)
-    localStorage.setItem('sessionId', sessionId)
-    localStorage.setItem('locale', locale)
-    localStorage.setItem('email', email)
-    localStorage.setItem('password', password)
-    localStorage.setItem('userId', loginResponse.data.user.user_id)
-    localStorage.setItem('userName', loginResponse.data.user.username)
-    localStorage.setItem('auth', loginResponse.data.auth)
-    localStorage.setItem('expires', loginResponse.data.expires)
-
-    await fire('auth::changed')
-
-    return true
+    const result = await request('POST', '/auth/v1/token', data, headers)
+    return result
 }
 
 /**
- * Retrieve template as text
- * @param name
- * @param data
+ * Refresh login on Crunchyroll with refresh token
+ * @param refreshToken
  * @returns
  */
-const getTemplate = async (name: string, data: any) => {
-    const element = $('script#template-' + name)
-    const template = element.innerHTML
-    return Engine.parse(template, data)
+const refreshLogin = async (refreshToken: string) => {
+
+    const data = encode({
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+        scope: 'offline_access',
+    })
+
+    const headers = new Headers()
+    headers.append('Authorization', 'Basic ' + authToken);
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const result = await request('POST', '/auth/v1/token', data, headers)
+    return result
 }
 
 /**
- * Transform data into serie item
- * @param data
+ * Retrieve cookies
+ * @param accessToken
  * @returns
  */
-const toSerie = (data: Data) => ({
-    id: data.series_id,
-    name: data.name,
-    description: data.description,
-    image: data.portrait_image.full_url
-})
+const getCookies = async (accessToken: string) => {
+
+    const headers = new Headers();
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const result = await request('GET', '/index/v2', null, headers)
+    return result
+}
 
 /**
- * Transform data to serie episode item
- * @param data
- * @param source
+ * Retrieve profile data
+ * @param accessToken
  * @returns
  */
-const toSerieEpisode = (data: Data, source: string) => {
+const getProfile = async (accessToken: string) => {
 
-    let serie = data.series || {}
-    let episode = data
+    const headers = new Headers();
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
 
-    if (source == 'history') {
-        episode = data.media
-    }
-    if (source == 'queue') {
-        episode = data.most_likely_media
-    }
+    const result = await request('GET', '/accounts/v1/me/profile', null, headers)
+    return result
+}
 
-    if (!episode) {
-        return
-    }
+/**
+ * Update profile data
+ * @param accessToken
+ * @param data
+ * @returns
+ */
+const updateProfile = async (accessToken: string, data: Data) => {
 
-    return {
-        serie_id: serie.series_id || episode.series_id,
-        serie_name: serie.name || '',
-        id: episode.media_id,
-        name: episode.name,
-        number: episode.episode_number,
-        image: episode.screenshot_image.full_url,
-        duration: episode.duration,
-        playhead: episode.playhead,
-        premium: (!episode.free_available) ? 1 : 0
-    }
+    const headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/json')
+
+    const body = JSON.stringify(data)
+    const result = await request('PATCH', '/accounts/v1/me/profile', body, headers)
+    return result
+}
+
+/**
+ * Retrieve home feed data. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``n`` (number): results per request
+ * - ``start`` (number): start offset
+ *
+ * @param accessToken
+ * @param accountId
+ * @param filters
+ * @returns
+ */
+const homeFeed = async (accessToken: string, accountId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/discover/' + accountId + '/home_feed?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve search results. Possible filter parameters:
+ *
+ * - ``locale`` (string): user locale
+ * - ``type`` (string): type filter
+ * - ``q`` (string): search terms filter
+ * - ``n`` (number): results per request
+ * - ``start`` (number): results start offset
+ *
+ * @param accessToken
+ * @param filters
+ * @returns
+ */
+const search = async (accessToken: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/discover/search?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve watchlist results. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``content_ids`` (string): list of content to filter, comma separated
+ * - ``n`` (number): results per request
+ * - ``start`` (number): results start offset
+ * - ``order`` (string): results order
+ *
+ * @param accessToken
+ * @param accountId
+ * @param filters
+ * @returns
+ */
+const watchlist = async (accessToken: string, accountId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/discover/' + accountId + '/watchlist?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Check results in watchlist. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``content_ids`` (string): list of content to filter, comma separated
+ *
+ * @param accessToken
+ * @param accountId
+ * @param contentId
+ * @param filters
+ * @returns
+ */
+const inWatchlist = async (accessToken: string, accountId: string, filters: Data) => {
+    
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/' + accountId + '/watchlist?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Add serie to watchlist. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param accountId
+ * @param contentId
+ * @param filters
+ * @returns
+ */
+const addToWatchlist = async (accessToken: string, accountId: string, contentId: string, filters: Data) => {
+
+    const headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/json')
+
+    const body = JSON.stringify({
+        content_id: contentId
+    })
+
+    const params = encode(filters)
+    const result = await request('POST', '/content/v2/' + accountId + '/watchlist?' + params, body, headers)
+
+    return result
+}
+
+/**
+ * Remove serie from watchlist. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param accountId
+ * @param contentId
+ * @param filters
+ * @returns
+ */
+const removeFromWatchlist = async (accessToken: string, accountId: string, contentId: string, filters: Data) => {
+
+    const headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/json')
+
+    const params = encode(filters)
+    const result = await request('DELETE', '/content/v2/' + accountId + '/watchlist/' + contentId + '?' + params, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve history results. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``page_size`` (number): results per request
+ * - ``page`` (number): results page number
+ * - ``order`` (string): results order
+ *
+ * @param accessToken
+ * @param accountId
+ * @param filters
+ * @returns
+ */
+const history = async (accessToken: string, accountId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/' + accountId + '/watch-history?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve up next episode. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param contentId
+ * @param filters
+ * @returns
+ */
+const upNext = async (accessToken: string, contentId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/discover/up_next/' + contentId + '?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve previous episode. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param contentId
+ * @param filters
+ * @returns
+ */
+const previousEpisode = async (accessToken: string, contentId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/discover/previous_episode/' + contentId + '?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve playheads results. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``content_ids`` (string): list of content to filter, comma separated
+ *
+ * @param accessToken
+ * @param accountId
+ * @param filters
+ * @returns
+ */
+const playHeads = async (accessToken: string, accountId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/' + accountId + '/playheads?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Set progress. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param accountId
+ * @param filters
+ * @param data
+ * @returns
+ */
+const setProgress = async (accessToken: string, accountId: string, filters: Data, data: Data) => {
+
+    const headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/json')
+
+    const params = encode(filters)
+    const body = JSON.stringify(data)
+    const result = await request('POST', '/content/v2/' + accountId + '/playheads?' + params, body, headers)
+
+    return result
+}
+
+/**
+ * Retrieve categories results. Possible filter parameters:
+ *
+ * - ``include_subcategories`` (string): true to include, false to remove
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param filters
+ * @returns
+ */
+const categories = async (accessToken: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v1/tenant_categories?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve serie information. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param serieId
+ * @param filters
+ * @returns
+ */
+const serie = async (accessToken: string, serieId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/cms/series/' + serieId + '?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve seasons results. Possible filter parameters:
+ *
+ * - ``Signature`` (string): cookies signature - REQUIRED
+ * - ``Policy`` (string): cookies policy - REQUIRED
+ * - ``Key-Pair-Id`` (string): cookies key-par id - REQUIRED
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``series_id`` (string): series id filter
+ *
+ * @param accessToken
+ * @param bucket
+ * @param filters
+ * @returns
+ */
+const seasons = async (accessToken: string, bucket: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/cms/v2' + bucket + '/seasons?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve episodes results. Possible filter parameters:
+ *
+ * - ``Signature`` (string): cookies signature - REQUIRED
+ * - ``Policy`` (string): cookies policy - REQUIRED
+ * - ``Key-Pair-Id`` (string): cookies key-par id - REQUIRED
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``season_id`` (string): season_id filter
+ *
+ * @param accessToken
+ * @param bucket
+ * @param filters
+ * @returns
+ */
+const episodes = async (accessToken: string, bucket: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/cms/v2' + bucket + '/episodes?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve episode information. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param contentId
+ * @param filters
+ * @returns
+ */
+const episode = async (accessToken: string, contentId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/cms/objects/' + contentId + '?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve streams results. Possible filter parameters:
+ *
+ * - ``Signature`` (string): cookies signature - REQUIRED
+ * - ``Policy`` (string): cookies policy - REQUIRED
+ * - ``Key-Pair-Id`` (string): cookies key-par id - REQUIRED
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ *
+ * @param accessToken
+ * @param bucket
+ * @param contentId
+ * @param filters
+ * @returns
+ */
+const streams = async (accessToken: string, bucket: string, contentId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/cms/v2' + bucket + '/videos/' + contentId + '/streams?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve text languages results
+ * @returns
+ */
+const textLanguages = async () => {
+
+    const headers = new Headers()
+    const endpoint = staticUrl + '/config/i18n/v3/timed_text_languages.json'
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve audio languages results
+ * @returns
+ */
+const audioLanguages = async () => {
+
+    const headers = new Headers()
+    const endpoint = staticUrl + '/config/i18n/v3/audio_languages.json'
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Retrieve episode intro
+ * @param contentId
+ */
+const intro = async (contentId: string) => {
+
+    const headers = new Headers()
+    const endpoint = staticUrl + '/datalab-intro-v2/' + contentId + '.json'
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
+ * Return avatar image URL with given size
+ * @param reference
+ * @param size
+ * @returns
+ */
+const avatar = (reference: string, size: number) => {
+    const endpoint = staticUrl + '/assets/avatar/' + size + 'x' + size + '/' + reference
+    return endpoint
+}
+
+export type {
+    Data,
+    Result,
 }
 
 export const Api = {
+    encode,
     request,
-    tryLogin,
-    getTemplate,
-    toSerie,
-    toSerieEpisode
+    makeLogin,
+    refreshLogin,
+    getCookies,
+    getProfile,
+    updateProfile,
+    homeFeed,
+    search,
+    watchlist,
+    inWatchlist,
+    addToWatchlist,
+    removeFromWatchlist,
+    history,
+    upNext,
+    previousEpisode,
+    playHeads,
+    setProgress,
+    categories,
+    serie,
+    seasons,
+    episodes,
+    episode,
+    streams,
+    textLanguages,
+    audioLanguages,
+    intro,
+    avatar
 }

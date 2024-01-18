@@ -1,99 +1,128 @@
 /* MENU */
 #menu {
-    background: rgba(255, 255, 255, 0.1);
-    bottom: 0;
+    align-items: center;
+    background: #2f2f2f;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 1),
         0 1px 1px rgba(255, 255, 255, 0.3),
         0 1px 15px rgba(0, 0, 0, 0.25);
     display: flex;
-    flex-flow: column;
-    justify-content: space-between;
+    flex-flow: row;
+    justify-content: center;
     left: 0;
+    min-width: 300px;
+    right: 0;
+    padding: 0.5rem 1rem;
     position: fixed;
     top: 0;
-    width: 9.16rem;
     z-index: 2;
 
     .links {
-        flex: 1 1 auto;
+        flex: 0 1 auto;
     }
 
     .link {
         background: transparent;
-        border-radius: 0 4px 4px 0;
+        border-radius: 5px;
         cursor: pointer;
         color: #FFF;
         display: inline-block;
-        font-size: 1.2rem;
-        margin-top: 2.2rem;
-        min-width: 90%;
-        padding: 10px 2.2rem 10px 0.83rem;
+        padding: 10px 0.5rem;
         text-decoration: none;
         transition: all 0.2s ease-in-out;
+        vertical-align: middle;
 
         &.active {
             background: #F37521;
-            color: #FFF;
         }
         &.hover {
-            color: #F37521;
-            background: #FFF;
+            background: #000;
+        }
+
+        span {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        span.icon {
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            content: '';
+            display: inline-block;
+            height: 28px;
+            margin-right: 0.3rem;
+            vertical-align: middle;
+            width: 28px;
+        }
+        &.link-home span.icon {
+            background-image: url(../icons/home.svg);
+        }
+        &.link-explore span.icon {
+            background-image: url(../icons/explore.svg);
+        }
+        &.link-watchlist span.icon {
+            background-image: url(../icons/watchlist.svg);
+        }
+        &.link-history span.icon {
+            background-image: url(../icons/history.svg);
         }
     }
 
     .account {
+        align-items: center;
+        display: flex;
         flex: 0 1 auto;
-        margin-bottom: 0.83rem;
-        margin-top: 0.83rem;
+        margin-left: 1rem;
+    }
+    .account-image img {
+        border-radius: 5px;
+        display: block;
+        margin-right: 10px;
     }
     .account-name {
         font-size: 0.8rem;
-        font-weight: bold;
-        margin-bottom: 10px;
         overflow: hidden;
-        padding: 10px 0.83rem;
         text-overflow: ellipsis;
         word-wrap: normal;
         word-break: keep-all;
     }
-    .account-logout {
+    .account-logout a {
         cursor: pointer;
         display: block;
-        font-size: 1.2rem;
-        padding: 10px 0.83rem;
+        font-size: 0.8rem;
+        margin-top: 5px;
         transition: all 0.2s ease-in-out;
     }
-    .account-logout.hover {
-        color: #e89f6d;
+    .account-logout a.hover {
+        color: #F37521;
     }
 
 }
 
 .mouse #menu .link:hover {
-    background: #FFF;
-    color: #F37521;
+    background: #000;
 }
-.mouse #menu .account-logout:hover {
-    color: #e89f6d;
+.mouse #menu .link.active:hover {
+    background: #F37521;
+}
+.mouse #menu .account-logout a:hover {
+    color: #F37521;
 }
 
 @media screen and (max-width: 860px) {
 
-    #menu {
-        flex-flow: row;
-        padding: 0 0.83rem;
-        position: static;
-        width: 100%;
+    #menu .account .account-name {
+        display: none;
+    }
+    #menu .account .account-logout a {
+        margin-top: 0;
+    }
 
-        .link {
-            border-radius: 4px;
-            margin-top: 1rem;
-            min-width: unset;
-            padding: 10px 0.83rem;
-        }
-        .account-name {
-            display: none;
-        }
+}
+
+@media screen and (max-width: 600px) {
+
+    #menu .links .link span.label {
+        display: none;
     }
 
 }

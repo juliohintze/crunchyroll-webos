@@ -1,6 +1,6 @@
 import type { Callback, Template } from "./vine"
 import { $, register, Route, unwatch, watch } from "./vine"
-import { Api } from "./api"
+import { App } from "./app"
 
 /**
  * Return template
@@ -8,7 +8,7 @@ import { Api } from "./api"
  * @returns
  */
 const template: Template = async ({ state }) => {
-    return await Api.getTemplate('menu', state)
+    return await App.getTemplate('menu', state)
 }
 
 /**

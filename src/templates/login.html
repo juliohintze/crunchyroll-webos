@@ -2,11 +2,11 @@
     <form action="#" method="POST" autocomplete="off">
 
         <div>
-            <label for="email">E-mail:</label>
+            <label for="username">Email:</label>
             <input
-                id="email"
+                id="username"
                 type="email"
-                value="{{ store('email', '') }}"
+                value="{{ store('username', '') }}"
                 tabindex="0"
                 autocomplete="off"
                 required>
@@ -20,30 +20,6 @@
                 tabindex="0"
                 autocomplete="off"
                 required>
-        </div>
-
-        <div>
-            <label for="locale">Locale:</label>
-            <div class="dropdown" tabindex="0" data-dropdown>
-                <input type="hidden" id="locale" name="locale" value="{{ store('locale', 'enUS') }}">
-                <div class="dropdown-value"></div>
-                <div class="dropdown-list">
-                    <ul>
-                        <li tabindex="0" data-value="enUS">English (US)</li>
-                        <li tabindex="0" data-value="enGB">English (UK)</li>
-                        <li tabindex="0" data-value="esLA">Español</li>
-                        <li tabindex="0" data-value="esES">Español (España)</li>
-                        <li tabindex="0" data-value="ptBR">Português (Brasil)</li>
-                        <li tabindex="0" data-value="ptPT">Português (Portugal)</li>
-                        <li tabindex="0" data-value="frFR">Français (France)</li>
-                        <li tabindex="0" data-value="deDE">Deutsch</li>
-                        <li tabindex="0" data-value="itIT">Italiano</li>
-                        <li tabindex="0" data-value="ruRU">Русский</li>
-                        <li tabindex="0" data-value="arME">العربية</li>
-                        <li tabindex="0" data-value="jaJP">日本語</li>
-                    </ul>
-                </div>
-            </div>
         </div>
 
         <button type="submit" tabindex="0">Login</button>

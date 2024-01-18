@@ -18,7 +18,7 @@ const onMount: Callback = ({ element }) => {
         progressElement.classList.remove('hidden')
     }
 
-    if (Number(premium) == 1) {
+    if (premium == "true") {
         const premiumElement = $('.list-item-premium', element)
         premiumElement.classList.remove('hidden')
     }

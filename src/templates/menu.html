@@ -1,21 +1,54 @@
 <div class="links">
-    <a href="series"
-        class="link link-series"
-        tabindex="0">Series</a>
-    <a href="queue"
-        class="link link-queue"
-        data-content="queue"
-        tabindex="0">Queue</a>
+    <a href="home"
+        class="link link-home"
+        data-content="home"
+        tabindex="0"
+        title="Home">
+        <span class="icon"></span>
+        <span class="label">Home</span>
+    </a>
+    <a href="explore"
+        class="link link-explore"
+        tabindex="0"
+        title="Explore">
+        <span class="icon"></span>
+        <span class="label">Explore</span>
+    </a>
+    <a href="watchlist"
+        class="link link-watchlist"
+        data-content="watchlist"
+        tabindex="0"
+        title="Watchlist">
+        <span class="icon"></span>
+        <span class="label">Watchlist</span>
+    </a>
     <a href="history"
         class="link link-history"
-        tabindex="0">History</a>
+        tabindex="0"
+        title="History">
+        <span class="icon"></span>
+        <span class="label">History</span>
+    </a>
 </div>
 
-{{ if store('sessionId') }}
+{{ if store('accountId') }}
     <div class="account">
-        <div class="account-name">{{ store('userName') }}</div>
-        <a href="logout"
-            class="account-logout"
-            tabindex="0">Logout</a>
+        <div class="account-image">
+            <img src="{{ store('avatar') }}" 
+                width="48" height="48" 
+                alt="{{ store('user') }}"
+                loading="lazy" />
+        </div>
+        <div class="account-info">
+            <div class="account-name">
+                <span>{{ store('user') }}</span>
+            </div>
+            <div class="account-logout">
+                <a href="logout" tabindex="0" title="Logout">
+                    <span class="icon"></span>
+                    <span class="label">Logout</span>
+                </a>
+            </div>
+        </div>
     </div>
 {{ end }}

@@ -9,7 +9,7 @@ import { App } from "./app"
 const state: State = () => {
     return {
         pageNumber: Number(Route.getParam('pageNumber') || 1),
-        limit: Number(Route.getQuery('limit') || 12),
+        limit: Number(Route.getQuery('limit') || 20),
         loaded: false,
         error: false,
         message: '',
@@ -23,30 +23,30 @@ const state: State = () => {
  * @returns
  */
 const template: Template = async ({ state }) => {
-    return await App.getTemplate('history', state)
+    return await App.getTemplate('watchlist', state)
 }
 
 /**
- * List history
+ * List watchlist
  * @param component
  */
-const listHistory: Callback = async ({ state, render }) => {
+const listWatchlist: Callback = async ({ state, render }) => {
 
     const pageNumber = Number(state.pageNumber)
     const limit = Number(state.limit)
+    const offset = (pageNumber - 1) * limit
 
     fire('loading::show')
 
     try {
 
-        const response = await App.history({
-            'page': pageNumber.toString(),
-            'page_size': limit.toString()
+        const response = await App.watchlist({
+            'order': 'desc',
+            'start': offset.toString(),
+            'n': limit.toString(),
         })
 
-        const items = response.data.filter((item) => {
-            return item.panel.type === 'episode'
-        }).map((item) => {
+        const items = response.data.map((item) => {
             return {
                 id: item.panel.id,
                 image: item.panel.images.thumbnail[0][0].source,
@@ -71,7 +71,7 @@ const listHistory: Callback = async ({ state, render }) => {
         })
 
     } catch (error) {
-        
+
         await render({
             loaded: true,
             error: true,
@@ -92,10 +92,10 @@ const listHistory: Callback = async ({ state, render }) => {
 const onMount: Callback = (component) => {
 
     watch(component.element, 'view::reload', () => {
-        listHistory(component)
+        listWatchlist(component)
     })
 
-    listHistory(component)
+    listWatchlist(component)
 
 }
 
@@ -107,7 +107,7 @@ const onDestroy: Callback = ({ element }) => {
     unwatch(element, 'view::reload')
 }
 
-register('[data-history]', {
+register('[data-watchlist]', {
     state,
     template,
     onMount,
@@ -115,18 +115,36 @@ register('[data-history]', {
 })
 
 Route.add({
-    id: 'history',
-    menuId: 'history',
-    path: '/history',
-    title: 'History',
-    component: '<div data-history></div>',
+    id: 'watchlist',
+    menuId: 'watchlist',
+    path: '/watchlist',
+    title: 'Watchlist',
+    component: '<div data-watchlist></div>',
     authenticated: true
 })
 Route.add({
-    id: 'history',
-    menuId: 'history',
-    path: '/history/:pageNumber',
-    title: 'History',
-    component: '<div data-history></div>',
+    id: 'watchlist',
+    menuId: 'watchlist',
+    path: '/watchlist/:pageNumber',
+    title: 'Watchlist',
+    component: '<div data-watchlist></div>',
+    authenticated: true
+})
+
+// Home simulation
+Route.add({
+    id: 'watchlist',
+    menuId: 'watchlist',
+    path: '/',
+    title: 'Watchlist',
+    component: '<div data-watchlist></div>',
+    authenticated: true
+})
+Route.add({
+    id: 'watchlist',
+    menuId: 'watchlist',
+    path: '/home',
+    title: 'Watchlist',
+    component: '<div data-watchlist></div>',
     authenticated: true
 })

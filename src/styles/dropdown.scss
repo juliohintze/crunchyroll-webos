@@ -70,10 +70,12 @@
     &.hover,
     &:focus,
     &:active {
+        background-color: #ffc8a4;
         border-color: #F37521;
         outline: none;
     }
     &:focus-within {
+        background-color: #ffc8a4;
         border-color: #F37521;
         outline: none;
     }
@@ -85,6 +87,7 @@
 }
 
 .mouse .dropdown:hover {
+    background-color: #ffc8a4;
     border-color: #F37521;
     outline: none;
 }

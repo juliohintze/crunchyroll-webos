@@ -1,6 +1,6 @@
-import type { Callback, Template } from "./vine"
+import type { Callback, State, Template } from "./vine"
 import { $, fire, on, off, trigger, register, Route, unwatch, watch } from "./vine"
-import { Api } from "./api"
+import { App } from "./app"
 
 declare var Hls: any
 
@@ -8,10 +8,22 @@ let hls = null
 let area: HTMLElement = null
 let video: HTMLVideoElement = null
 let streams = []
-let startTime = 0
 let playing = false
 let trackTimeout = null
 let lastPlayhead = 0
+
+/**
+ * Initial state
+ * @returns
+ */
+const state: State = () => {
+    return {
+        serieId: String(Route.getParam('serieId') || ''),
+        seasonId: String(Route.getParam('seasonId') || ''),
+        episodeId: String(Route.getParam('episodeId') || ''),
+        videoId: String(Route.getParam('videoId') || ''),
+    }
+}
 
 /**
  * Return template
@@ -19,7 +31,7 @@ let lastPlayhead = 0
  * @returns
  */
 const template: Template = async ({ state }) => {
-    return await Api.getTemplate('video', state)
+    return await App.getTemplate('video', state)
 }
 
 /**
@@ -81,155 +93,114 @@ const hideVideo = () => {
 }
 
 /**
- * Load video
+ * Load episode
+ * @param component
  */
-const loadVideo = async () => {
+const loadEpisode: Callback = async ({ state }) => {
+
+    const episodeId = state.episodeId
+    const episodeResponse = await App.episode(episodeId, {})
+    const episodeInfo = episodeResponse.data[0]
+
+    const serieName = episodeInfo.episode_metadata.series_title
+    const seasonNumber = episodeInfo.episode_metadata.season_number
+    const episodeNumber = Number(episodeInfo.episode_metadata.episode_number)
+    const episodeName = episodeInfo.title
+    
+    const streamsLink = String(episodeInfo.streams_link)
+    const videoId = streamsLink.replace('/content/v2/cms/videos/', '').replace('/streams', '')
+    state.videoId = videoId
 
     const serie = $('.video-serie', area)
+    serie.innerHTML = serieName + ' / S' + seasonNumber + ' / E' + episodeNumber
+
     const title = $('.video-title', area)
-    const episodeId = Route.getParam('episodeId')
-
-    const fields = [
-        'media.collection_id',
-        'media.episode_number',
-        'media.name',
-        'media.stream_data',
-        'media.media_id',
-        'media.playhead',
-        'media.duration',
-        'media.series_id',
-        'media.series_name'
-    ]
-
-    const response = await Api.request('POST', '/info', {
-        media_id: episodeId,
-        fields: fields.join(',')
-    })
-
-    if (response.error
-        && response.code == 'bad_session') {
-        await Api.tryLogin()
-        return loadVideo()
-    }
-
-    if (response.error && response.message) {
-        throw new Error(response.message)
-    }
-
-    const serieName = response.data.series_name
-    const episodeName = response.data.name
-
-    const serieId = Number(response.data.series_id)
-    const collectionId = Number(response.data.collection_id)
-    const episodeNumber = Number(response.data.episode_number)
-
-    serie.innerHTML = serieName + ' / Episode ' + episodeNumber
     title.innerHTML = episodeName
-
-    let playhead = response.data.playhead || 0
-    let duration = response.data.duration || 0
-
-    if (playhead / duration > 0.90 || playhead < 30) {
-        playhead = 0
-    }
-
-    streams = response.data.stream_data.streams
-    startTime = playhead
-
-    loadClosestEpisodes(serieId, collectionId, episodeNumber)
 
 }
 
 /**
  * Load next and previous episodes
- * @param serieId
- * @param collectionId
- * @param episodeNumber
+ * @param component
  */
-const loadClosestEpisodes = async (
-    serieId: number,
-    collectionId: number,
-    episodeNumber: number
-) => {
+const loadClosestEpisodes: Callback = async ({ state }) => {
 
-    const fields = [
-        'media',
-        'media.name',
-        'media.description',
-        'media.episode_number',
-        'media.duration',
-        'media.playhead',
-        'media.screenshot_image',
-        'media.media_id',
-        'media.series_id',
-        'media.series_name',
-        'media.collection_id',
-        'media.url',
-        'media.free_available'
-    ]
+    const episodeId = state.episodeId
+    const previousResponse = await App.previousEpisode(episodeId, {})
+    const nextResponse = await App.upNext(episodeId, {})
 
-    // TODO: collection_id filter does not show the next episode of the next season
-    // At the current stage, we cannot do much because it's a limitation of the API
-    // We also cannot use series_id as filter because results would be very large
-    // Offset filter does not work on multiple seasons too...
-    const response = await Api.request('POST', '/list_media', {
-        collection_id: collectionId,
-        sort: 'asc',
-        fields: fields.join(','),
-        limit: 50
-    })
-
-    const episodes: Array<any> = response.data
-    const next = $('.video-next-episode', area)
     const previous = $('.video-previous-episode', area)
-
     previous.classList.add('hide')
+
+    if( previousResponse.data && previousResponse.data.length ){
+        const item = previousResponse.data[0].panel
+        const serieId = item.episode_metadata.series_id
+        const seasonId = item.episode_metadata.season_id
+        const episodeId = item.id
+        const seasonNumber = item.episode_metadata.season_number
+        const episodeNumber = item.episode_metadata.episode_number
+        const episodeUrl = '/serie/' + serieId + '/season/' + seasonId + '/episode/' + episodeId + '/video'
+
+        previous.dataset.url = episodeUrl
+        previous.title = 'Previous Episode - S' + seasonNumber + ' / E' + episodeNumber
+        previous.classList.remove('hide')
+    }
+
+    const next = $('.video-next-episode', area)
     next.classList.add('hide')
 
-    for (const item of episodes) {
+    if( nextResponse.data && nextResponse.data.length ){
+        const item = nextResponse.data[0].panel
+        const serieId = item.episode_metadata.series_id
+        const seasonId = item.episode_metadata.season_id
+        const episodeId = item.id
+        const seasonNumber = item.episode_metadata.season_number
+        const episodeNumber = item.episode_metadata.episode_number
+        const episodeUrl = '/serie/' + serieId + '/season/' + seasonId + '/episode/' + episodeId + '/video'
 
-        const itemNumber = Number(item.episode_number)
-        const itemMedia = item.media_id
-        const itemUrl = '/serie/' + serieId + '/episode/' + itemMedia + '/video'
-
-        if (previous.dataset.url && next.dataset.url) {
-            break
-        }
-
-        if (itemNumber + 1 == episodeNumber) {
-            previous.dataset.url = itemUrl
-            previous.title = 'Previous Episode - E' + itemNumber
-            previous.classList.remove('hide')
-        } else if (itemNumber - 1 == episodeNumber) {
-            next.dataset.url = itemUrl
-            next.title = 'Next Episode - E' + itemNumber
-            next.classList.remove('hide')
-        }
-
+        next.dataset.url = episodeUrl
+        next.title = 'Next Episode - S' + seasonNumber + ' / E' + episodeNumber
+        next.classList.remove('hide')
     }
 
 }
 
 /**
  * Stream video
+ * @param component
  */
-const streamVideo = async () => {
+const streamVideo: Callback = async ({ state }) => {
 
-    if (!streams.length) {
+    const episodeId = state.episodeId
+    const videoId = state.videoId
+
+    const playheadResponse = await App.playHeads([episodeId], {})
+    let playhead = 0
+    let duration = 0
+
+    if( playheadResponse && playheadResponse.data && playheadResponse.data.length ){
+        playhead = playheadResponse.data[0].playhead
+        duration = playheadResponse.data[0].duration
+    }
+
+    if (playhead / duration > 0.90 || playhead < 30) {
+        playhead = 0
+    }
+
+    const streamsResponse = await App.streams(videoId, {})
+    const locale = localStorage.getItem('preferredContentSubtitleLanguage')
+
+    streams = streamsResponse.streams
+
+    let stream = streamsResponse.streams.adaptive_hls[locale]
+    if (!stream) {
         throw Error('No streams to load.')
     }
 
-    let stream = streams.find((item: any) => {
-        return item.quality == 'adaptive'
-    })
-
-    if (!stream) {
-        stream = streams[streams.length - 1]
-    }
-
-    const proxy = document.body.dataset.proxy
-    if (proxy) {
-        stream.url = proxy + encodeURI(stream.url)
+    const proxyUrl = document.body.dataset.proxyUrl
+    const proxyEncode = document.body.dataset.proxyEncode
+    if (proxyUrl) {
+        stream.url = proxyUrl + (proxyEncode === "true" ? encodeURIComponent(stream.url) : stream.url)
     }
 
     area.classList.add('video-is-loading')
@@ -255,7 +226,7 @@ const streamVideo = async () => {
         })
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            hls.startLoad(startTime)
+            hls.startLoad(playhead)
         })
 
         hls.on(Hls.Events.LEVEL_LOADED, () => {
@@ -318,8 +289,9 @@ const streamVideo = async () => {
 
 /**
  * Play video
+ * @param component
  */
-const playVideo = async () => {
+const playVideo: Callback = async (component) => {
 
     try {
         await video.play()
@@ -330,40 +302,43 @@ const playVideo = async () => {
     area.classList.add('video-is-playing')
 
     playing = true
-    trackProgress()
+    trackProgress(component)
 
 }
 
 /**
  * Pause video
+ * @param component
  */
-const pauseVideo = () => {
+const pauseVideo: Callback = (component) => {
 
     video.pause()
     area.classList.remove('video-is-playing')
     area.classList.add('video-is-paused')
 
     playing = false
-    stopTrackProgress()
+    stopTrackProgress(component)
 
 }
 
 /**
  * Stop video
+ * @param component
  */
-const stopVideo = () => {
-    pauseVideo()
+const stopVideo: Callback = (component) => {
+    pauseVideo(component)
     skipAhead(0)
 }
 
 /**
  * Toggle video
+ * @param component
  */
-const toggleVideo = () => {
+const toggleVideo: Callback = (component) => {
     if (playing) {
-        pauseVideo()
+        pauseVideo(component)
     } else {
-        playVideo()
+        playVideo(component)
     }
 }
 
@@ -454,7 +429,7 @@ const updateSeekTooltip = (event: MouseEvent) => {
 /**
  * Update video duration
  */
-const updateDuration = () => {
+const updateDuration: Callback = () => {
 
     const duration = $('.duration', area)
     const seek = $('input[type="range"]', area) as HTMLInputElement
@@ -474,7 +449,7 @@ const updateDuration = () => {
 /**
  * Update video time elapsed
  */
-const updateTimeElapsed = () => {
+const updateTimeElapsed: Callback = () => {
 
     const elapsed = $('.elapsed', area)
     const time = Math.round(video.currentTime)
@@ -488,7 +463,7 @@ const updateTimeElapsed = () => {
 /**
  * Update video progress
  */
-const updateProgress = () => {
+const updateProgress: Callback = () => {
 
     const seek = $('input[type="range"]', area) as HTMLInputElement
     const progress = $('progress', area) as HTMLProgressElement
@@ -500,15 +475,16 @@ const updateProgress = () => {
 
 /**
  * Start progress tracking
+ * @param component
  */
-const trackProgress = () => {
+const trackProgress: Callback = (component) => {
 
     if (trackTimeout) {
-        stopTrackProgress()
+        stopTrackProgress(component)
     }
 
     trackTimeout = setTimeout(() => {
-        updatePlaybackStatus()
+        updatePlaybackStatus(component)
     }, 15000) // 15s
 
 }
@@ -516,7 +492,7 @@ const trackProgress = () => {
 /**
  * Stop progress tracking
  */
-const stopTrackProgress = () => {
+const stopTrackProgress: Callback = () => {
     if (trackTimeout) {
         clearTimeout(trackTimeout)
     }
@@ -524,49 +500,40 @@ const stopTrackProgress = () => {
 
 /**
  * Update playback status at Crunchyroll
+ * @param component
  */
-const updatePlaybackStatus = async () => {
+const updatePlaybackStatus: Callback = async (component) => {
 
-    const episodeId = Route.getParam('episodeId')
-    const elapsed = 15
-    const elapsedDelta = 15
-    const playhead = video.currentTime
+    const episodeId = component.state.episodeId
+    const playhead = Math.floor(video.currentTime)
 
     if (playhead != lastPlayhead) {
-        await Api.request('POST', '/log', {
-            event: 'playback_status',
-            media_id: episodeId,
-            playhead: playhead,
-            elapsed: elapsed,
-            elapsedDelta: elapsedDelta
+        await App.setProgress({}, {
+            'content_id': episodeId,
+            'playhead': playhead
         })
     }
 
     lastPlayhead = playhead
-    trackProgress()
+    trackProgress(component)
 
 }
 
 /**
  * Set video as watched at Crunchyroll
+ * @param component
  */
-const setWatched = async () => {
+const setWatched: Callback = async (component) => {
 
-    const episodeId = Route.getParam('episodeId')
+    const episodeId = component.state.episodeId
     const duration = Math.floor(video.duration)
-    const playhead = Math.floor(video.currentTime)
-    const elapsed = duration - playhead
-    const elapsedDelta = duration - playhead
 
-    await Api.request('POST', '/log', {
-        event: 'playback_status',
-        media_id: episodeId,
-        playhead: duration,
-        elapsed: elapsed,
-        elapsedDelta: elapsedDelta
+    await App.setProgress({}, {
+        'content_id': episodeId,
+        'playhead': duration
     })
-
-    stopTrackProgress()
+    
+    stopTrackProgress(component)
 
 }
 
@@ -583,22 +550,24 @@ const setQuality = (level: number) => {
  * On mount
  * @param component
  */
-const onMount: Callback = ({ element, render }) => {
+const onMount: Callback = (component) => {
 
-    const serieId = Route.getParam('serieId')
+    const serieId = component.state.serieId
+    const seasonId = component.state.seasonId
+    const element = component.element
     let controlsTimeout = null
 
     // UI Events
     on(element, 'click', '.video-close', (event) => {
         event.preventDefault()
-        pauseVideo()
+        pauseVideo(component)
         hideVideo()
         Route.redirect('/home')
     })
 
     on(element, 'click', '.video-watched', (event) => {
         event.preventDefault()
-        setWatched()
+        setWatched(component)
     })
 
     on(element, 'click', '.video-quality', (event, target) => {
@@ -608,20 +577,20 @@ const onMount: Callback = ({ element, render }) => {
 
     on(element, 'click', '.video-episodes', (event) => {
         event.preventDefault()
-        pauseVideo()
+        pauseVideo(component)
         hideVideo()
-        Route.redirect('/serie/' + serieId)
+        Route.redirect('/serie/' + serieId + '/season/' + seasonId)
     })
 
     on(element, 'click', '.video-previous-episode', (event, target) => {
         event.preventDefault()
-        pauseVideo()
+        pauseVideo(component)
         Route.redirect(target.dataset.url)
     })
 
     on(element, 'click', '.video-next-episode', (event, target) => {
         event.preventDefault()
-        pauseVideo()
+        pauseVideo(component)
         Route.redirect(target.dataset.url)
     })
 
@@ -633,7 +602,7 @@ const onMount: Callback = ({ element, render }) => {
     on(element, 'click', '.video-pause', (event) => {
 
         event.preventDefault()
-        pauseVideo()
+        pauseVideo(component)
 
         const playButton = $('.video-play', element)
         fire('active::element::set', playButton)
@@ -643,7 +612,7 @@ const onMount: Callback = ({ element, render }) => {
     on(element, 'click', '.video-play', (event) => {
 
         event.preventDefault()
-        playVideo()
+        playVideo(component)
 
         const pauseButton = $('.video-pause', element)
         fire('active::element::set', pauseButton)
@@ -652,8 +621,8 @@ const onMount: Callback = ({ element, render }) => {
 
     on(element, 'click', '.video-reload', (event) => {
         event.preventDefault()
-        pauseVideo()
-        render()
+        pauseVideo(component)
+        component.render()
     })
 
     on(element, 'click', '.video-forward', (event) => {
@@ -705,14 +674,26 @@ const onMount: Callback = ({ element, render }) => {
     })
 
     // Public
-    watch(element, 'video::play', playVideo)
-    watch(element, 'video::pause', pauseVideo)
-    watch(element, 'video::stop', stopVideo)
-    watch(element, 'video::toggle', toggleVideo)
-    watch(element, 'video::forward', forwardVideo)
-    watch(element, 'video::backward', backwardVideo)
+    watch(element, 'video::play', () => {
+        playVideo(component)
+    })
+    watch(element, 'video::pause', () => {
+        pauseVideo(component)
+    })
+    watch(element, 'video::stop', () => {
+        stopVideo(component)
+    })
+    watch(element, 'video::toggle', () => {
+        toggleVideo(component)
+    })
+    watch(element, 'video::forward', (seconds: number) => {
+        forwardVideo(seconds)
+    })
+    watch(element, 'video::backward', (seconds: number) => {
+        backwardVideo(seconds)
+    })
     watch(element, 'view::reload', () => {
-        render()
+        component.render()
     })
 
 }
@@ -721,9 +702,11 @@ const onMount: Callback = ({ element, render }) => {
  * On render
  * @param component
  */
-const onRender: Callback = async ({ element }) => {
+const onRender: Callback = async (component) => {
 
     setTimeout(async () => {
+
+        const element = component.element
 
         area = $('#video', element)
         video = $('video', element) as HTMLVideoElement
@@ -735,27 +718,28 @@ const onRender: Callback = async ({ element }) => {
         // Video Events
         on(video, 'click', (event) => {
             event.preventDefault()
-            toggleVideo()
+            toggleVideo(component)
         })
 
         on(video, 'timeupdate', () => {
-            updateDuration()
-            updateTimeElapsed()
-            updateProgress()
+            updateDuration(component)
+            updateTimeElapsed(component)
+            updateProgress(component)
         })
 
         fire('loading::show')
 
         try {
 
-            await loadVideo()
-            await streamVideo()
+            await loadEpisode(component)
+            await loadClosestEpisodes(component)
+            await streamVideo(component)
             await showVideo()
 
             trigger(element, 'click', '.video-play')
 
         } catch (error) {
-            showError(error.message)
+            showError(error.message + error.stack)
         }
 
         fire('loading::hide')
@@ -799,6 +783,7 @@ const onDestroy: Callback = ({ element }) => {
 }
 
 register('[data-video]', {
+    state,
     template,
     onMount,
     onRender,
@@ -807,7 +792,7 @@ register('[data-video]', {
 
 Route.add({
     id: 'video',
-    path: '/serie/:serieId/episode/:episodeId/video',
+    path: '/serie/:serieId/season/:seasonId/episode/:episodeId/video',
     title: 'Episode Video',
     component: '<div data-video></div>',
     authenticated: true
