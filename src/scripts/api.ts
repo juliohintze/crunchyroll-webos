@@ -189,6 +189,38 @@ const homeFeed = async (accessToken: string, accountId: string, filters: Data) =
 }
 
 /**
+ * Retrieve browser data. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``type`` (string): type filter
+ * - ``categories`` (string): categories filter, comma separated
+ * - ``sort_by`` (string): sort results by specific order
+ * - ``seasonal_tag`` (string): filter results by specific tag
+ * - ``ratings`` (string): true to include, false to remove
+ * - ``is_subbed`` (string): set true to include only results with this key
+ * - ``is_dubbed`` (string): set true to include only results with this key
+ * - ``n`` (number): results per request
+ * - ``start`` (number): start offset
+ *
+ * @param accessToken
+ * @param filters
+ * @returns
+ */
+const browser = async (accessToken: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/discover/browse?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
  * Retrieve search results. Possible filter parameters:
  *
  * - ``locale`` (string): user locale
@@ -664,6 +696,7 @@ export const Api = {
     getProfile,
     updateProfile,
     homeFeed,
+    browser,
     search,
     watchlist,
     inWatchlist,

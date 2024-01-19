@@ -265,6 +265,29 @@ const homeFeed = async (filters: Data) => {
 }
 
 /**
+ * Retrieve browser data
+ * @see Api.browser
+ * @param filters
+ * @returns
+ */
+const browser = async (filters: Data) => {
+
+    await refreshSession()
+
+    const accessToken = localStorage.getItem('accessToken')
+    const preferredContentAudioLanguage = localStorage.getItem('preferredContentAudioLanguage')
+    const preferredCommunicationLanguage = localStorage.getItem('preferredCommunicationLanguage')
+
+    filters['preferred_audio_language'] = preferredContentAudioLanguage
+    filters['locale'] = preferredCommunicationLanguage
+
+    return Api.browser(
+        accessToken,
+        filters
+    )
+}
+
+/**
  * Retrieve search results
  * @see Api.search
  * @param filters
@@ -706,6 +729,7 @@ export const App = {
     getProfile,
     updateProfile,
     homeFeed,
+    browser,
     search,
     history,
     watchlist,

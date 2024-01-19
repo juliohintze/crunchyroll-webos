@@ -7,17 +7,31 @@ import { App } from "./app"
  * @returns
  */
 const state: State = () => {
+
+    // Categories
+    const categories = []
+    categories.push({ id: 'popular', name: 'Popular' })
+    categories.push({ id: 'new', name: 'Newest' })
+    categories.push({ id: 'alphabetical', name: 'Alphabetical' })
+
+    App.getCategories().map((item) => {
+        categories.push({
+            id: item.slug,
+            name: item.localization.title
+        })
+    })
+
     return {
+        categories: categories,
+        category: 'popular',
+        sort: 'popularity',
+        page: 1,
         limit: 20,
-        pageNumber: 1,
-        filter: 'popular',
-        category: '',
-        search: '',
+        special: true,
         loaded: false,
         error: false,
         message: '',
-        filters: [],
-        categories: [],
+        total: 0,
         items: [],
         nextPage: '',
         previousPage: ''
@@ -39,45 +53,23 @@ const template: Template = async ({ state }) => {
  */
 const parseParams: Callback = ({ state }) => {
 
-    const pageNumber = Number(Route.getParam('pageNumber') || 1)
-    const filter = String(Route.getParam('filter') || 'popular')
-    const category = String(Route.getQuery('category') || '')
-    const search = String(Route.getQuery('search') || '')
+    const category = String(Route.getParam('category') || 'popular')
+    const sort = String(Route.getQuery('sort') || 'popularity')
+    const page = Number(Route.getQuery('page') || 1)
 
-    state.pageNumber = pageNumber
-    state.filter = filter
     state.category = category
-    state.search = search
+    state.sort = sort
+    state.page = page
+    state.special = ['popular', 'new', 'alphabetical'].includes(category)
 
-}
-
-/**
- * Retrieve filter options
- * @param component
- */
-const retrieveFilters: Callback = async ({ state }) => {
-
-    // General filters
-    const filters = []
-    filters.push({ id: 'alpha', name: 'Alphabetical' })
-    filters.push({ id: 'featured', name: 'Featured' })
-    filters.push({ id: 'newest', name: 'Newest' })
-    filters.push({ id: 'popular', name: 'Popular' })
-    filters.push({ id: 'updated', name: 'Updated' })
-    filters.push({ id: 'simulcast', name: 'Simulcasts' })
-
-    state.filters = filters
-
-    // Categories
-    const categories = []
-    App.getCategories().map((item) => {
-        categories.push({
-            id: item.slug,
-            name: item.localization.title
-        })
-    })
-
-    state.categories = categories
+    // Ensure that sort is correct for special categories
+    if ( category === 'popular' ){
+        state.sort = 'popularity'
+    } else if ( category === 'new' ){
+        state.sort = 'newly_added'
+    } else if ( category === 'alphabetical' ){
+        state.sort = 'alphabetical'
+    }
 
 }
 
@@ -87,30 +79,31 @@ const retrieveFilters: Callback = async ({ state }) => {
  */
 const listResults: Callback = async ({ state, render }) => {
 
-    const pageNumber = Number(state.pageNumber)
-    const limit = Number(state.limit)
-    const filter = String(state.filter)
     const category = String(state.category)
-    const search = String(state.search)
+    const sort = String(state.sort)
+    const page = Number(state.page)
+    const limit = Number(state.limit)
+    const special = Boolean(state.special)
+    const offset = (page - 1) * limit
 
     fire('loading::show')
 
     try {
 
-        const offset = (pageNumber - 1) * limit
         let total = 0
         let items = []
-
-        if(search){
-            const response = await App.search({
+        
+        // Special listings
+        if ( category && special ){
+            const response = await App.browser({
                 'type': 'series',
-                'q': search, 
+                'sort_by': sort,
                 'start': offset.toString(), 
                 'n': limit.toString()
             })
 
-            total = response.data[0].count
-            items = response.data[0].items.map((item) => {
+            total = (response.total || 0)
+            items = (response.data || []).map((item) => {
                 return {
                     id: item.id,
                     name: item.title,
@@ -118,18 +111,35 @@ const listResults: Callback = async ({ state, render }) => {
                     image: item.images.poster_wide[0][0].source
                 }
             })
-        } else if ( category ){
 
-        } else if( filter ){
+        // Other categories
+        } else {
+            const response = await App.browser({
+                'type': 'series',
+                'categories': category,
+                'sort_by': sort,
+                'start': offset.toString(), 
+                'n': limit.toString()
+            })
 
+            total = (response.total || 0)
+            items = (response.data || []).map((item) => {
+                return {
+                    id: item.id,
+                    name: item.title,
+                    description: item.description,
+                    image: item.images.poster_wide[0][0].source
+                }
+            })
         }
 
-        const base = 'explore/' + filter + '/'
-        const nextPage = (items.length) ? base + (pageNumber + 1) : ''
-        const previousPage = (pageNumber > 1) ? base + (pageNumber - 1) : ''
+        const base = 'explore/' + category + '?sort=' + sort + '&page={PAGE}'
+        const nextPage = (total > offset + limit) ? base.replace('{PAGE}', Number(page + 1).toString()) : ''
+        const previousPage = (page > 1) ? base.replace('{PAGE}', Number(page - 1).toString()) : ''
 
         await render({
             loaded: true,
+            total: total,
             items: items,
             nextPage: nextPage,
             previousPage: previousPage,
@@ -160,16 +170,13 @@ const onMount: Callback = async (component) => {
 
     const element = component.element
 
-    on(element, 'change', 'input#filter', (_event, target: HTMLInputElement) => {
-        Route.redirect('/explore/' + target.value)
-    })
-
     on(element, 'change', 'input#category', (_event, target: HTMLInputElement) => {
         Route.redirect('/explore/' + target.value)
     })
 
-    on(element, 'change', 'input#search', (_event, target: HTMLInputElement) => {
-        Route.redirect('/explore?search=' + encodeURI(target.value))
+    on(element, 'change', 'input#sort', (_event, target: HTMLInputElement) => {
+        const category = String(component.state.category)
+        Route.redirect('/explore/' + category + '?sort=' + target.value)
     })
 
     watch(element, 'view::reload', async () => {
@@ -178,7 +185,6 @@ const onMount: Callback = async (component) => {
     })
 
     await parseParams(component)
-    await retrieveFilters(component)
     await listResults(component)
 
 }
@@ -189,9 +195,8 @@ const onMount: Callback = async (component) => {
  */
 const onDestroy: Callback = ({ element }) => {
 
-    off(element, 'change', 'input#filter')
     off(element, 'change', 'input#category')
-    off(element, 'change', 'input#search')
+    off(element, 'change', 'input#sort')
 
     unwatch(element, 'view::reload')
 
@@ -215,15 +220,7 @@ Route.add({
 Route.add({
     id: 'explore',
     menuId: 'explore',
-    path: '/explore/:filter',
-    title: 'Explore',
-    component: '<div data-explore></div>',
-    authenticated: true
-})
-Route.add({
-    id: 'explore',
-    menuId: 'explore',
-    path: '/explore/:filter/:pageNumber',
+    path: '/explore/:category',
     title: 'Explore',
     component: '<div data-explore></div>',
     authenticated: true
