@@ -2,16 +2,16 @@
     {{ serieName }}
 </h1>
 
-{{ if totalSeasons || totalEpisodes }} 
+{{ if seasonsCount || episodesCount }} 
     <div class="list-info">
-        {{ if totalSeasons }}
-            {{ totalSeasons }} {{ totalSeasons == 1 ? 'season' : 'seasons'}} 
+        {{ if seasonsCount }}
+            {{ seasonsCount }} {{ seasonsCount == 1 ? 'season' : 'seasons'}} 
         {{ end }}
-        {{ if totalSeasons && totalEpisodes }} 
+        {{ if seasonsCount && episodesCount }} 
             <span class="separator">|</span>
         {{ end }}
-        {{ if totalEpisodes }} 
-            {{ totalEpisodes }} {{ totalEpisodes == 1 ? 'episode' : 'episodes' }}
+        {{ if episodesCount }} 
+            {{ episodesCount }} {{ episodesCount == 1 ? 'episode' : 'episodes' }}
         {{ end }}
     </div>
 {{ end }}
@@ -62,30 +62,36 @@
     <p>Loading...</p>
 {{ end }}
 
+{{ if loaded && total }}
+    <div class="list-info">
+        <p>{{ total }} {{ total == 1 ? 'episode in this season' : 'episodes in this season'}}</p>
+    </div>
+{{ end }}
+
 {{ if items && items.length }}
     <div class="list-items">
         {{ each item in items }}
-        <div class="list-item serie-episode-item"
-            data-episode
-            data-episode-id="{{ item.id }}"
-            data-episode-number="{{ item.number }}"
-            data-episode-name="{{ item.name }}"
-            data-episode-duration="{{ item.duration }}"
-            data-episode-playhead="{{ item.playhead }}"
-            data-episode-premium="{{ item.premium }}">
-            <a href="serie/{{ item.serie_id }}/season/{{ item.season_id }}/episode/{{ item.id }}/video" class="list-item-inside" tabindex="0">
-                <div class="list-item-image">
-                    <img src="{{ item.image }}" 
-                        title="E{{ item.number }} - {{ item.name }}" 
-                        loading="lazy" />
-                    <div class="list-item-progress hidden">&nbsp;</div>
-                    <div class="list-item-premium hidden">&nbsp;</div>
-                </div>
-                <div class="list-item-info">
-                    <h3>E{{ item.number }} - {{ item.name }}</h3>
-                </div>
-            </a>
-        </div>
+            <div class="list-item serie-episode-item"
+                data-episode
+                data-episode-id="{{ item.id }}"
+                data-episode-number="{{ item.number }}"
+                data-episode-name="{{ item.name }}"
+                data-episode-duration="{{ item.duration }}"
+                data-episode-playhead="{{ item.playhead }}"
+                data-episode-premium="{{ item.premium }}">
+                <a href="serie/{{ item.serie_id }}/season/{{ item.season_id }}/episode/{{ item.id }}/video" class="list-item-inside" tabindex="0">
+                    <div class="list-item-image">
+                        <img src="{{ item.image }}" 
+                            title="E{{ item.number }} - {{ item.name }}" 
+                            loading="lazy" />
+                        <div class="list-item-progress hidden">&nbsp;</div>
+                        <div class="list-item-premium hidden">&nbsp;</div>
+                    </div>
+                    <div class="list-item-info">
+                        <h3>E{{ item.number }} - {{ item.name }}</h3>
+                    </div>
+                </a>
+            </div>
         {{ end }}
     </div>
 {{ elseif loaded && !error && !items.length }}

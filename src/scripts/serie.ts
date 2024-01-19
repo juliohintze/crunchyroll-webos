@@ -10,16 +10,18 @@ const state: State = () => {
     return {
         serieId: null,
         serieName: '',
-        totalSeasons: 0,
-        totalEpisodes: 0,
+        seasonsCount: 0,
+        episodesCount: 0,
         seasons: [],
         seasonId: null,
         inWatchlist: false,
-        pageNumber: 1,
-        sort: 'desc',
+        sort: 'asc',
+        page: 1,
+        limit: 20,
         loaded: false,
         error: false,
         message: '',
+        total: 0,
         items: [],
         nextPage: '',
         previousPage: ''
@@ -43,13 +45,13 @@ const parseParams: Callback = ({ state }) => {
 
     const serieId = String(Route.getParam('serieId') || '')
     const seasonId = String(Route.getParam('seasonId') || '')
-    const sort = String(Route.getParam('sort') || 'desc')
-    const pageNumber = Number(Route.getParam('pageNumber') || 1)
+    const sort = String(Route.getQuery('sort') || 'asc')
+    const page = Number(Route.getQuery('page') || 1)
 
     state.serieId = serieId
     state.seasonId = seasonId
     state.sort = sort
-    state.pageNumber = pageNumber
+    state.page = page
 
 }
 
@@ -104,12 +106,12 @@ const listSerieInfo: Callback = async ({ state }) => {
         const serieInfo = serieResponse.data[0]
 
         const serieName = serieInfo.title
-        const totalSeasons = serieInfo.season_count
-        const totalEpisodes = serieInfo.episode_count
+        const seasonsCount = serieInfo.season_count
+        const episodesCount = serieInfo.episode_count
 
         state.serieName = serieName
-        state.totalSeasons = totalSeasons
-        state.totalEpisodes = totalEpisodes
+        state.seasonsCount = seasonsCount
+        state.episodesCount = episodesCount
 
         const watchlistResponse = await App.inWatchlist({
             'content_ids': serieId
@@ -149,9 +151,10 @@ const listEpisodes: Callback = async ({ state, render }) => {
 
     const serieId = String(state.serieId)
     const seasonId = String(state.seasonId)
-    const pageNumber = Number(state.pageNumber)
     const sort = String(state.sort)
-    const limit = 20
+    const page = Number(state.page)
+    const limit = Number(state.limit)
+    const offset = (page - 1) * limit
 
     if( !serieId || !seasonId ){
         return
@@ -161,12 +164,9 @@ const listEpisodes: Callback = async ({ state, render }) => {
 
     try {
 
-        const response = await App.episodes(seasonId, {
-            'order': sort,
-            'n': limit.toString()
-        })
-
-        const items = response.items.map((item) => {
+        const response = await App.episodes(seasonId, {})
+        const total = (response.total || 0)
+        const items = (response.items || []).map((item) => {
             return {
                 id: item.id,
                 image: item.images.thumbnail[0][0].source,
@@ -183,17 +183,21 @@ const listEpisodes: Callback = async ({ state, render }) => {
             }
         })
 
-        const base = 'serie/' + serieId + '/season/' + seasonId + '/' + sort + '/'
-        const nextPage = (items.length) ? base + (pageNumber + 1) : ''
-        const previousPage = (pageNumber > 1) ? base + (pageNumber - 1) : ''
+        const sorted = (sort === 'desc') ? items.reverse() : items
+        const paginated = sorted.slice((page - 1) * limit, offset + limit);
+
+        const base = 'serie/' + serieId + '/season/' + seasonId + '?sort=' + sort + '&page={PAGE}'
+        const nextPage = (total > offset + limit) ? base.replace('{PAGE}', Number(page + 1).toString()) : ''
+        const previousPage = (page > 1) ? base.replace('{PAGE}', Number(page - 1).toString()) : ''
 
         await render({
             loaded: true,
-            items: items,
+            total: total,
+            items: paginated,
             nextPage: nextPage,
             previousPage: previousPage,
-            error: response.error,
-            message: response.message || ''
+            error: false,
+            message: ''
         })
 
     } catch (error) {
@@ -227,7 +231,7 @@ const onMount: Callback = async (component) => {
     on(element, 'change', 'input#sort', (_event, target: HTMLInputElement) => {
         const serieId = component.state.serieId
         const seasonId = component.state.seasonId
-        Route.redirect('/serie/' + serieId + '/season/' + seasonId + '/' + target.value)
+        Route.redirect('/serie/' + serieId + '/season/' + seasonId + '?sort=' + target.value)
     })
 
     on(element, 'click', '.add-to-watchlist', (event) => {
@@ -286,22 +290,6 @@ Route.add({
     id: 'serie',
     menuId: 'explore',
     path: '/serie/:serieId/season/:seasonId',
-    title: 'Serie',
-    component: '<div data-serie></div>',
-    authenticated: true
-})
-Route.add({
-    id: 'serie',
-    menuId: 'explore',
-    path: '/serie/:serieId/season/:seasonId/:sort',
-    title: 'Serie',
-    component: '<div data-serie></div>',
-    authenticated: true
-})
-Route.add({
-    id: 'serie',
-    menuId: 'explore',
-    path: '/serie/:serieId/season/:seasonId/:sort/:pageNumber',
     title: 'Serie',
     component: '<div data-serie></div>',
     authenticated: true
