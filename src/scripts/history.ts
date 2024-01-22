@@ -49,7 +49,7 @@ const listHistory: Callback = async ({ state, render }) => {
         }).map((item) => {
             return {
                 id: item.panel.id,
-                image: item.panel.images.thumbnail[0][0].source,
+                image: App.getImage(item.panel.images.thumbnail).source,
                 number: item.panel.episode_metadata.episode_number,
                 name: item.panel.title,
                 description: item.panel.description,

@@ -15,6 +15,21 @@ const getTemplate = async (name: string, data: any) => {
 }
 
 /**
+ * Retrieve image information
+ * @param images 
+ * @returns 
+ */
+const getImage = (images: any[]) => {
+
+    const image = { source: '' }
+    if( images && images.length ){
+        image.source = images[0][0].source
+    }
+    
+    return image
+}
+
+/**
  * Run application login process
  * @param username
  * @param password
@@ -747,6 +762,7 @@ const getTextLanguages = () => {
 
 export const App = {
     getTemplate,
+    getImage,
     login,
     logout,
     isLoggedIn,

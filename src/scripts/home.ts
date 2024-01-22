@@ -56,7 +56,7 @@ const listResults: Callback = async ({ state, render }) => {
                 id: item.id,
                 name: item.title,
                 description: item.description,
-                image: item.images.poster_wide[0][0].source
+                image: App.getImage(item.images.poster_wide).source
             }
         })
 
@@ -66,7 +66,7 @@ const listResults: Callback = async ({ state, render }) => {
         }).map((item) => {
             return {
                 id: item.panel.id,
-                image: item.panel.images.thumbnail[0][0].source,
+                image: App.getImage(item.panel.images.thumbnail).source,
                 number: item.panel.episode_metadata.episode_number,
                 name: item.panel.title,
                 description: item.panel.description,
@@ -84,7 +84,7 @@ const listResults: Callback = async ({ state, render }) => {
         const watchlist = (watchlistResponse.data || []).map((item) => {
             return {
                 id: item.panel.id,
-                image: item.panel.images.thumbnail[0][0].source,
+                image: App.getImage(item.panel.images.thumbnail).source,
                 number: item.panel.episode_metadata.episode_number,
                 name: item.panel.title,
                 description: item.panel.description,
@@ -104,7 +104,7 @@ const listResults: Callback = async ({ state, render }) => {
                 id: item.id,
                 name: item.title,
                 description: item.description,
-                image: item.images.poster_wide[0][0].source
+                image: App.getImage(item.images.poster_wide).source
             }
         })
 

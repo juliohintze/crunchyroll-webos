@@ -1,6 +1,10 @@
 /* CONTENT */
+#main {
+    min-width: 300px;
+}
+
 #content {
-    padding: 4rem 1rem 1rem;
+    padding: 1rem;
 
     .inside {
         align-items: stretch;
@@ -10,7 +14,7 @@
     h1 {
         flex: 1 1 100%;
         margin: 0;
-        padding: 1.16rem 0 0.83rem;
+        padding: 0 0 0.83rem;
 
         &.hover {
             color: #F37521;
@@ -38,12 +42,14 @@
     display: flex;
     flex: 1 1 100%;
     flex-flow: row;
+    flex-wrap: wrap;
     justify-content: space-between;
     margin: 0 0 0.83rem;
 
     .list-filters-part {
         display: flex;
         flex: 0 1 auto;
+        flex-wrap: wrap;
     }
 
     input,
@@ -51,6 +57,7 @@
         background: transparent;
         border-color: #FFF;
         color: #FFF;
+        margin-bottom: 0.5rem;
     }
 
     input {

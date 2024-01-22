@@ -1,3 +1,5 @@
+<h1 tabindex="0">Search</h1>
+
 <div class="list-search">
     <input
         type="text"
@@ -8,14 +10,14 @@
         tabindex="0">
 </div>
 
+{{ if !query }}
+    <p>Please use the search field to find what you are looking for.</p>
+{{ end }}
+
 {{ if error && message }}
     <div class="error-message">
         <p>{{ message }}</p>
     </div>
-{{ end }}
-
-{{ if !query }}
-    <p>Please use the search field to find what you are looking for.</p>
 {{ end }}
 
 {{ if query && !loaded }}
@@ -23,7 +25,9 @@
 {{ end }}
 
 {{ if query && loaded }}
-    <p>{{ total }} results found for "<em>{{ query }}</em>".</p>
+    <div class="list-info">
+        <p>{{ total }} results found for "<em>{{ query }}</em>"</p>
+    </div>
 {{ end }}
 
 {{ if query && items && items.length }}

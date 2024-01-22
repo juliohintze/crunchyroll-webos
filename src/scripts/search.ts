@@ -86,7 +86,7 @@ const listResults: Callback = async ({ state, render }) => {
                 id: item.id,
                 name: item.title,
                 description: item.description,
-                image: item.images.poster_wide[0][0].source
+                image: App.getImage(item.images.poster_wide).source
             }
         })
 

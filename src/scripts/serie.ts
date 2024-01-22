@@ -169,7 +169,7 @@ const listEpisodes: Callback = async ({ state, render }) => {
         const items = (response.items || []).map((item) => {
             return {
                 id: item.id,
-                image: item.images.thumbnail[0][0].source,
+                image: App.getImage(item.images.thumbnail).source,
                 number: item.episode_number,
                 name: item.title,
                 description: item.description,

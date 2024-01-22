@@ -12,7 +12,7 @@
     min-width: 300px;
     right: 0;
     padding: 0.5rem 1rem;
-    position: fixed;
+    position: relative;
     top: 0;
     z-index: 2;
 
@@ -78,7 +78,9 @@
     .account-image img {
         border-radius: 5px;
         display: block;
-        margin-right: 10px;
+    }
+    .account-info {
+        margin-left: 10px;
     }
     .account-name {
         font-size: 0.8rem;
@@ -121,10 +123,16 @@
 
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 680px) {
 
+    #menu .account .account-info {
+        display: none;
+    }
     #menu .links .link span.label {
         display: none;
+    }
+    #menu .link {
+        padding: 5px 0.25rem
     }
 
 }
