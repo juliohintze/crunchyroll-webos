@@ -309,6 +309,31 @@ const search = async (filters: Data) => {
 }
 
 /**
+ * Retrieve recommendations results
+ * @see Api.recommendations
+ * @param filters
+ * @returns
+ */
+const recommendations = async (filters: Data) => {
+
+    await refreshSession()
+
+    const accessToken = localStorage.getItem('accessToken')
+    const accountId = localStorage.getItem('accountId')
+    const preferredContentAudioLanguage = localStorage.getItem('preferredContentAudioLanguage')
+    const preferredCommunicationLanguage = localStorage.getItem('preferredCommunicationLanguage')
+
+    filters['preferred_audio_language'] = preferredContentAudioLanguage
+    filters['locale'] = preferredCommunicationLanguage
+
+    return Api.recommendations(
+        accessToken,
+        accountId,
+        filters
+    )
+}
+
+/**
  * Retrieve watchlist results
  * @see Api.watchlist
  * @param filters
@@ -732,6 +757,7 @@ export const App = {
     browser,
     search,
     history,
+    recommendations,
     watchlist,
     inWatchlist,
     addToWatchlist,

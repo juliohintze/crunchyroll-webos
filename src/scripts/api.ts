@@ -247,6 +247,32 @@ const search = async (accessToken: string, filters: Data) => {
 }
 
 /**
+ * Retrieve recommendations results. Possible filter parameters:
+ *
+ * - ``preferred_audio_language`` (string): user preferred language
+ * - ``locale`` (string): user locale
+ * - ``n`` (number): results per request
+ * - ``start`` (number): results start offset
+ *
+ * @param accessToken
+ * @param accountId
+ * @param filters
+ * @returns
+ */
+const recommendations = async (accessToken: string, accountId: string, filters: Data) => {
+
+    var headers = new Headers()
+    headers.append('Authorization', 'Bearer ' + accessToken)
+    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+
+    const params = encode(filters)
+    const endpoint = '/content/v2/discover/' + accountId + '/recommendations?' + params
+    const result = await request('GET', endpoint, null, headers)
+
+    return result
+}
+
+/**
  * Retrieve watchlist results. Possible filter parameters:
  *
  * - ``preferred_audio_language`` (string): user preferred language
@@ -698,6 +724,7 @@ export const Api = {
     homeFeed,
     browser,
     search,
+    recommendations,
     watchlist,
     inWatchlist,
     addToWatchlist,

@@ -130,21 +130,3 @@ Route.add({
     component: '<div data-watchlist></div>',
     authenticated: true
 })
-
-// Home simulation
-Route.add({
-    id: 'watchlist',
-    menuId: 'watchlist',
-    path: '/',
-    title: 'Watchlist',
-    component: '<div data-watchlist></div>',
-    authenticated: true
-})
-Route.add({
-    id: 'watchlist',
-    menuId: 'watchlist',
-    path: '/home',
-    title: 'Watchlist',
-    component: '<div data-watchlist></div>',
-    authenticated: true
-})
