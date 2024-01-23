@@ -2,7 +2,7 @@
 export PROOT=$(shell pwd)
 export BINARIES=${PROOT}/node_modules/.bin
 
-export VERSION=1.9.3
+export VERSION=1.10.0
 export ID=com.crunchyroll.webos
 export HOMEPAGE="https://github.com/mateussouzaweb/crunchyroll-webos"
 export THUMBNAIL="https://raw.githubusercontent.com/mateussouzaweb/crunchyroll-webos/master/src/images/80px.png"
