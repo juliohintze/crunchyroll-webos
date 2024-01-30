@@ -86,3 +86,17 @@ npm run app-inspect
 ```
 
 Please note that the developer mode is enabled only for a few hours, so you will need to renew the developer session from time to time to keep using and developing the app.
+
+### Running on Browser
+
+You can also test this project in the browser, but it requires a few necessary steps. First, you need to start the browser without CORS. You also will need to access the project from the ``index.html`` file located on the ``dist/`` folder using the ``file://`` protocol, otherwise, Crunchyroll API response and video playback will be blocked by the security rules of the navigator:
+
+```bash
+# Step 1 - Start the browser without CORS
+flatpak run com.google.Chrome --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
+
+# Step 2 - Access the project from the dist/ folder
+# Open in the browser the address in the format:
+# file://{PATH_TO_DIST_FOLDER}/index.html
+```
+
