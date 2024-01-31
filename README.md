@@ -9,7 +9,7 @@ The last Crunchyroll app you will ever need!
 
 Compatible with webOS TV 4.x or more recent.
 
-## Download
+## Download and Installation
 
 You can download and install this app in your WebOS TV following one of the guides below:
 
@@ -17,17 +17,61 @@ You can download and install this app in your WebOS TV following one of the guid
 - Using [dev-manager-desktop](https://github.com/webosbrew/dev-manager-desktop) from computer.
 - Downloading IPK from [latest release](https://github.com/mateussouzaweb/crunchyroll-webos/releases/latest) page and install using [WebOS SDK](https://webostv.developer.lge.com/develop/tools/cli-introduction).
 
-## For Developers
+## Developing with Docker
 
-This method will install Crunchyroll as TV app, but is recommended only for developers:
-
-- Install [Compactor](https://github.com/mateussouzaweb/compactor).
-- Enable TV for [testing with developer mode](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app).
-- Clone this repository, then run the following code to install the app:
+You are more than welcome to contribute to this project! To make the development process easier for everyone, we encourage you to build a container that will include all the dependencies. Here are the necessary steps:
 
 ```bash
-# Install packages
+# Clone the repository
+git clone git@github.com:mateussouzaweb/crunchyroll-webos.git
+cd crunchyroll-webos/
+
+# Build the container from Dockerfile
+docker build -t crunchyroll-webos:latest .
+
+# Run the container with user environment
+docker run -it --rm \
+  --network host \
+  --name crunchyroll-webos \
+  --user $(id -u):$(id -g) \
+  --env HOME="$HOME" \
+  --volume "$HOME":"$HOME" \
+  --volume "$PWD":"/app" \
+  crunchyroll-webos:latest bash
+
+# Installs project dependencies
 npm install
+
+# Run develop mode
+npm run develop
+```
+
+The ``develop`` command needs to keep running in the background to compile changes while you are developing. When you need to access others commands, please create additional terminals by connecting to the same container or run the command with docker:
+
+```bash
+# Connect to bash and run the command
+docker exec -it crunchyroll-webos bash
+npm run device-check
+
+# Or, run the command directly
+docker exec -it crunchyroll-webos npm run device-check
+```
+
+### Running on TV
+
+To test and develop directly on the TV, you need to enable your TV for testing with developer mode. Please refer to the official LG guide to learn how to enable the developer mode: <https://webostv.developer.lge.com/develop/getting-started/developer-mode-app>. 
+
+Once you enabled the developer mode, you can use the project commands to connect, build, launch and inspect the program on your TV:
+
+```bash
+# List devices
+npm run devices
+
+# Run setup process to connect to the TV
+npm run device-setup
+
+# Check device connection
+npm run device-check
 
 # Build from SRC
 npm run build
@@ -41,10 +85,18 @@ npm run app-launch
 npm run app-inspect
 ```
 
-Developer Mode is enabled only for 50 hours, so you will need to renew developer session every 50 hours to keep using Crunchyroll as app... If you want to develop changes on the project, use the ``develop`` command to open a static web server and watch changes / build while you develop:
+Please note that the developer mode is enabled only for a few hours, so you will need to renew the developer session from time to time to keep using and developing the app.
+
+### Running on Browser
+
+You can also test this project in the browser, but it requires a few necessary steps. First, you need to start the browser without CORS. You also will need to access the project from the ``index.html`` file located on the ``dist/`` folder using the ``file://`` protocol, otherwise, Crunchyroll API response and video playback will be blocked by the security rules of the navigator:
 
 ```bash
-# This command creates a static web server available on your desktop
-# You can test it direct from the browser
-npm run develop
+# Step 1 - Start the browser without CORS
+flatpak run com.google.Chrome --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
+
+# Step 2 - Access the project from the dist/ folder
+# Open in the browser the address in the format:
+# file://{PATH_TO_DIST_FOLDER}/index.html
 ```
+
