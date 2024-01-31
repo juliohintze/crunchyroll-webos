@@ -194,12 +194,15 @@ const streamVideo: Callback = async ({ state }) => {
     }
 
     const streamsResponse = await App.streams(videoId, {})
-    const streams = streamsResponse.streams.adaptive_hls || []
-    let stream = ''
+    if( !streamsResponse.streams ){
+        throw Error('Streams not available for this episode.')
+    }
 
+    const streams = streamsResponse.streams.adaptive_hls || []
     const locale = localStorage.getItem('preferredContentSubtitleLanguage')
     const priorities = [locale, 'en-US', '']
 
+    let stream = ''
     priorities.forEach((locale) => {
         if( streams[locale] && !stream ){
             stream = streams[locale].url
