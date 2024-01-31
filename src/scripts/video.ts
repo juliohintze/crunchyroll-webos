@@ -753,7 +753,7 @@ const onRender: Callback = async (component) => {
             trigger(element, 'click', '.video-play')
 
         } catch (error) {
-            showError(error.message + error.stack)
+            showError(error.message)
         }
 
         fire('loading::hide')
