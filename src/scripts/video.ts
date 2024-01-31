@@ -200,7 +200,7 @@ const streamVideo: Callback = async ({ state }) => {
 
     const streams = streamsResponse.streams.adaptive_hls || []
     const locale = localStorage.getItem('preferredContentSubtitleLanguage')
-    const priorities = [locale, 'en-US', '']
+    const priorities = [locale, '']
 
     let stream = ''
     priorities.forEach((locale) => {
