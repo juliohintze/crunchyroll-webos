@@ -707,6 +707,7 @@ const onMount: Callback = (component) => {
         backwardVideo(seconds)
     })
     watch(element, 'view::reload', () => {
+        pauseVideo(component)
         component.render(state())
     })
 
