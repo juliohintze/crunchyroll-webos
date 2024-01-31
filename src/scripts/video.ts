@@ -728,6 +728,7 @@ const onRender: Callback = async (component) => {
 
         video = video
         playing = false
+        lastPlayhead = 0
 
         // Video Events
         on(video, 'click', (event) => {
