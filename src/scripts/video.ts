@@ -117,6 +117,13 @@ const loadEpisode: Callback = async ({ state }) => {
     const title = $('.video-title', area)
     title.innerHTML = episodeName
 
+    const serieId = state.serieId
+    const seasonId = state.seasonId
+    const episodesUrl = '/serie/' + serieId + '/season/' + seasonId
+
+    const episodes = $('.video-episodes', area)
+    episodes.dataset.url = episodesUrl
+
 }
 
 /**
@@ -552,8 +559,6 @@ const setQuality = (level: number) => {
  */
 const onMount: Callback = (component) => {
 
-    const serieId = component.state.serieId
-    const seasonId = component.state.seasonId
     const element = component.element
     let controlsTimeout = null
 
@@ -575,11 +580,11 @@ const onMount: Callback = (component) => {
         setQuality(Number(target.dataset.next))
     })
 
-    on(element, 'click', '.video-episodes', (event) => {
+    on(element, 'click', '.video-episodes', (event, target) => {
         event.preventDefault()
         pauseVideo(component)
         hideVideo()
-        Route.redirect('/serie/' + serieId + '/season/' + seasonId)
+        Route.redirect(target.dataset.url)
     })
 
     on(element, 'click', '.video-previous-episode', (event, target) => {
