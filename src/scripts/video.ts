@@ -7,7 +7,6 @@ declare var Hls: any
 let hls = null
 let area: HTMLElement = null
 let video: HTMLVideoElement = null
-let streams = []
 let playing = false
 let trackTimeout = null
 let lastPlayhead = 0
@@ -106,7 +105,7 @@ const loadEpisode: Callback = async ({ state }) => {
     const seasonNumber = episodeInfo.episode_metadata.season_number
     const episodeNumber = Number(episodeInfo.episode_metadata.episode_number)
     const episodeName = episodeInfo.title
-    
+
     const streamsLink = String(episodeInfo.streams_link)
     const videoId = streamsLink.replace('/content/v2/cms/videos/', '').replace('/streams', '')
     state.videoId = videoId
@@ -195,11 +194,18 @@ const streamVideo: Callback = async ({ state }) => {
     }
 
     const streamsResponse = await App.streams(videoId, {})
+    const streams = streamsResponse.streams.adaptive_hls || []
+    let stream = ''
+
     const locale = localStorage.getItem('preferredContentSubtitleLanguage')
+    const priorities = [locale, 'en-US', '']
 
-    streams = streamsResponse.streams
+    priorities.forEach((locale) => {
+        if( streams[locale] && !stream ){
+            stream = streams[locale].url
+        }
+    })
 
-    let stream = streamsResponse.streams.adaptive_hls[locale]
     if (!stream) {
         throw Error('No streams to load.')
     }
@@ -207,7 +213,7 @@ const streamVideo: Callback = async ({ state }) => {
     const proxyUrl = document.body.dataset.proxyUrl
     const proxyEncode = document.body.dataset.proxyEncode
     if (proxyUrl) {
-        stream.url = proxyUrl + (proxyEncode === "true" ? encodeURIComponent(stream.url) : stream.url)
+        stream = proxyUrl + (proxyEncode === "true" ? encodeURIComponent(stream) : stream)
     }
 
     area.classList.add('video-is-loading')
@@ -229,7 +235,7 @@ const streamVideo: Callback = async ({ state }) => {
         })
 
         hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-            hls.loadSource(stream.url)
+            hls.loadSource(stream)
         })
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -539,7 +545,7 @@ const setWatched: Callback = async (component) => {
         'content_id': episodeId,
         'playhead': duration
     })
-    
+
     stopTrackProgress(component)
 
 }
