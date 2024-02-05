@@ -7,7 +7,6 @@ declare var Hls: any
 let hls = null
 let area: HTMLElement = null
 let video: HTMLVideoElement = null
-let streams = []
 let playing = false
 let trackTimeout = null
 let lastPlayhead = 0
@@ -106,7 +105,7 @@ const loadEpisode: Callback = async ({ state }) => {
     const seasonNumber = episodeInfo.episode_metadata.season_number
     const episodeNumber = Number(episodeInfo.episode_metadata.episode_number)
     const episodeName = episodeInfo.title
-    
+
     const streamsLink = String(episodeInfo.streams_link)
     const videoId = streamsLink.replace('/content/v2/cms/videos/', '').replace('/streams', '')
     state.videoId = videoId
@@ -116,6 +115,13 @@ const loadEpisode: Callback = async ({ state }) => {
 
     const title = $('.video-title', area)
     title.innerHTML = episodeName
+
+    const serieId = state.serieId
+    const seasonId = state.seasonId
+    const episodesUrl = '/serie/' + serieId + '/season/' + seasonId
+
+    const episodes = $('.video-episodes', area)
+    episodes.dataset.url = episodesUrl
 
 }
 
@@ -188,11 +194,21 @@ const streamVideo: Callback = async ({ state }) => {
     }
 
     const streamsResponse = await App.streams(videoId, {})
+    if( !streamsResponse.streams ){
+        throw Error('Streams not available for this episode.')
+    }
+
+    const streams = streamsResponse.streams.adaptive_hls || []
     const locale = localStorage.getItem('preferredContentSubtitleLanguage')
+    const priorities = [locale, '']
 
-    streams = streamsResponse.streams
+    let stream = ''
+    priorities.forEach((locale) => {
+        if( streams[locale] && !stream ){
+            stream = streams[locale].url
+        }
+    })
 
-    let stream = streamsResponse.streams.adaptive_hls[locale]
     if (!stream) {
         throw Error('No streams to load.')
     }
@@ -200,7 +216,7 @@ const streamVideo: Callback = async ({ state }) => {
     const proxyUrl = document.body.dataset.proxyUrl
     const proxyEncode = document.body.dataset.proxyEncode
     if (proxyUrl) {
-        stream.url = proxyUrl + (proxyEncode === "true" ? encodeURIComponent(stream.url) : stream.url)
+        stream = proxyUrl + (proxyEncode === "true" ? encodeURIComponent(stream) : stream)
     }
 
     area.classList.add('video-is-loading')
@@ -222,7 +238,7 @@ const streamVideo: Callback = async ({ state }) => {
         })
 
         hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-            hls.loadSource(stream.url)
+            hls.loadSource(stream)
         })
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -532,7 +548,7 @@ const setWatched: Callback = async (component) => {
         'content_id': episodeId,
         'playhead': duration
     })
-    
+
     stopTrackProgress(component)
 
 }
@@ -552,8 +568,6 @@ const setQuality = (level: number) => {
  */
 const onMount: Callback = (component) => {
 
-    const serieId = component.state.serieId
-    const seasonId = component.state.seasonId
     const element = component.element
     let controlsTimeout = null
 
@@ -575,11 +589,11 @@ const onMount: Callback = (component) => {
         setQuality(Number(target.dataset.next))
     })
 
-    on(element, 'click', '.video-episodes', (event) => {
+    on(element, 'click', '.video-episodes', (event, target) => {
         event.preventDefault()
         pauseVideo(component)
         hideVideo()
-        Route.redirect('/serie/' + serieId + '/season/' + seasonId)
+        Route.redirect(target.dataset.url)
     })
 
     on(element, 'click', '.video-previous-episode', (event, target) => {
@@ -693,7 +707,8 @@ const onMount: Callback = (component) => {
         backwardVideo(seconds)
     })
     watch(element, 'view::reload', () => {
-        component.render()
+        pauseVideo(component)
+        component.render(state())
     })
 
 }
@@ -714,6 +729,7 @@ const onRender: Callback = async (component) => {
 
         video = video
         playing = false
+        lastPlayhead = 0
 
         // Video Events
         on(video, 'click', (event) => {
@@ -739,7 +755,7 @@ const onRender: Callback = async (component) => {
             trigger(element, 'click', '.video-play')
 
         } catch (error) {
-            showError(error.message + error.stack)
+            showError(error.message)
         }
 
         fire('loading::hide')
