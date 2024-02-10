@@ -82,13 +82,7 @@
     flex-flow: row;
     flex-wrap: wrap;
     justify-content: space-between;
-    margin: 0 0 0.83rem;
-
-    .list-filters-part {
-        display: flex;
-        flex: 0 1 auto;
-        flex-wrap: wrap;
-    }
+    margin: 0 -1rem 0.83rem 0;
 
     input,
     .dropdown {
@@ -96,6 +90,7 @@
         border-color: #FFF;
         color: #FFF;
         margin-bottom: 0.5rem;
+        margin-right: 1rem;
     }
 
     input {
@@ -103,9 +98,10 @@
     }
 
     .dropdown {
-        //flex: 1 1 12.5rem;
-        flex: auto;
-        margin-right: 1rem;
+        flex: 1; 
+    }
+    .dropdown + .dropdown {
+        flex: 0;
     }
     .dropdown:focus-within {
         border-color: #F37521;
