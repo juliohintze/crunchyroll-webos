@@ -46,7 +46,8 @@ const listWatchlist: Callback = async ({ state, render }) => {
             'n': limit.toString(),
         })
 
-        const items = response.data.map((item) => {
+        const data = response.data || []
+        const items = data.map((item) => {
             return {
                 id: item.panel.id,
                 image: App.getImage(item.panel.images.thumbnail).source,

@@ -121,7 +121,8 @@ const listSerieInfo: Callback = async ({ state }) => {
         state.inWatchlist = inWatchlist
 
         const seasonsResponse = await App.seasons(serieId, {})
-        const seasons = seasonsResponse.items.map((item) => {
+        const seasonItems = seasonsResponse.items || []
+        const seasons = seasonItems.map((item) => {
             return {
                 id: item.id,
                 name: 'S' + item.season_number + ': ' + item.title

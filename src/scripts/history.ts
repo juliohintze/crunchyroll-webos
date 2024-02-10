@@ -44,7 +44,8 @@ const listHistory: Callback = async ({ state, render }) => {
             'page_size': limit.toString()
         })
 
-        const items = response.data.filter((item) => {
+        const data = response.data || []
+        const items = data.filter((item) => {
             return item.panel.type === 'episode'
         }).map((item) => {
             return {
