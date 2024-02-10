@@ -206,7 +206,7 @@ const listEpisodes: Callback = async ({ state, render }) => {
         })
 
     } catch (error) {
-        
+
         await render({
             loaded: true,
             error: true,
@@ -232,7 +232,7 @@ const onMount: Callback = async (component) => {
         const serieId = component.state.serieId
         Route.redirect('/serie/' + serieId + '/season/' + target.value)
     })
-    
+
     on(element, 'change', 'input#sort', (_event, target: HTMLInputElement) => {
         const serieId = component.state.serieId
         const seasonId = component.state.seasonId

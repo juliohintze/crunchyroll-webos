@@ -72,7 +72,7 @@ const listHistory: Callback = async ({ state, render }) => {
         })
 
     } catch (error) {
-        
+
         await render({
             loaded: true,
             error: true,

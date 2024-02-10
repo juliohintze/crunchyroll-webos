@@ -61,7 +61,7 @@ const request = async (method: string, endpoint: string, body: any, headers: Hea
     }
 
     const result = await fetch(url, requestOptions)
-    
+
     if( result.status === 204 ){
         return {} as Result
     }
@@ -85,7 +85,7 @@ const makeLogin = async (username: string, password: string) => {
         scope: 'offline_access',
     })
 
-    
+
     const headers = new Headers()
     headers.append('Content-Type', 'application/x-www-form-urlencoded')
     headers.append('Authorization', 'Basic ' + authToken);
@@ -314,7 +314,7 @@ const watchlist = async (accessToken: string, accountId: string, filters: Data) 
  * @returns
  */
 const inWatchlist = async (accessToken: string, accountId: string, filters: Data) => {
-    
+
     var headers = new Headers()
     headers.append('Authorization', 'Bearer ' + accessToken)
     headers.append('Content-Type', 'application/x-www-form-urlencoded')
