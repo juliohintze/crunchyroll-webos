@@ -38,7 +38,7 @@
         <div class="dropdown-list">
             <ul>
                 {{ each option in seasons }}
-                    <li tabindex="0" data-value="{{ option.id }}">{{ option.name }}</li>
+                    <li tabindex="0" data-value="{{ option.id }}">S{{ option.number }} - {{ option.name }}</li>
                 {{ end }}
             </ul>
         </div>

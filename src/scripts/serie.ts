@@ -124,11 +124,16 @@ const listSerieInfo: Callback = async ({ state }) => {
         const seasons = seasonsResponse.items.map((item) => {
             return {
                 id: item.id,
-                name: 'S' + item.season_number + ': ' + item.title
+                number: item.season_number,
+                name: item.title
             }
         })
 
-        state.seasons = seasons
+        state.seasons = seasons.sort((a, b) => {
+            if(a.number < b.number) { return -1; }
+            if(a.number > b.number) { return 1; }
+            return 0;
+        })
 
         if( !state.seasonId && seasons.length ){
             state.seasonId = seasons[0].id
