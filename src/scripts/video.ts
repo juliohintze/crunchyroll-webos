@@ -100,10 +100,11 @@ const loadEpisode: Callback = async ({ state }) => {
     const episodeId = state.episodeId
     const episodeResponse = await App.episode(episodeId, {})
     const episodeInfo = episodeResponse.data[0]
+    const episodeMetadata = episodeInfo.episode_metadata
 
-    const serieName = episodeInfo.episode_metadata.series_title
-    const seasonNumber = episodeInfo.episode_metadata.season_number
-    const episodeNumber = Number(episodeInfo.episode_metadata.episode_number)
+    const serieName = episodeMetadata.series_title
+    const seasonNumber = episodeMetadata.season_number
+    const episodeNumber = episodeMetadata.episode_number || episodeMetadata.episode
     const episodeName = episodeInfo.title
 
     const streamsLink = String(episodeInfo.streams_link)
@@ -140,11 +141,12 @@ const loadClosestEpisodes: Callback = async ({ state }) => {
 
     if( previousResponse.data && previousResponse.data.length ){
         const item = previousResponse.data[0].panel
-        const serieId = item.episode_metadata.series_id
-        const seasonId = item.episode_metadata.season_id
+        const metadata = item.episode_metadata
+        const serieId = metadata.series_id
+        const seasonId = metadata.season_id
         const episodeId = item.id
-        const seasonNumber = item.episode_metadata.season_number
-        const episodeNumber = item.episode_metadata.episode_number
+        const seasonNumber = metadata.season_number
+        const episodeNumber = metadata.episode_number || metadata.episode
         const episodeUrl = '/serie/' + serieId + '/season/' + seasonId + '/episode/' + episodeId + '/video'
 
         previous.dataset.url = episodeUrl
@@ -157,11 +159,12 @@ const loadClosestEpisodes: Callback = async ({ state }) => {
 
     if( nextResponse.data && nextResponse.data.length ){
         const item = nextResponse.data[0].panel
-        const serieId = item.episode_metadata.series_id
-        const seasonId = item.episode_metadata.season_id
+        const metadata = item.episode_metadata
+        const serieId = metadata.series_id
+        const seasonId = metadata.season_id
         const episodeId = item.id
-        const seasonNumber = item.episode_metadata.season_number
-        const episodeNumber = item.episode_metadata.episode_number
+        const seasonNumber = metadata.season_number
+        const episodeNumber = metadata.episode_number || metadata.episode
         const episodeUrl = '/serie/' + serieId + '/season/' + seasonId + '/episode/' + episodeId + '/video'
 
         next.dataset.url = episodeUrl

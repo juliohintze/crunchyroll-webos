@@ -170,7 +170,7 @@ const listEpisodes: Callback = async ({ state, render }) => {
             return {
                 id: item.id,
                 image: App.getImage(item.images.thumbnail).source,
-                number: item.episode_number,
+                number: item.episode_number || item.episode,
                 name: item.title,
                 description: item.description,
                 duration: item.duration_ms / 1000,
