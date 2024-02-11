@@ -30,6 +30,16 @@ const getImage = (images: any[]) => {
 }
 
 /**
+ * Format error for better visualization
+ * @param error
+ * @returns
+ */
+const formatError = (error: Error) => {
+    const message = error.message + "\n\n" + error.stack;
+    return message.split("\n").join("<br/>")
+}
+
+/**
  * Run application login process
  * @param username
  * @param password
@@ -763,6 +773,7 @@ const getTextLanguages = () => {
 export const App = {
     getTemplate,
     getImage,
+    formatError,
     login,
     logout,
     isLoggedIn,

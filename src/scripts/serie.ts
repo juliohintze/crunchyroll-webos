@@ -142,7 +142,7 @@ const listSerieInfo: Callback = async ({ state }) => {
 
     } catch (error) {
         state.error = true
-        state.message = error.message
+        state.message = App.formatError(error)
     }
 
     fire('loading::hide')
@@ -211,7 +211,7 @@ const listEpisodes: Callback = async ({ state, render }) => {
         await render({
             loaded: true,
             error: true,
-            message: error.message
+            message: App.formatError(error)
         })
 
     }

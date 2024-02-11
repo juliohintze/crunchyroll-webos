@@ -77,7 +77,7 @@ const listHistory: Callback = async ({ state, render }) => {
         await render({
             loaded: true,
             error: true,
-            message: error.message
+            message: App.formatError(error)
         })
 
     }

@@ -314,7 +314,8 @@ const playVideo: Callback = async (component) => {
 
     try {
         await video.play()
-    } catch (err) {
+    } catch (error) {
+        console.log(error.message)
     }
 
     area.classList.remove('video-is-paused')
@@ -758,7 +759,7 @@ const onRender: Callback = async (component) => {
             trigger(element, 'click', '.video-play')
 
         } catch (error) {
-            showError(error.message)
+            showError(App.formatError(error))
         }
 
         fire('loading::hide')
