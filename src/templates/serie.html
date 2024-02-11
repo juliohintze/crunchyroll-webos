@@ -1,6 +1,21 @@
-<h1 tabindex="0">
-    {{ serieName }}
-</h1>
+<div class="list-header">
+    <h1 tabindex="0">
+        {{ serieName }}
+    </h1>
+
+    <button
+        class="add-to-watchlist {{ inWatchlist ? 'hidden' : '' }}"
+        tabindex="0">
+        <span class="icon"></span>
+        <span>Add</span>
+    </button>
+    <button
+        class="remove-from-watchlist {{ inWatchlist ? '' : 'hidden' }}"
+        tabindex="0">
+        <span class="icon"></span>
+        <span>Remove</span>
+    </button>
+</div>
 
 {{ if seasonsCount || episodesCount }} 
     <div class="list-info">
@@ -17,38 +32,27 @@
 {{ end }}
 
 <div class="list-filters">
-    <div class="list-filters-part">
-        <div class="dropdown" tabindex="0" data-dropdown>
-            <input type="hidden" id="season" name="season" value="{{ seasonId }}">
-            <div class="dropdown-value">Season</div>
-            <div class="dropdown-list">
-                <ul>
-                    {{ each option in seasons }}
-                        <li tabindex="0" data-value="{{ option.id }}">{{ option.name }}</li>
-                    {{ end }}
-                </ul>
-            </div>
-        </div>
-
-        <div class="dropdown" tabindex="0" data-dropdown>
-            <input type="hidden" id="sort" name="sort" value="{{ sort }}">
-            <div class="dropdown-value">Sort</div>
-            <div class="dropdown-list">
-                <ul>
-                    <li tabindex="0" data-value="asc">Ascending</li>
-                    <li tabindex="0" data-value="desc">Descending</li>
-                </ul>
-            </div>
+    <div class="dropdown" tabindex="0" data-dropdown>
+        <input type="hidden" id="season" name="season" value="{{ seasonId }}">
+        <div class="dropdown-value">Season</div>
+        <div class="dropdown-list">
+            <ul>
+                {{ each option in seasons }}
+                    <li tabindex="0" data-value="{{ option.id }}">S{{ option.number }} - {{ option.name }}</li>
+                {{ end }}
+            </ul>
         </div>
     </div>
 
-    <div class="list-filters-part">
-        <button
-            class="add-to-watchlist {{ inWatchlist ? 'hidden' : '' }}"
-            tabindex="0">Add To Watchlist</button>
-        <button
-            class="remove-from-watchlist {{ inWatchlist ? '' : 'hidden' }}"
-            tabindex="0">Remove From Watchlist</button>
+    <div class="dropdown" tabindex="0" data-dropdown>
+        <input type="hidden" id="sort" name="sort" value="{{ sort }}">
+        <div class="dropdown-value">Sort</div>
+        <div class="dropdown-list">
+            <ul>
+                <li tabindex="0" data-value="asc">Ascending</li>
+                <li tabindex="0" data-value="desc">Descending</li>
+            </ul>
+        </div>
     </div>
 </div>
 

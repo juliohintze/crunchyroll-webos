@@ -92,13 +92,13 @@ const listResults: Callback = async ({ state, render }) => {
 
         let total = 0
         let items = []
-        
+
         // Special listings
         if ( category && special ){
             const response = await App.browser({
                 'type': 'series',
                 'sort_by': sort,
-                'start': offset.toString(), 
+                'start': offset.toString(),
                 'n': limit.toString()
             })
 
@@ -118,7 +118,7 @@ const listResults: Callback = async ({ state, render }) => {
                 'type': 'series',
                 'categories': category,
                 'sort_by': sort,
-                'start': offset.toString(), 
+                'start': offset.toString(),
                 'n': limit.toString()
             })
 

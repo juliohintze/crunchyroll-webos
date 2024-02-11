@@ -26,8 +26,8 @@ const makeLogin: Callback = async ({ element, render }) => {
         await App.login(username.value, password.value)
         Route.redirect('/home')
     } catch (error) {
-        await render({ 
-            message: error.message 
+        await render({
+            message: error.message
         })
     }
 

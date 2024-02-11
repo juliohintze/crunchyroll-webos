@@ -66,13 +66,13 @@ const listResults: Callback = async ({ state, render }) => {
         const response = await App.search({
             'type': 'series',
             'q': query,
-            'start': offset.toString(), 
+            'start': offset.toString(),
             'n': limit.toString()
         })
 
-        const data = { 
-            count: 0, 
-            items: [] 
+        const data = {
+            count: 0,
+            items: []
         }
 
         if( response.data && response.data.length ){

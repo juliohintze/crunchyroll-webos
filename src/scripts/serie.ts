@@ -124,11 +124,16 @@ const listSerieInfo: Callback = async ({ state }) => {
         const seasons = seasonsResponse.items.map((item) => {
             return {
                 id: item.id,
-                name: 'S' + item.season_number + ': ' + item.title
+                number: item.season_number,
+                name: item.title
             }
         })
 
-        state.seasons = seasons
+        state.seasons = seasons.sort((a, b) => {
+            if(a.number < b.number) { return -1; }
+            if(a.number > b.number) { return 1; }
+            return 0;
+        })
 
         if( !state.seasonId && seasons.length ){
             state.seasonId = seasons[0].id
@@ -170,7 +175,7 @@ const listEpisodes: Callback = async ({ state, render }) => {
             return {
                 id: item.id,
                 image: App.getImage(item.images.thumbnail).source,
-                number: item.episode_number,
+                number: item.episode_number || item.episode,
                 name: item.title,
                 description: item.description,
                 duration: item.duration_ms / 1000,
@@ -201,7 +206,7 @@ const listEpisodes: Callback = async ({ state, render }) => {
         })
 
     } catch (error) {
-        
+
         await render({
             loaded: true,
             error: true,
@@ -227,7 +232,7 @@ const onMount: Callback = async (component) => {
         const serieId = component.state.serieId
         Route.redirect('/serie/' + serieId + '/season/' + target.value)
     })
-    
+
     on(element, 'change', 'input#sort', (_event, target: HTMLInputElement) => {
         const serieId = component.state.serieId
         const seasonId = component.state.seasonId

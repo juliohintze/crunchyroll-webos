@@ -16,8 +16,8 @@ const getTemplate = async (name: string, data: any) => {
 
 /**
  * Retrieve image information
- * @param images 
- * @returns 
+ * @param images
+ * @returns
  */
 const getImage = (images: any[]) => {
 
@@ -25,7 +25,7 @@ const getImage = (images: any[]) => {
     if( images && images.length ){
         image.source = images[0][0].source
     }
-    
+
     return image
 }
 
@@ -589,7 +589,7 @@ const setProgress = async (filters: Data, data: Data) => {
  * @returns
  */
 const serie = async (serieId: string, filters: Data) => {
-    
+
     await refreshSession()
 
     const accessToken = localStorage.getItem('accessToken')
@@ -686,7 +686,7 @@ const episode = async (episodeId: string, filters: Data) => {
     const accessToken = localStorage.getItem('accessToken')
     const preferredContentAudioLanguage = localStorage.getItem('preferredContentAudioLanguage')
     const preferredCommunicationLanguage = localStorage.getItem('preferredCommunicationLanguage')
-    
+
     filters['preferred_audio_language'] = preferredContentAudioLanguage
     filters['locale'] = preferredCommunicationLanguage
 
