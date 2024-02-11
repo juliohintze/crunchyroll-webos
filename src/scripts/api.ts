@@ -61,7 +61,7 @@ const request = async (method: string, endpoint: string, body: any, headers: Hea
     }
 
     const result = await fetch(url, requestOptions)
-    
+
     if( result.status === 204 ){
         return {} as Result
     }
@@ -323,7 +323,7 @@ const watchlist = async (accessToken: string, accountId: string, filters: Data) 
  * @returns
  */
 const inWatchlist = async (accessToken: string, accountId: string, filters: Data) => {
-    
+
     const headers = {
         'Authorization': 'Bearer ' + accessToken,
         'Content-Type': 'application/x-www-form-urlencoded'
