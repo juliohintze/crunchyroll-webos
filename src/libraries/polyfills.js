@@ -41,6 +41,13 @@ if (!Array.prototype.find) {
     };
 }
 
+// String.includes
+if( !String.prototype.includes ) {
+    String.prototype.includes = function(search){
+        return !!~this.indexOf(search);
+    };
+}
+
 // Array.includes
 if( !Array.prototype.includes ) {
     Array.prototype.includes = function(search){
