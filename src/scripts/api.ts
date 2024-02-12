@@ -90,7 +90,8 @@ const makeLogin = async (username: string, password: string) => {
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 
-    const result = await request('POST', '/auth/v1/token', data, headers)
+    const endpoint = '/auth/v1/token'
+    const result = await request('POST', endpoint, data, headers)
     return result
 }
 
@@ -112,7 +113,8 @@ const refreshLogin = async (refreshToken: string) => {
         'Content-Type': 'application/x-www-form-urlencoded',
     }
 
-    const result = await request('POST', '/auth/v1/token', data, headers)
+    const endpoint = '/auth/v1/token'
+    const result = await request('POST', endpoint, data, headers)
     return result
 }
 
@@ -128,7 +130,8 @@ const getCookies = async (accessToken: string) => {
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 
-    const result = await request('GET', '/index/v2', null, headers)
+    const endpoint = '/index/v2'
+    const result = await request('GET', endpoint, null, headers)
     return result
 }
 
@@ -144,7 +147,8 @@ const getProfile = async (accessToken: string) => {
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 
-    const result = await request('GET', '/accounts/v1/me/profile', null, headers)
+    const endpoint = '/accounts/v1/me/profile'
+    const result = await request('GET', endpoint, null, headers)
     return result
 }
 
@@ -162,7 +166,8 @@ const updateProfile = async (accessToken: string, data: Data) => {
     }
 
     const body = JSON.stringify(data)
-    const result = await request('PATCH', '/accounts/v1/me/profile', body, headers)
+    const endpoint = '/accounts/v1/me/profile'
+    const result = await request('PATCH', endpoint, body, headers)
     return result
 }
 
@@ -360,7 +365,8 @@ const addToWatchlist = async (accessToken: string, accountId: string, contentId:
     })
 
     const params = encode(filters)
-    const result = await request('POST', '/content/v2/' + accountId + '/watchlist?' + params, body, headers)
+    const endpoint = '/content/v2/' + accountId + '/watchlist?' + params
+    const result = await request('POST', endpoint, body, headers)
 
     return result
 }
@@ -385,7 +391,8 @@ const removeFromWatchlist = async (accessToken: string, accountId: string, conte
     }
 
     const params = encode(filters)
-    const result = await request('DELETE', '/content/v2/' + accountId + '/watchlist/' + contentId + '?' + params, null, headers)
+    const endpoint = '/content/v2/' + accountId + '/watchlist/' + contentId + '?' + params
+    const result = await request('DELETE', endpoint, null, headers)
 
     return result
 }
@@ -515,7 +522,8 @@ const setProgress = async (accessToken: string, accountId: string, filters: Data
 
     const params = encode(filters)
     const body = JSON.stringify(data)
-    const result = await request('POST', '/content/v2/' + accountId + '/playheads?' + params, body, headers)
+    const endpoint = '/content/v2/' + accountId + '/playheads?' + params
+    const result = await request('POST', endpoint, body, headers)
 
     return result
 }
