@@ -27,7 +27,7 @@ git clone git@github.com:mateussouzaweb/crunchyroll-webos.git
 cd crunchyroll-webos/
 
 # Build the container from Dockerfile
-docker build -t crunchyroll-webos:latest .
+docker build --no-cache -t crunchyroll-webos:latest .
 
 # Run the container with user environment
 docker run -it --rm \
