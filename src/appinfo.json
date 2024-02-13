@@ -1,10 +1,11 @@
 {
     "id": "com.crunchyroll.webos",
-    "version": "1.10.1",
+    "version": "1.10.2",
     "vendor": "Mateus Souza",
     "type": "web",
     "main": "index.html",
     "title": "Crunchyroll",
+    "appDescription": "Unofficial Crunchyroll app for WebOS TV",
     "icon": "images/80px.png",
     "largeIcon": "images/130px.png",
     "splashBackground": "images/background.png",

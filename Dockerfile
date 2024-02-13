@@ -3,11 +3,13 @@ LABEL org.opencontainers.image.source https://github.com/mateussouzaweb/crunchyr
 LABEL maintainer="Mateus Souza <mateussouzaweb@gmail.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies
+# Install system packages
 RUN apt update && apt install -y make sed curl
-RUN mkdir -p /usr/local/bin 
-RUN curl https://mateussouzaweb.github.io/compactor/install.sh | bash
-RUN npm install -g rollup
+RUN npm install -g npm
+
+# Install compactor
+RUN mkdir -p /usr/local/bin && \
+    curl https://mateussouzaweb.github.io/compactor/install.sh | bash -
 
 # Create app directory
 WORKDIR /app
