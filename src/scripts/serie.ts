@@ -121,7 +121,8 @@ const listSerieInfo: Callback = async ({ state }) => {
         state.inWatchlist = inWatchlist
 
         const seasonsResponse = await App.seasons(serieId, {})
-        const seasons = seasonsResponse.items.map((item) => {
+        const seasonItems = seasonsResponse.items || []
+        const seasons = seasonItems.map((item) => {
             return {
                 id: item.id,
                 number: item.season_number,
@@ -141,7 +142,7 @@ const listSerieInfo: Callback = async ({ state }) => {
 
     } catch (error) {
         state.error = true
-        state.message = error.message
+        state.message = App.formatError(error)
     }
 
     fire('loading::hide')
@@ -210,7 +211,7 @@ const listEpisodes: Callback = async ({ state, render }) => {
         await render({
             loaded: true,
             error: true,
-            message: error.message
+            message: App.formatError(error)
         })
 
     }

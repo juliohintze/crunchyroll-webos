@@ -46,12 +46,14 @@ const listResults: Callback = async ({ state, render }) => {
         // ]
 
         // const listsResponse = await App.homeFeed({})
-        // const lists = listsResponse.data.filter((list: any) => {
+        // const listsData = listsResponse.data || []
+        // const lists = listsData.filter((list: any) => {
         //     return validLists.includes(list.response_type)
         // })
 
         const recommendationsResponse = await App.recommendations({'n': '4'})
-        const recommendations = (recommendationsResponse.data || []).map((item) => {
+        const recommendationsData = recommendationsResponse.data || []
+        const recommendations = recommendationsData.map((item) => {
             return {
                 id: item.id,
                 name: item.title,
@@ -61,7 +63,8 @@ const listResults: Callback = async ({ state, render }) => {
         })
 
         const historyResponse = await App.history({'page_size': '4'})
-        const history = (historyResponse.data || []).filter((item) => {
+        const historyData = historyResponse.data || []
+        const history = historyData.filter((item) => {
             return item.panel.type === 'episode'
         }).map((item) => {
             const metadata = item.panel.episode_metadata
@@ -82,7 +85,8 @@ const listResults: Callback = async ({ state, render }) => {
         })
 
         const watchlistResponse = await App.watchlist({'n': '4'})
-        const watchlist = (watchlistResponse.data || []).map((item) => {
+        const watchlistData = watchlistResponse.data || []
+        const watchlist = watchlistData.map((item) => {
             const metadata = item.panel.episode_metadata
             return {
                 id: item.panel.id,
@@ -101,7 +105,8 @@ const listResults: Callback = async ({ state, render }) => {
         })
 
         const popularResponse = await App.browser({'n': '4', 'sort_by': 'popularity'})
-        const popular = (popularResponse.data || []).map((item) => {
+        const popularData = popularResponse.data || []
+        const popular = popularData.map((item) => {
             return {
                 id: item.id,
                 name: item.title,
@@ -125,7 +130,7 @@ const listResults: Callback = async ({ state, render }) => {
         await render({
             loaded: true,
             error: true,
-            message: error.message
+            message: App.formatError(error)
         })
 
     }

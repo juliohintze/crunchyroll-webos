@@ -40,7 +40,7 @@ const encode = (data: Data) => {
  * @param headers
  * @returns
  */
-const request = async (method: string, endpoint: string, body: any, headers: Headers) => {
+const request = async (method: string, endpoint: string, body: any, headers: HeadersInit) => {
 
     const proxyUrl = document.body.dataset.proxyUrl
     const proxyEncode = document.body.dataset.proxyEncode
@@ -85,12 +85,13 @@ const makeLogin = async (username: string, password: string) => {
         scope: 'offline_access',
     })
 
+    const headers = {
+        'Authorization': 'Basic ' + authToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
-    const headers = new Headers()
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
-    headers.append('Authorization', 'Basic ' + authToken);
-
-    const result = await request('POST', '/auth/v1/token', data, headers)
+    const endpoint = '/auth/v1/token'
+    const result = await request('POST', endpoint, data, headers)
     return result
 }
 
@@ -107,11 +108,13 @@ const refreshLogin = async (refreshToken: string) => {
         scope: 'offline_access',
     })
 
-    const headers = new Headers()
-    headers.append('Authorization', 'Basic ' + authToken);
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Basic ' + authToken,
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
 
-    const result = await request('POST', '/auth/v1/token', data, headers)
+    const endpoint = '/auth/v1/token'
+    const result = await request('POST', endpoint, data, headers)
     return result
 }
 
@@ -122,11 +125,13 @@ const refreshLogin = async (refreshToken: string) => {
  */
 const getCookies = async (accessToken: string) => {
 
-    const headers = new Headers();
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
-    const result = await request('GET', '/index/v2', null, headers)
+    const endpoint = '/index/v2'
+    const result = await request('GET', endpoint, null, headers)
     return result
 }
 
@@ -137,11 +142,13 @@ const getCookies = async (accessToken: string) => {
  */
 const getProfile = async (accessToken: string) => {
 
-    const headers = new Headers();
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
-    const result = await request('GET', '/accounts/v1/me/profile', null, headers)
+    const endpoint = '/accounts/v1/me/profile'
+    const result = await request('GET', endpoint, null, headers)
     return result
 }
 
@@ -153,12 +160,14 @@ const getProfile = async (accessToken: string) => {
  */
 const updateProfile = async (accessToken: string, data: Data) => {
 
-    const headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/json')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+    }
 
     const body = JSON.stringify(data)
-    const result = await request('PATCH', '/accounts/v1/me/profile', body, headers)
+    const endpoint = '/accounts/v1/me/profile'
+    const result = await request('PATCH', endpoint, body, headers)
     return result
 }
 
@@ -177,9 +186,10 @@ const updateProfile = async (accessToken: string, data: Data) => {
  */
 const homeFeed = async (accessToken: string, accountId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/discover/' + accountId + '/home_feed?' + params
@@ -209,9 +219,10 @@ const homeFeed = async (accessToken: string, accountId: string, filters: Data) =
  */
 const browser = async (accessToken: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/discover/browse?' + params
@@ -235,9 +246,10 @@ const browser = async (accessToken: string, filters: Data) => {
  */
 const search = async (accessToken: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/discover/search?' + params
@@ -261,9 +273,10 @@ const search = async (accessToken: string, filters: Data) => {
  */
 const recommendations = async (accessToken: string, accountId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/discover/' + accountId + '/recommendations?' + params
@@ -289,9 +302,10 @@ const recommendations = async (accessToken: string, accountId: string, filters: 
  */
 const watchlist = async (accessToken: string, accountId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/discover/' + accountId + '/watchlist?' + params
@@ -315,9 +329,10 @@ const watchlist = async (accessToken: string, accountId: string, filters: Data) 
  */
 const inWatchlist = async (accessToken: string, accountId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/' + accountId + '/watchlist?' + params
@@ -340,16 +355,18 @@ const inWatchlist = async (accessToken: string, accountId: string, filters: Data
  */
 const addToWatchlist = async (accessToken: string, accountId: string, contentId: string, filters: Data) => {
 
-    const headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/json')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+    }
 
     const body = JSON.stringify({
         content_id: contentId
     })
 
     const params = encode(filters)
-    const result = await request('POST', '/content/v2/' + accountId + '/watchlist?' + params, body, headers)
+    const endpoint = '/content/v2/' + accountId + '/watchlist?' + params
+    const result = await request('POST', endpoint, body, headers)
 
     return result
 }
@@ -368,12 +385,14 @@ const addToWatchlist = async (accessToken: string, accountId: string, contentId:
  */
 const removeFromWatchlist = async (accessToken: string, accountId: string, contentId: string, filters: Data) => {
 
-    const headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/json')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+    }
 
     const params = encode(filters)
-    const result = await request('DELETE', '/content/v2/' + accountId + '/watchlist/' + contentId + '?' + params, null, headers)
+    const endpoint = '/content/v2/' + accountId + '/watchlist/' + contentId + '?' + params
+    const result = await request('DELETE', endpoint, null, headers)
 
     return result
 }
@@ -394,9 +413,10 @@ const removeFromWatchlist = async (accessToken: string, accountId: string, conte
  */
 const history = async (accessToken: string, accountId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/' + accountId + '/watch-history?' + params
@@ -418,9 +438,10 @@ const history = async (accessToken: string, accountId: string, filters: Data) =>
  */
 const upNext = async (accessToken: string, contentId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/discover/up_next/' + contentId + '?' + params
@@ -442,9 +463,10 @@ const upNext = async (accessToken: string, contentId: string, filters: Data) => 
  */
 const previousEpisode = async (accessToken: string, contentId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/discover/previous_episode/' + contentId + '?' + params
@@ -467,9 +489,10 @@ const previousEpisode = async (accessToken: string, contentId: string, filters: 
  */
 const playHeads = async (accessToken: string, accountId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/' + accountId + '/playheads?' + params
@@ -492,13 +515,15 @@ const playHeads = async (accessToken: string, accountId: string, filters: Data) 
  */
 const setProgress = async (accessToken: string, accountId: string, filters: Data, data: Data) => {
 
-    const headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/json')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+    }
 
     const params = encode(filters)
     const body = JSON.stringify(data)
-    const result = await request('POST', '/content/v2/' + accountId + '/playheads?' + params, body, headers)
+    const endpoint = '/content/v2/' + accountId + '/playheads?' + params
+    const result = await request('POST', endpoint, body, headers)
 
     return result
 }
@@ -515,9 +540,10 @@ const setProgress = async (accessToken: string, accountId: string, filters: Data
  */
 const categories = async (accessToken: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v1/tenant_categories?' + params
@@ -539,9 +565,10 @@ const categories = async (accessToken: string, filters: Data) => {
  */
 const serie = async (accessToken: string, serieId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/cms/series/' + serieId + '?' + params
@@ -567,9 +594,10 @@ const serie = async (accessToken: string, serieId: string, filters: Data) => {
  */
 const seasons = async (accessToken: string, bucket: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/cms/v2' + bucket + '/seasons?' + params
@@ -595,9 +623,10 @@ const seasons = async (accessToken: string, bucket: string, filters: Data) => {
  */
 const episodes = async (accessToken: string, bucket: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/cms/v2' + bucket + '/episodes?' + params
@@ -619,9 +648,10 @@ const episodes = async (accessToken: string, bucket: string, filters: Data) => {
  */
 const episode = async (accessToken: string, contentId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/content/v2/cms/objects/' + contentId + '?' + params
@@ -647,9 +677,10 @@ const episode = async (accessToken: string, contentId: string, filters: Data) =>
  */
 const streams = async (accessToken: string, bucket: string, contentId: string, filters: Data) => {
 
-    var headers = new Headers()
-    headers.append('Authorization', 'Bearer ' + accessToken)
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    const headers = {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
     const params = encode(filters)
     const endpoint = '/cms/v2' + bucket + '/videos/' + contentId + '/streams?' + params
@@ -664,7 +695,7 @@ const streams = async (accessToken: string, bucket: string, contentId: string, f
  */
 const textLanguages = async () => {
 
-    const headers = new Headers()
+    const headers = {}
     const endpoint = staticUrl + '/config/i18n/v3/timed_text_languages.json'
     const result = await request('GET', endpoint, null, headers)
 
@@ -677,7 +708,7 @@ const textLanguages = async () => {
  */
 const audioLanguages = async () => {
 
-    const headers = new Headers()
+    const headers = {}
     const endpoint = staticUrl + '/config/i18n/v3/audio_languages.json'
     const result = await request('GET', endpoint, null, headers)
 
@@ -690,7 +721,7 @@ const audioLanguages = async () => {
  */
 const intro = async (contentId: string) => {
 
-    const headers = new Headers()
+    const headers = {}
     const endpoint = staticUrl + '/datalab-intro-v2/' + contentId + '.json'
     const result = await request('GET', endpoint, null, headers)
 

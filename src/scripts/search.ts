@@ -76,8 +76,8 @@ const listResults: Callback = async ({ state, render }) => {
         }
 
         if( response.data && response.data.length ){
-            data.count = response.data[0].count
-            data.items = response.data[0].items
+            data.count = response.data[0].count || 0
+            data.items = response.data[0].items || []
         }
 
         const total = data.count
@@ -109,7 +109,7 @@ const listResults: Callback = async ({ state, render }) => {
         await render({
             loaded: true,
             error: true,
-            message: error.message
+            message: App.formatError(error)
         })
 
     }

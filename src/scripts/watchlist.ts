@@ -46,7 +46,8 @@ const listWatchlist: Callback = async ({ state, render }) => {
             'n': limit.toString(),
         })
 
-        const items = response.data.map((item) => {
+        const data = response.data || []
+        const items = data.map((item) => {
             const metadata = item.panel.episode_metadata
             return {
                 id: item.panel.id,
@@ -76,7 +77,7 @@ const listWatchlist: Callback = async ({ state, render }) => {
         await render({
             loaded: true,
             error: true,
-            message: error.message
+            message: App.formatError(error)
         })
 
     }

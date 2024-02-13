@@ -44,7 +44,8 @@ const listHistory: Callback = async ({ state, render }) => {
             'page_size': limit.toString()
         })
 
-        const items = response.data.filter((item) => {
+        const data = response.data || []
+        const items = data.filter((item) => {
             return item.panel.type === 'episode'
         }).map((item) => {
             const metadata = item.panel.episode_metadata
@@ -76,7 +77,7 @@ const listHistory: Callback = async ({ state, render }) => {
         await render({
             loaded: true,
             error: true,
-            message: error.message
+            message: App.formatError(error)
         })
 
     }
